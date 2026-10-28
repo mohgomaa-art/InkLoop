@@ -1,0 +1,21 @@
+{
+  "milestone": "M0",
+  "component": "L2 Muse Spark Multimodal Verifier",
+  "model": "muse-spark-1.3",
+  "test_cases": [
+    {
+      "case_id": "control_case_matching",
+      "description": "Candidate matches character specification completely",
+      "expected_verdict": "pass"
+    },
+    {
+      "case_id": "corrupted_case_wrong_hair_no_glasses",
+      "description": "Candidate deliberately generated with blonde straight hair and no glasses",
+      "expected_verdict": "fail"
+    }
+  ],
+  "status": "BLOCKED",
+  "details": {
+    "error": "Missing credentials"
+  }
+}

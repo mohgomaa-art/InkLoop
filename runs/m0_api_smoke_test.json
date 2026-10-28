@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-10-29T02:30:00Z",
+  "endpoint": "https://api.meta.ai/v1",
+  "credentials_configured": false,
+  "masked_key": "[NOT SET]",
+  "status": "BLOCKED",
+  "details": {
+    "error": "Missing API Key",
+    "http_status": 401,
+    "response_body": {
+      "error": {
+        "code": "invalid_api_key",
+        "message": "Unauthorized",
+        "param": null,
+        "type": "authentication_error"
+      }
+    },
+    "x_request_id": "ba4dc613-ebc5-4476-a592-e60f1757af6d",
+    "x_route": "model-api-rust"
+  }
+}

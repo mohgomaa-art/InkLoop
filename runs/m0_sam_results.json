@@ -1,0 +1,12 @@
+{
+  "milestone": "M0",
+  "component": "L1 SAM 3.1 Concept Segmentation",
+  "model": "sam-3.1",
+  "endpoint": "https://api.meta.ai/v1/responses",
+  "input_pattern": "Promptable Concept Segmentation (PCS) with input_text and input_image",
+  "fallback_defined": "Muse Spark Vision Bounding Box Extractor (normalized [ymin, xmin, ymax, xmax])",
+  "status": "BLOCKED",
+  "details": {
+    "error": "Missing credentials"
+  }
+}
