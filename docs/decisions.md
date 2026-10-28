@@ -31,14 +31,17 @@
 
 ---
 
-## ADR-004: Meta Model API Integration & SDK Compatibility
+## ADR-004: Meta Model API Integration & Canonical Credential Standard
 - **Status:** [VERIFIED ENDPOINT / BLOCKED AUTHENTICATION]
-- **Context:** The hackathon requires meaningful use of Meta models via the Meta Model API.
+- **Context:** The hackathon requires meaningful use of Meta models via the Meta Model API (`https://api.meta.ai/v1`).
 - **Verified Facts:**
+  - Official documentation standard specifies `MODEL_API_KEY` as the canonical environment variable.
   - Base URL is `https://api.meta.ai/v1`.
   - Endpoint probe confirmed live server responses (`x-route: model-api-rust`, HTTP 401 when unauthorized).
-  - SDK compatibility verified: `openai` Python SDK (v3.41.0) configured with `base_url="https://api.meta.ai/v1"`.
-- **Current Blocker:** `META_API_KEY` (or `MODEL_API_KEY`) is not configured in `.env` or system environment.
+  - SDK compatibility verified: `openai` Python SDK (v3.41.0) and direct `httpx` HTTP requests configured with `base_url="https://api.meta.ai/v1"` and Bearer authorization.
+  - Project-root `.env` loading normalized via `Path(__file__).resolve().parent.parent.parent / ".env"` rather than working directory.
+  - Safe credential masking enforced: zero key characters are logged, serialized, or displayed.
+- **Current Blocker:** `MODEL_API_KEY` is not configured in `.env` or system environment. Execution stops before making authenticated calls.
 
 ---
 

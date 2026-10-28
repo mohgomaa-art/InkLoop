@@ -106,17 +106,17 @@ def run_consistency_experiment():
 
     if not config.has_credentials:
         print("\n[!] FATAL: Cannot execute live generation experiment.")
-        print("[!] Missing credentials (META_API_KEY / MODEL_API_KEY is not set).")
+        print("[!] Missing credentials (MODEL_API_KEY is not set).")
         print("[!] In accordance with Hackathon Integrity Directives, results cannot be fabricated.")
         report["summary"]["verdict"] = "BLOCKED"
-        report["summary"]["error"] = "Execution blocked due to missing META_API_KEY in environment"
+        report["summary"]["error"] = "Execution blocked due to missing MODEL_API_KEY in environment"
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
         print(f"[+] Status report written to: {output_path}")
         return report
 
     from openai import OpenAI
-    client = OpenAI(base_url=config.meta_base_url, api_key=config.meta_api_key)
+    client = OpenAI(base_url=config.meta_base_url, api_key=config.model_api_key)
 
     print("[*] Generating reference anchor sheet for character Nour...")
     # Real generation loop will execute here when credentials are provided

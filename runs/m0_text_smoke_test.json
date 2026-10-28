@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-10-28T23:48:41.671618+00:00",
+  "target_model": "muse-spark-1.3",
+  "model_available": true,
+  "response_status": 200,
+  "request_id": "e343ffce-6bda-4608-b7c1-c50dbac538ed",
+  "output_received": "INKLOOP_API_OK",
+  "reported_usage": {
+    "input_tokens": 19,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 289,
+    "output_tokens_details": {
+      "reasoning_tokens": 276
+    },
+    "total_tokens": 308
+  },
+  "error": null
+}

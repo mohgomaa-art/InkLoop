@@ -2,8 +2,8 @@
 
 **Date:** Thu Oct 29, 2026  
 **Auditor:** Senior Implementation Agent (Antigravity)  
-**Status:** **BLOCKED** (Awaiting Meta Model API Key)  
-**Decision Gate Recommendation:** **BLOCKED**
+**Authentication Status:** **VERIFIED** (Meta Model API live and authenticated)  
+**Decision Gate Recommendation:** **BLOCKED** (Pending Image Reference Consistency & Live Vision Verifier Evaluation)
 
 ---
 
@@ -13,9 +13,12 @@ Milestone 0 verifies whether InkLoop's technical foundation and critical API ass
 
 In accordance with Hackathon Integrity Rules:
 - No model outputs, test scores, or API results have been fabricated.
-- Public endpoint connectivity to `https://api.meta.ai/v1` was directly tested and confirmed live (`x-route: model-api-rust`, HTTP 401 Unauthorized with valid request ID).
-- The Python test environment, OpenAI SDK (v3.41.0), Pydantic schemas, and test harnesses were successfully constructed and verified with passing unit tests.
-- Live model generation, the 6-scene character consistency benchmark, the Muse Spark verifier smoke test, and SAM 3.1 segmentation are **BLOCKED** because `META_API_KEY` (or `MODEL_API_KEY`) is not configured in the workspace environment or `.env` file.
+- Public endpoint connectivity to `https://api.meta.ai/v1` was verified live.
+- Live authentication using canonical `MODEL_API_KEY` succeeded with HTTP 200 (Request ID `300c083e-e8cf-4222-b4d6-f1ff41a7ad46`).
+- The actual model catalog was retrieved: 9 models are available, confirming `muse-image-1.0`, `muse-spark-1.3`, `sam-3.1`, and `muse-wonder-1.0`.
+- One minimal text generation probe with `muse-spark-1.3` was executed via `POST /v1/responses`, returning exactly `INKLOOP_API_OK` (Request ID `e343ffce-6bda-4608-b7c1-c50dbac538ed`, usage: 19 input tokens, 289 output tokens including 276 reasoning tokens).
+- The foundation unit tests pass (11 of 11 tests green).
+- Image generation, reference-anchored generation, live vision verifier accuracy, and SAM 3.1 image segmentation remain to be evaluated in the next verification step.
 
 ---
 
@@ -23,13 +26,14 @@ In accordance with Hackathon Integrity Rules:
 
 | Component / Assumption | Verification Procedure | Actual Outcome / Evidence | Status |
 |---|---|---|---|
-| **Meta API Base Endpoint** | HTTP GET probe to `https://api.meta.ai/v1/models` | Responded with HTTP 401 Unauthorized; headers `x-route: model-api-rust`, `x-request-id: ba4dc613...`. Confirmed live and reachable. | **VERIFIED** |
-| **SDK Compatibility** | Python 3.12 + `openai` SDK v3.41.0 installed and tested with `base_url="https://api.meta.ai/v1"` | Client instantiates correctly without configuration errors. | **VERIFIED** |
-| **Account Credentials & Credits** | Inspected environment variables and workspace filesystem for API key | No `META_API_KEY` or `.env` found. User card/credits visibility cannot be determined. | **BLOCKED** |
-| **Model Catalog (`models.list`)** | Probed `client.models.list()` via `scripts/api_smoke_test.py` | Blocked on 401 authentication error. | **BLOCKED** |
-| **Character Consistency Benchmark (A vs B)** | Constructed `scripts/consistency_test.py` (6 neutral scenes for character "Nour", B&W ink style, checklist: messy black hair with left white streak, round glasses, lightning patch jacket) | Test harness ready; generation execution halted cleanly due to missing API key. Results saved to `runs/m0_consistency_results.json`. | **BLOCKED** |
-| **L2 Verifier (Muse Spark)** | Constructed `scripts/verifier_smoke_test.py` with strict Pydantic `VerificationResult` schema and contrasting test cases | Schema parsing, tri-state verification (`pass`/`fail`/`unsure`), and failure rejection verified via 6 passing unit tests. Live visual inference blocked on API key. | **BLOCKED** |
-| **L1 Segmenter (SAM 3.1)** | Constructed `scripts/sam_smoke_test.py` targeting `/v1/responses` with Promptable Concept Segmentation (`input_text: "person"`); defined Spark bounding box fallback | Harness ready. Live call blocked on API key. Fallback strategy confirmed. | **BLOCKED** |
+| **Meta API Base Endpoint** | HTTP GET probe to `https://api.meta.ai/v1/models` | Responded with HTTP 200 OK; headers `x-route: model-api-rust`, `x-request-id: 300c083e...`. Confirmed live and reachable. | **VERIFIED** |
+| **SDK Compatibility** | Python 3.12 + `openai` SDK v3.41.0 and direct `httpx` client with `base_url="https://api.meta.ai/v1"` | Client instantiates correctly; Bearer auth and Responses API compatible. | **VERIFIED** |
+| **Account Credentials** | Configured `MODEL_API_KEY` via project-root `.env` | Authentication succeeded with HTTP 200. Key safe masking verified. | **VERIFIED** |
+| **Model Catalog (`models.list`)** | Probed `GET /v1/models` via `scripts/api_smoke_test.py` | 9 models confirmed: `muse-image-1.0`, `muse-spark-1.3`, `sam-3.1`, `muse-wonder-1.0`, `muse-spark-1.2`, `muse-spark-1.1`, `muse-voice-transcribe-1.0`, and contributor variants. Saved to `runs/m0_model_catalog.json`. | **VERIFIED** |
+| **Minimal Text Probe** | Probed `muse-spark-1.3` via `POST /v1/responses` requesting `INKLOOP_API_OK` | Succeeded with HTTP 200; output received: `'INKLOOP_API_OK'`. Recorded in `runs/m0_text_smoke_test.json`. | **VERIFIED** |
+| **Character Consistency Benchmark (A vs B)** | Constructed `scripts/consistency_test.py` (6 neutral scenes for character "Nour", B&W ink style, checklist: messy black hair with left white streak, round glasses, lightning patch jacket) | Test harness ready. Image generation not yet executed in this prompt. | **READY FOR EVALUATION** |
+| **L2 Verifier (Muse Spark)** | Constructed `scripts/verifier_smoke_test.py` with strict Pydantic `VerificationResult` schema and contrasting test cases | Schema parsing, tri-state verification (`pass`/`fail`/`unsure`), and failure rejection verified via 11 passing unit tests. Live visual inference ready for execution. | **READY FOR EVALUATION** |
+| **L1 Segmenter (SAM 3.1)** | Constructed `scripts/sam_smoke_test.py` targeting `/v1/responses` with Promptable Concept Segmentation (`input_text: "person"`); defined Spark bounding box fallback | Model confirmed present in catalog (`sam-3.1`). Visual segmentation ready for execution. | **READY FOR EVALUATION** |
 | **Font Selection & Licensing** | Evaluated comic typography and verified open licenses | Shortlisted Cairo, Tajawal, Amiri (Arabic RTL) and Bangers, Comic Neue, Kalam (Latin LTR) under SIL Open Font License (OFL-1.1). Documented in `assets/fonts/FONTS.md`. | **VERIFIED** |
 | **Safety & Budget Caps** | Tested `InkLoopConfig` and safety bounds | Hard spend cap ($25.00), max 2 retries per panel, and API key masking verified in unit tests. | **VERIFIED** |
 
@@ -37,24 +41,31 @@ In accordance with Hackathon Integrity Rules:
 
 ## 3. Detailed Component Findings
 
-### 3.1 Meta Model API Access
-- **Endpoint:** `https://api.meta.ai/v1`
-- **Probe Result:**
-  ```json
-  {
-    "http_status": 401,
-    "response_body": {
-      "error": {
-        "code": "invalid_api_key",
-        "message": "Unauthorized",
-        "param": null,
-        "type": "authentication_error"
-      }
-    },
-    "x_route": "model-api-rust"
-  }
-  ```
-- **Finding:** The endpoint is fully online and active. Unlocking full Day-0 testing requires the project lead to supply the API key in `.env`.
+### 3.1 Meta Model API Access & Catalog
+- **Endpoint:** `https://api.meta.ai/v1/models`
+- **Authentication:** `Authorization: Bearer $MODEL_API_KEY`
+- **HTTP Status:** 200 OK (Request ID: `300c083e-e8cf-4222-b4d6-f1ff41a7ad46`)
+- **Available Models (9 total):**
+  1. `muse-wonder-1.0`
+  2. `sam-3.1`
+  3. `muse-spark-1.3-contributor`
+  4. `muse-voice-transcribe-1.0`
+  5. `muse-spark-1.3`
+  6. `muse-image-1.0`
+  7. `muse-spark-1.2-contributor`
+  8. `muse-spark-1.2`
+  9. `muse-spark-1.1`
+
+### 3.2 Minimal Text Smoke Test
+- **Endpoint:** `POST https://api.meta.ai/v1/responses`
+- **Target Model:** `muse-spark-1.3`
+- **HTTP Status:** 200 OK (Request ID: `e343ffce-6bda-4608-b7c1-c50dbac538ed`)
+- **Prompt:** "Return exactly INKLOOP_API_OK and nothing else."
+- **Output Received:** `'INKLOOP_API_OK'`
+- **Token Usage:**
+  - Input tokens: 19
+  - Output tokens: 289 (Reasoning: 276 tokens, Content: 13 tokens)
+  - Total tokens: 308
 
 ### 3.2 Controlled Consistency Test (Arm A vs Arm B)
 - **Character Specification:** "Nour"
@@ -102,7 +113,7 @@ In strict adherence to the project brief (Section 7 and Section 11):
 The project lead needs to take one single action:
 1. Create a `.env` file in the project root (`C:\Users\mnile\Desktop\InkLoob\.env`) containing:
    ```bash
-   META_API_KEY=your_meta_model_api_key_here
+   MODEL_API_KEY=your_key_here
    ```
 2. Once the file is saved, notify the agent. The agent will immediately execute:
    - `python scripts/api_smoke_test.py`

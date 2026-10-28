@@ -78,7 +78,7 @@ def run_verifier_test():
     print(f"Schema Validation: Strict Pydantic VerificationResult")
 
     if not config.has_credentials:
-        print("[!] Execution blocked: META_API_KEY is not set.")
+        print("[!] Execution blocked: MODEL_API_KEY is not set.")
         report["details"]["error"] = "Missing credentials"
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
