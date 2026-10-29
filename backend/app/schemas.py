@@ -16,8 +16,12 @@ class Tolerances(BaseModel):
 
 class CharacterSpec(BaseModel):
     id: str = Field(..., description="Character identifier in lowercase (e.g. nour)")
+    name: Optional[str] = Field(default=None, description="Character display name")
     attributes: List[AttributeCheck] = Field(..., description="List of declared attributes to verify")
     tolerances: Tolerances = Field(default_factory=Tolerances)
+    visual_invariants: List[str] = Field(default_factory=list, description="Explicit character visual invariants")
+    restrictions: List[str] = Field(default_factory=list, description="Character-specific negative constraints")
+    clothing_attributes: List[str] = Field(default_factory=list, description="Canonical clothing traits")
 
 class AttributeVerdict(BaseModel):
     attr_id: str
@@ -78,14 +82,33 @@ class StyleBible(BaseModel):
     ], description="Negative constraints for the style")
     version: str = Field(default="1.0.0", description="Semantic version of the style specification")
 
+class LocationSpec(BaseModel):
+    """Specification of a narrative location/setting."""
+    location_id: str = Field(..., description="Unique location identifier")
+    name: str = Field(..., description="Location display name")
+    description: str = Field(default="", description="Visual and narrative description")
+    required_attributes: List[str] = Field(default_factory=list, description="Mandatory visual attributes")
+    version: str = Field(default="1.0.0", description="Specification version")
+
+class PropSpec(BaseModel):
+    """Specification of a narrative prop."""
+    prop_id: str = Field(..., description="Unique prop identifier")
+    name: str = Field(..., description="Prop display name")
+    description: str = Field(default="", description="Visual and physical description")
+    required_attributes: List[str] = Field(default_factory=list, description="Mandatory visual attributes")
+    version: str = Field(default="1.0.0", description="Specification version")
+
 class StoryBible(BaseModel):
     """External structured Story Bible — the single source of truth for canon."""
     bible_id: str = Field(..., description="Unique Story Bible identifier")
     version: str = Field(default="1.0.0", description="Story Bible version string or content hash")
+    canon_hash: Optional[str] = Field(default=None, description="Cryptographic hash of canon definitions")
     project_id: str = Field(default="inkloop", description="Project identifier")
     style: StyleBible = Field(default_factory=StyleBible)
     characters: Dict[str, CharacterSpec] = Field(default_factory=dict, description="Declared characters keyed by id")
     character_assets: Dict[str, ReferenceAsset] = Field(default_factory=dict, description="Canonical reference assets keyed by character id")
+    locations: Dict[str, LocationSpec] = Field(default_factory=dict, description="Declared locations keyed by id")
+    props: Dict[str, PropSpec] = Field(default_factory=dict, description="Declared props keyed by id")
     story_facts: List[str] = Field(default_factory=list, description="Story-wide canonical facts")
 
 class SceneSpec(BaseModel):
@@ -218,6 +241,7 @@ class PanelResult(BaseModel):
     output_asset_path: Optional[str] = None
     output_content_hash: Optional[str] = None
     context_fingerprint: str
+    verification_status: str = Field(default="UNVERIFIED", description="Verification outcome: 'PASSED', 'FAILED', 'UNSURE', or 'UNVERIFIED'")
     verification_result: Optional[VerificationResult] = None
 
 class BatchSpec(BaseModel):
@@ -241,6 +265,8 @@ class BatchSummary(BaseModel):
     bible_version: str
     total_panels: int
     successful_panels: int
+    generated_panels: int = Field(default=0, description="Total panels rendered by image generation adapter")
+    verified_panels: int = Field(default=0, description="Total panels that passed visual verification")
     failed_panels: int
     unresolved_panels: int
     unverified_panels: int = Field(default=0, description="Panels generated but awaiting visual verification")

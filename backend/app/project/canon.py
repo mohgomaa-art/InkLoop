@@ -246,3 +246,37 @@ class CanonSnapshot(BaseModel):
         }
         serialized = json.dumps(canonical_dict, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+    def to_story_bible(
+        self,
+        language: str = "ar",
+        reading_direction: Literal["rtl", "ltr"] = "rtl",
+        user_story_text: Optional[str] = None
+    ) -> Any:
+        """
+        Reconstructs a fully functional StoryBible from this immutable snapshot.
+        Guarantees that the reconstructed bible's canon snapshot hash matches this snapshot's hash.
+        """
+        from app.project.bible import StoryBible
+        return StoryBible(
+            project_id=self.project_id,
+            schema_version=self.schema_version,
+            bible_version=self.bible_version,
+            created_at=self.created_at,
+            updated_at=self.created_at,
+            status="validated",
+            language=language,
+            reading_direction=reading_direction,
+            user_story_text=user_story_text,
+            style=self.style.model_copy(deep=True),
+            characters={k: v.model_copy(deep=True) for k, v in self.characters.items()},
+            locations={k: v.model_copy(deep=True) for k, v in self.locations.items()},
+            props={k: v.model_copy(deep=True) for k, v in self.props.items()}
+        )
+
+
+# Aliases for cross-module compatibility
+StyleBible = StyleDefinition
+LocationSpec = LocationDefinition
+PropSpec = PropDefinition
+
