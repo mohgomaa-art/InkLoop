@@ -1,0 +1,105 @@
+{
+  "bible_version": 2,
+  "characters": {
+    "hero": {
+      "approval_status": "approved",
+      "attributes": [
+        {
+          "id": "hair",
+          "required": true,
+          "text": "spiky brown hair"
+        },
+        {
+          "id": "cloak",
+          "required": true,
+          "text": "red hooded cloak"
+        }
+      ],
+      "canon_version": 2,
+      "character_id": "hero",
+      "clothing_attributes": [
+        "burned tunic"
+      ],
+      "expressions": {},
+      "name": "Hero",
+      "reference_assets": [],
+      "restrictions": [
+        "never remove cloak"
+      ],
+      "tolerances": {
+        "min_face_px_for_check": 80
+      },
+      "views": {},
+      "visual_invariants": [
+        "spiky hair"
+      ]
+    }
+  },
+  "created_at": "2026-10-29T00:51:21Z",
+  "locations": {
+    "citadel_gate": {
+      "approval_status": "approved",
+      "description": "Massive stone gate",
+      "location_id": "citadel_gate",
+      "name": "Citadel Gate",
+      "reference_assets": [],
+      "required_attributes": [
+        "stone arches"
+      ],
+      "state_relevant_properties": [
+        "time_of_day",
+        "weather",
+        "lighting",
+        "damage_state"
+      ],
+      "version": 1
+    }
+  },
+  "project_id": "test_project",
+  "props": {
+    "magic_amulet": {
+      "approval_status": "approved",
+      "description": "Silver amulet with blue crystal",
+      "name": "Magic Amulet",
+      "prop_id": "magic_amulet",
+      "reference_assets": [],
+      "required_attributes": [
+        "blue crystal"
+      ],
+      "state_relevant_properties": [
+        "holder_id",
+        "condition",
+        "location_id"
+      ],
+      "version": 1
+    }
+  },
+  "schema_version": "1.0.0",
+  "status": "validated",
+  "style": {
+    "background_detail_rules": "",
+    "lighting_constraints": [],
+    "line_art_rules": [
+      "crisp contours"
+    ],
+    "medium": "digital ink",
+    "name": "Test Ink Style",
+    "negative_constraints": [
+      "no color",
+      "no text"
+    ],
+    "palette_or_screentone": {},
+    "positive_constraints": [
+      "manga lineart"
+    ],
+    "provenance": null,
+    "reference_assets": [],
+    "rendering_approach": "black-and-white high contrast",
+    "style_id": "test_ink_style",
+    "tonal_rules": [
+      "solid blacks"
+    ],
+    "version": 1
+  },
+  "updated_at": "2026-10-29T00:51:21Z"
+}

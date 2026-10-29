@@ -1,0 +1,117 @@
+"""
+InkLoop Project Module: Story Bible, Canon, and State Timeline subsystem.
+Provides the external source of truth for character specs, visual style,
+locations, props, append-only narrative state events, and versioned snapshots.
+"""
+from app.project.asset_refs import (
+    AssetRef,
+    validate_asset_ref,
+    compute_file_sha256,
+    AssetIntegrityError,
+    AssetNotFoundError,
+    AssetHashMismatchError,
+    PathTraversalError,
+    InvalidAssetTypeError
+)
+from app.project.canon import (
+    StyleDefinition,
+    CharacterDefinition,
+    LocationDefinition,
+    PropDefinition,
+    CanonMutationProposal,
+    CanonSnapshot,
+    CanonError,
+    UnauthorizedMutationError,
+    CanonImmutabilityError,
+    CanonValidationError
+)
+from app.project.story_state import (
+    StoryStateEvent,
+    StateResolutionResult,
+    resolve_timeline_state,
+    validate_event_against_bible,
+    StateTimelineError,
+    InvalidStateEventError,
+    UndeclaredEntityError,
+    ContradictoryTransitionError,
+    DuplicateEventConflictError
+)
+from app.project.bible import (
+    StoryBible,
+    ValidationReport,
+    StoryBibleError,
+    UnsupportedSchemaVersionError,
+    VersionConflictError,
+    EntityNotFoundError,
+    MalformedBibleError,
+    CanonMutationError,
+    load_bible,
+    validate_bible,
+    save_bible,
+    get_canon_snapshot,
+    get_character_spec,
+    get_location_spec,
+    get_prop_spec,
+    append_state_event,
+    resolve_state,
+    validate_state_transition,
+    propose_canon_mutation,
+    apply_canon_mutation,
+    get_continuity_context,
+    create_canonical_nour_bible
+)
+
+__all__ = [
+    # Asset References
+    "AssetRef",
+    "validate_asset_ref",
+    "compute_file_sha256",
+    "AssetIntegrityError",
+    "AssetNotFoundError",
+    "AssetHashMismatchError",
+    "PathTraversalError",
+    "InvalidAssetTypeError",
+    # Canon
+    "StyleDefinition",
+    "CharacterDefinition",
+    "LocationDefinition",
+    "PropDefinition",
+    "CanonMutationProposal",
+    "CanonSnapshot",
+    "CanonError",
+    "UnauthorizedMutationError",
+    "CanonValidationError",
+    # Story State
+    "StoryStateEvent",
+    "StateResolutionResult",
+    "resolve_timeline_state",
+    "validate_event_against_bible",
+    "StateTimelineError",
+    "InvalidStateEventError",
+    "UndeclaredEntityError",
+    "ContradictoryTransitionError",
+    "DuplicateEventConflictError",
+    # Story Bible & Services
+    "StoryBible",
+    "ValidationReport",
+    "StoryBibleError",
+    "UnsupportedSchemaVersionError",
+    "VersionConflictError",
+    "EntityNotFoundError",
+    "MalformedBibleError",
+    "CanonMutationError",
+    "load_bible",
+    "validate_bible",
+    "save_bible",
+    "get_canon_snapshot",
+    "get_character_spec",
+    "get_location_spec",
+    "get_prop_spec",
+    "append_state_event",
+    "resolve_state",
+    "validate_state_transition",
+    "propose_canon_mutation",
+    "apply_canon_mutation",
+    "get_continuity_context",
+    "create_canonical_nour_bible"
+]
