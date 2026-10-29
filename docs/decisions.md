@@ -100,3 +100,39 @@
      - `user_story_text` in `StoryBible` preserves original user input (including Arabic RTL and diacritics) byte-for-byte without normalization or deletion.
 - **Verification Evidence:**
   - 34 dedicated unit and integration tests passing in `backend/tests/test_story_bible.py` and `backend/tests/test_story_bible_advanced.py`. Total test suite: 98 passing tests.
+
+---
+
+## ADR-009: Content-Addressed Asset Registry, Physical Artifact Store & Reproducible Lineage DAG
+- **Status:** [VERIFIED ARCHITECTURE & IMPLEMENTED IN M1]
+- **Context:** Comic production generates large volumes of heterogeneous artifacts (reference sheets, panel crops, masks, lettering vectors, bubble geometry, speech text blocks, composites, page previews, and final print exports). To ensure tamper-evidence, lineage traceability, and system stability under concurrent or resumed workflows, binary assets must be cleanly decoupled from searchable metadata, deduplicated, and tracked through a directed acyclic graph (DAG).
+- **Architectural Invariants & Decisions:**
+  1. **Decoupled Architecture (Physical Store vs Registry DB):**
+     - **Physical Content-Addressed Store (`ArtifactStore`):** Physical binary content is stored on disk strictly organized by SHA-256 digest: `objects/<hash[:2]>/<sha256><norm_ext>`. Callers cannot dictate disk destinations or file paths.
+     - **Metadata & Lineage Persistence (`RegistryDB`):** SQLite database operating in WAL mode with enforced foreign keys and secondary indexes (`project_id`, `content_sha256`, `asset_type`, `run_id`, `parent_id`, `child_id`).
+  2. **Security & Input Sanitization (OWASP / Defensive Hardening):**
+     - **Path Traversal Defense:** Caller-supplied paths are validated via `Path.resolve().relative_to(root)`. Any directory escape attempts trigger explicit `PathTraversalSecurityError`.
+     - **Sanitized Logical Filenames:** Original logical filenames are sanitized via `re.sub(r"[^\w.\-]", "_", ...)` and never used to determine physical storage paths.
+     - **Prohibited Executables:** Prohibited extensions (`.exe`, `.sh`, `.bat`, `.cmd`, `.ps1`, `.py`, etc.) are unconditionally rejected via `InvalidFileFormatError` (`PROHIBITED_EXECUTABLE_EXTENSION`).
+     - **Deep Magic Byte & Structural Inspection:** File extensions are never trusted blindly:
+       - Raster images must match valid PNG, WebP, or JPEG magic headers and pass Pillow structural verification (`verify()` + `size > 0`).
+       - Font files must match TrueType (`\x00\x01\x00\x00`), OpenType (`OTTO`), or WOFF/WOFF2 signatures.
+       - Vector SVG files are parsed for `<svg` tags and screened for dangerous `<script` tags (`PROHIBITED_SVG_SCRIPT_TAG`).
+       - PDF documents must verify `%PDF-` magic headers.
+       - JSON artifacts are verified to decode as valid UTF-8 and valid JSON.
+  3. **Content Immutability & Deduplication:**
+     - Registered assets are identified by their SHA-256 digest. Identical file contents share the same physical disk object, preventing redundant disk usage while allowing separate logical asset IDs and run linkages.
+     - Corrupted or modified files on disk are detected immediately during `verify_asset()` or resolution via streaming SHA-256 recalculation (`AssetIntegrityError`).
+  4. **Reproducible Lineage DAG & Cycle Prevention:**
+     - Downstream derivatives (`register_derivative`) record parent asset IDs, transformation operation, configuration hash, and engine metadata.
+     - Registering a derivative verifies all parent IDs exist (`UnregisteredParentError`) and runs DFS cycle detection across the lineage graph (`LineageCycleError`), guaranteeing an acyclic DAG.
+  5. **Bidirectional Story Bible Integration:**
+     - `AssetMetadata.to_asset_ref()` maps registered assets directly to Story Bible `AssetRef` models.
+     - `AssetRegistry.register_from_asset_ref()` imports existing Story Bible assets (such as canonical character sheets) into managed storage while preserving original IDs and content hashes.
+     - Story Bible state operations and timeline resolution operate strictly read-only on the asset registry.
+  6. **Deterministic Manifest Exports:**
+     - `export_manifest()` generates a stable, reproducible machine-readable JSON manifest sorted deterministically by `asset_id`.
+     - Zero secrets, API keys, or raw binary payloads are included in manifests or database logs.
+- **Verification Evidence:**
+  - 16 dedicated unit and integration tests passing in `backend/tests/test_storage_registry.py`.
+  - Total test suite: 123 passing tests with zero regressions.

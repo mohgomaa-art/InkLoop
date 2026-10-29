@@ -228,12 +228,12 @@ Final scope includes an Agent that can orchestrate approved engines/tools. Detai
 - **Acceptance:** a project can be loaded, validated, snapshotted, and reconstructed; canonical definitions are not mutated by generation runs. (SATISFIED: `backend/app/project/` (`asset_refs.py`, `canon.py`, `story_state.py`, `bible.py`), `backend/tests/test_story_bible.py`, `backend/tests/test_story_bible_advanced.py`).
 
 ### T5.4 — Asset registry, content hashes, and reproducibility
-- [ ] Define an asset manifest schema for all image, canvas, font, text, mask, effect, composite, and export artifacts.
-- [ ] Compute SHA-256 for every produced/stored artifact where applicable.
-- [ ] Record parent artifact IDs and transformations so the artifact lineage can be traversed.
-- [ ] Record original source, license, and permitted use where applicable.
-- [ ] Prevent overwriting an approved source or prior generation result without creating a new version.
-- **Acceptance:** a final page can be traced back to the exact project state, engine configurations, inputs, and source assets.
+- [x] Define an asset manifest schema for all image, canvas, font, text, mask, effect, composite, and export artifacts (`AssetMetadata`, `AssetManifestDocument`, `AssetType`, `ArtifactManifest`).
+- [x] Compute SHA-256 for every produced/stored artifact where applicable (`compute_file_sha256`, `compute_bytes_sha256`, physical storage key `objects/<hash[:2]>/<sha256><ext>`).
+- [x] Record parent artifact IDs and transformations so the artifact lineage can be traversed (`asset_lineage` table, `register_derivative()`, `list_parents()`, `list_children()`, cycle detection).
+- [x] Record original source, license, and permitted use where applicable (`source_origin`, `license_info`, `permitted_use` fields).
+- [x] Prevent overwriting an approved source or prior generation result without creating a new version (content immutability, immutable storage layout, `AssetIntegrityError` detection on tampering).
+- **Acceptance:** a final page can be traced back to the exact project state, engine configurations, inputs, and source assets. (SATISFIED: `backend/app/storage/` (`artifact_store.py`, `registry_db.py`, `registry.py`, `models.py`, `format_validator.py`, `errors.py`), `backend/tests/test_storage_registry.py`, 16 tests passing, 123 total suite passing).
 
 ### T5.5 — Run execution and budgets
 - [ ] Standardize run IDs and attempt IDs.
