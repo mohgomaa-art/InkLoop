@@ -252,12 +252,12 @@ Final scope includes an Agent that can orchestrate approved engines/tools. Detai
 Research is not a decorative bibliography. It must influence engine behavior and be verified through experiments.
 
 ### T6.1 — Research governance
-- [ ] Define a consistent research record with claim, source, date accessed, source type, evidence classification, limits, relevance, and engine/taxonomy IDs.
-- [ ] Maintain `FACT`, `INFERENCE`, `HYPOTHESIS`, `EXPERIMENTAL RESULT`, and `UNKNOWN` separately.
-- [ ] Record why a source supports each rule; do not attach citations without a claim mapping.
-- [ ] Track licenses for fonts, libraries, model-generated assets, reference assets, and any external datasets.
-- [ ] Create a review process to promote a rule from hypothesis to experimentally supported.
-- **Acceptance:** every production-critical research rule has a traceable basis and a clear confidence/evidence status.
+- [x] Define a consistent research record with claim, source, date accessed, source type, evidence classification, limits, relevance, and engine/taxonomy IDs (`SourceRecord`, `ResearchClaim`, `GenerationRule`, `RecipeRecord`, `TaxonomyGroupRecord`).
+- [x] Maintain `FACT`, `INFERENCE`, `HYPOTHESIS`, `EXPERIMENTAL RESULT`, and `UNKNOWN` separately (`ClaimConfidence` enum).
+- [x] Record why a source supports each rule; do not attach citations without a claim mapping (`supported_claim_ids`, `source_ids`, strict model validation).
+- [x] Track licenses for fonts, libraries, model-generated assets, reference assets, and any external datasets (`license_or_access` on `SourceRecord`).
+- [x] Create a review process to promote a rule from hypothesis to experimentally supported (`CoverageStatus` lifecycle, `validate_recipe_integrity()`, `validate_group_coverage_integrity()`).
+- **Acceptance:** every production-critical research rule has a traceable basis and a clear confidence/evidence status. (SATISFIED: `backend/app/catalogue/` (`enums.py`, `models.py`, `register.py`, `data_loader.py`, `data/taxonomy_60_groups.json`), `backend/tests/test_image_knowledge_catalogue.py`, 12 tests passing, 179 total suite passing).
 
 ### T6.2 — Experimental design and visual evaluation
 - [ ] Define controlled prompt/model experiments with frozen inputs and parameter records.

@@ -168,3 +168,28 @@
 - **Verification Evidence:**
   - 21 dedicated unit and integration tests passing in `backend/tests/test_execution_manager.py`.
   - Total test suite: 166 passing tests across all subsystems with zero regressions.
+
+---
+
+## ADR-011: Image Generation Knowledge Catalogue Schema, Research Governance & 60-Group Coverage Register
+- **Status:** [VERIFIED ARCHITECTURE & IMPLEMENTED IN T6.1]
+- **Context:** To ensure controlled, reproducible comic art generation without prompt bloat or hallucinated rules, the Image Generation Engine requires a structured technical knowledge catalogue. The catalogue must maintain strict research governance, separate evidence classes from claim confidences, enforce anti-gaming validation, and maintain a truthful coverage register across all 60 taxonomy groups.
+- **Architectural Invariants & Decisions:**
+  1. **Exclusivity to Image Generation Engine (E1):**
+     - The catalogue is a dedicated technical knowledge base for image prompt conditions, model capabilities, negative constraints, and recipes. It does not replace the other engines (Canvas, Bubble, Lettering, Effects, Compositor).
+  2. **Strict Separation of Evidence Class vs Claim Confidence:**
+     - **Evidence Class (`EvidenceClass`):** `PRIMARY_PROVIDER_DOC` (official Meta Muse docs), `PEER_REVIEWED_RESEARCH`, `INKLOOP_EXPERIMENT` (reproducible runs), `SECONDARY_TECHNICAL` (comic theory literature: McCloud, Eisner), `ANECDOTAL_UNVERIFIED`.
+     - **Claim Confidence (`ClaimConfidence`):** `FACT`, `INFERENCE`, `HYPOTHESIS`, `EXPERIMENTAL_RESULT`, `UNKNOWN`.
+  3. **Anti-Gaming Model Invariants:**
+     - An `UNRESEARCHED` group cannot be marked validated or claim recorded experiments (`validate_group_coverage_integrity`).
+     - A recipe cannot claim `is_empirically_validated=True` without an explicit `experiment_id` and a non-untested result (`validate_recipe_integrity`).
+     - A `VALIDATED` group requires at least one empirically passing recipe and primary provider / experimental source backing.
+  4. **Truthful 60-Group Baseline Coverage:**
+     - All 60 taxonomy groups from `INKLOOP_TASKS.md` Section 7 are represented with stable IDs (`tax_01_comic_formats` ... `tax_60_visual_continuity_validation`) and 840 canonical elements.
+     - Truthful baseline status: 1 VALIDATED (Group 60, backed by M0 visual feasibility experiment ADR-007), 4 RESEARCHED (Groups 07, 08, 19, 28, backed by primary style guidelines and comic theory), and 55 UNRESEARCHED with explicit open research gaps visible.
+  5. **Deterministic Serialization & Provenance Linking:**
+     - Serialized to `backend/app/catalogue/data/taxonomy_60_groups.json` sorted by sequential group number.
+     - Integrates with shared contracts (`IdPrefix.TAXONOMY`, `ProvenanceRecord.taxonomy_rule_ids`).
+- **Verification Evidence:**
+  - 12 dedicated unit and integration tests passing in `backend/tests/test_image_knowledge_catalogue.py`.
+  - Total test suite: 179 passing tests with zero regressions.
