@@ -189,6 +189,13 @@ class CanonSnapshot(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
+    def model_post_init(self, __context: Any) -> None:
+        """Enforces deep isolation by deep-copying all nested mutable models and registries."""
+        object.__setattr__(self, "style", self.style.model_copy(deep=True))
+        object.__setattr__(self, "characters", {k: v.model_copy(deep=True) for k, v in self.characters.items()})
+        object.__setattr__(self, "locations", {k: v.model_copy(deep=True) for k, v in self.locations.items()})
+        object.__setattr__(self, "props", {k: v.model_copy(deep=True) for k, v in self.props.items()})
+
     def __setattr__(self, name: str, value: Any) -> None:
         raise UnauthorizedMutationError(
             f"CanonSnapshot is immutable. Attempted to mutate '{name}' in Canon v{self.bible_version} "
@@ -209,25 +216,29 @@ class CanonSnapshot(BaseModel):
         return False
 
     def get_character(self, character_id: str) -> CharacterDefinition:
-        """Retrieves a character definition or raises CanonError."""
+        """Retrieves a deep-copied character definition to preserve snapshot immutability."""
         cid = character_id.lower().strip()
         if cid not in self.characters:
             raise CanonError(f"Character '{character_id}' not found in Canon v{self.bible_version}")
-        return self.characters[cid]
+        return self.characters[cid].model_copy(deep=True)
 
     def get_location(self, location_id: str) -> LocationDefinition:
-        """Retrieves a location definition or raises CanonError."""
+        """Retrieves a deep-copied location definition to preserve snapshot immutability."""
         lid = location_id.lower().strip()
         if lid not in self.locations:
             raise CanonError(f"Location '{location_id}' not found in Canon v{self.bible_version}")
-        return self.locations[lid]
+        return self.locations[lid].model_copy(deep=True)
 
     def get_prop(self, prop_id: str) -> PropDefinition:
-        """Retrieves a prop definition or raises CanonError."""
+        """Retrieves a deep-copied prop definition to preserve snapshot immutability."""
         pid = prop_id.lower().strip()
         if pid not in self.props:
             raise CanonError(f"Prop '{prop_id}' not found in Canon v{self.bible_version}")
-        return self.props[pid]
+        return self.props[pid].model_copy(deep=True)
+
+    def get_style(self) -> StyleDefinition:
+        """Retrieves a deep-copied style definition to preserve snapshot immutability."""
+        return self.style.model_copy(deep=True)
 
     @classmethod
     def compute_canon_hash(

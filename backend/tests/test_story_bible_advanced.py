@@ -678,3 +678,88 @@ def test_rejected_canon_mutation_preserves_audit_trail(tmp_path, sample_bible):
     assert current_bible.bible_version == 1
     assert "villain" not in current_bible.characters
 
+
+def test_deep_snapshot_immutability_and_isolation(sample_bible):
+    """
+    Acceptance & Verification Test for Deep Snapshot Immutability:
+    1. Proves mutating a nested value obtained from a snapshot cannot alter that snapshot.
+    2. Proves modifying a reconstructed StoryBible cannot alter the original snapshot.
+    3. Proves resolving generation context does not mutate the canonical source or historical snapshot.
+    4. Proves reconstructing a project and taking a new snapshot preserves the expected canonical hash.
+    """
+    from app.context_builder import build_panel_context_packet
+    from app.schemas import SceneSpec
+
+    snapshot = sample_bible.get_canon_snapshot()
+    initial_hash = snapshot.canon_hash
+    initial_hero_name = snapshot.characters["hero"].name
+    initial_hair_attr = snapshot.characters["hero"].attributes[0].text
+    initial_cloak_count = len(snapshot.characters["hero"].clothing_attributes)
+
+    # 1. Mutating a nested value obtained from snapshot cannot alter the snapshot
+    hero_copy = snapshot.get_character("hero")
+    hero_copy.name = "Mutated Infiltrator"
+    hero_copy.attributes[0].text = "shaved head bald"
+    hero_copy.clothing_attributes.append("radioactive spikes")
+
+    # Verify snapshot internal state is 100% unaffected
+    fresh_hero = snapshot.get_character("hero")
+    assert fresh_hero.name == initial_hero_name
+    assert fresh_hero.attributes[0].text == initial_hair_attr
+    assert len(fresh_hero.clothing_attributes) == initial_cloak_count
+    assert "radioactive spikes" not in fresh_hero.clothing_attributes
+
+    # Same for location and prop
+    loc_copy = snapshot.get_location("citadel_gate")
+    loc_copy.name = "Demolished Gate"
+    loc_copy.required_attributes.append("rubble")
+    assert snapshot.get_location("citadel_gate").name == "Citadel Gate"
+    assert "rubble" not in snapshot.get_location("citadel_gate").required_attributes
+
+    prop_copy = snapshot.get_prop("magic_amulet")
+    prop_copy.name = "Broken Amulet"
+    assert snapshot.get_prop("magic_amulet").name == "Magic Amulet"
+
+    # Style deep immutability
+    style_copy = snapshot.get_style()
+    style_copy.rendering_approach = "hyperrealistic oil painting"
+    assert snapshot.style.rendering_approach == "black-and-white high contrast"
+    assert snapshot.get_style().rendering_approach == "black-and-white high contrast"
+
+    # 2. Modifying a reconstructed StoryBible cannot alter the original snapshot
+    reconstructed_bible = snapshot.to_story_bible()
+    reconstructed_bible.characters["hero"].name = "Reconstructed Mutant"
+    reconstructed_bible.characters["hero"].attributes[0].text = "neon hair"
+    reconstructed_bible.style.medium = "watercolor"
+
+    # Original snapshot remains completely unaltered
+    assert snapshot.characters["hero"].name == initial_hero_name
+    assert snapshot.get_character("hero").name == initial_hero_name
+    assert snapshot.style.medium == "digital ink"
+    assert snapshot.canon_hash == initial_hash
+
+    # 3. Resolving generation context does not mutate canonical source or historical snapshot
+    scene = SceneSpec(
+        scene_id="scene_deep_test",
+        scene_index=0,
+        title="Deep Invariance Check",
+        shot_type="extreme close-up",
+        action="inspects the ancient gate",
+        character_ids=["hero"],
+        scene_state={"clothing.cloak_state": "muddy", "equipment": "torch"}
+    )
+    packet = build_panel_context_packet(
+        story_bible=snapshot,
+        scene=scene,
+        panel_id="panel_deep_01"
+    )
+    assert packet.scene_state["clothing.cloak_state"] == "muddy"
+    assert snapshot.characters["hero"].name == initial_hero_name
+    assert snapshot.canon_hash == initial_hash
+
+    # 4. Reconstructing a project and taking a new snapshot preserves the expected canonical hash
+    clean_reconstruction = snapshot.to_story_bible()
+    new_snapshot = clean_reconstruction.get_canon_snapshot()
+    assert new_snapshot.canon_hash == initial_hash
+
+

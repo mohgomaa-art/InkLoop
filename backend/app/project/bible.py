@@ -125,10 +125,10 @@ class StoryBible(BaseModel):
             bible_version=self.bible_version,
             canon_hash=canon_hash,
             created_at=self.updated_at,
-            style=self.style,
-            characters=self.characters,
-            locations=self.locations,
-            props=self.props
+            style=self.style.model_copy(deep=True),
+            characters={k: v.model_copy(deep=True) for k, v in self.characters.items()},
+            locations={k: v.model_copy(deep=True) for k, v in self.locations.items()},
+            props={k: v.model_copy(deep=True) for k, v in self.props.items()}
         )
 
     def to_project_spec(self) -> ProjectSpec:
