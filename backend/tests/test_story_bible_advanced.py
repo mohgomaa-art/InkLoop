@@ -763,3 +763,252 @@ def test_deep_snapshot_immutability_and_isolation(sample_bible):
     assert new_snapshot.canon_hash == initial_hash
 
 
+def test_direct_public_field_mutation_rejection_and_isolation(sample_bible):
+    """
+    T5.3 Final Acceptance Gate: Direct Mutation of CanonSnapshot Fields
+    Verifies that:
+    1. Direct public field mutations on snapshot.characters[id] (nested attributes, clothing, tolerances)
+       cannot alter the snapshot's internal canonical state.
+    2. Direct public field mutations on snapshot.locations[id] (nested attributes, variations)
+       cannot alter the snapshot's internal canonical state.
+    3. Direct public field mutations on snapshot.props[id] (nested attributes, name)
+       cannot alter the snapshot's internal canonical state.
+    4. Direct public field mutations on snapshot.style (rendering_approach, constraints, rules)
+       cannot alter the snapshot's internal canonical state.
+    5. Direct modifications of the dictionaries themselves (adding, replacing, deleting,
+       clearing, popping, updating, setdefault) are rejected with UnauthorizedMutationError.
+    6. Direct deletion or reassignment of top-level snapshot attributes are rejected with UnauthorizedMutationError.
+    7. Mutating an input object after constructing the snapshot cannot alter the snapshot.
+    8. Mutating a reconstructed StoryBible and its child objects cannot alter the snapshot.
+    9. canon_hash, version identifiers, and serialized snapshot contents remain unchanged after
+       every attempted external mutation.
+    """
+    snapshot = sample_bible.get_canon_snapshot()
+    initial_hash = snapshot.canon_hash
+    initial_version = snapshot.bible_version
+    initial_schema_version = snapshot.schema_version
+    initial_json = snapshot.model_dump_json()
+
+    initial_char_name = snapshot.characters["hero"].name
+    initial_hair_attr = snapshot.characters["hero"].attributes[0].text
+    initial_clothing_len = len(snapshot.characters["hero"].clothing_attributes)
+    initial_tolerance_px = snapshot.characters["hero"].tolerances.min_face_px_for_check
+    initial_loc_name = snapshot.locations["citadel_gate"].name
+    initial_loc_attrs_len = len(snapshot.locations["citadel_gate"].required_attributes)
+    initial_prop_name = snapshot.props["magic_amulet"].name
+    initial_style_approach = snapshot.style.rendering_approach
+    initial_style_rules_len = len(snapshot.style.line_art_rules)
+
+    # --------------------------------------------------------------------------
+    # 1. Direct mutation of snapshot.characters[character_id] and nested attributes
+    # --------------------------------------------------------------------------
+    snapshot.characters["hero"].name = "Mutated Direct Infiltrator"
+    snapshot.characters["hero"].clothing_attributes.append("radioactive spikes")
+    snapshot.characters["hero"].attributes[0].text = "shaved head completely bald"
+    snapshot.characters["hero"].tolerances.min_face_px_for_check = 99999
+
+    assert snapshot.characters["hero"].name == initial_char_name
+    assert snapshot.characters["hero"].attributes[0].text == initial_hair_attr
+    assert len(snapshot.characters["hero"].clothing_attributes) == initial_clothing_len
+    assert "radioactive spikes" not in snapshot.characters["hero"].clothing_attributes
+    assert snapshot.characters["hero"].tolerances.min_face_px_for_check == initial_tolerance_px
+
+    # Iteration views also return isolated copies
+    for char in snapshot.characters.values():
+        char.name = "Mutated Via Values"
+    assert snapshot.characters["hero"].name == initial_char_name
+
+    for k, char in snapshot.characters.items():
+        char.name = "Mutated Via Items"
+    assert snapshot.characters["hero"].name == initial_char_name
+
+    # --------------------------------------------------------------------------
+    # 2. Direct mutation of snapshot.locations[location_id] and nested attributes
+    # --------------------------------------------------------------------------
+    snapshot.locations["citadel_gate"].name = "Demolished Slag Heap"
+    snapshot.locations["citadel_gate"].required_attributes.append("crater rubble")
+    snapshot.locations["citadel_gate"].permitted_variations.append("collapsed walls")
+
+    assert snapshot.locations["citadel_gate"].name == initial_loc_name
+    assert len(snapshot.locations["citadel_gate"].required_attributes) == initial_loc_attrs_len
+    assert "crater rubble" not in snapshot.locations["citadel_gate"].required_attributes
+    assert "collapsed walls" not in snapshot.locations["citadel_gate"].permitted_variations
+
+    # --------------------------------------------------------------------------
+    # 3. Direct mutation of snapshot.props[prop_id] and nested attributes
+    # --------------------------------------------------------------------------
+    snapshot.props["magic_amulet"].name = "Broken Ceramic Shards"
+    snapshot.props["magic_amulet"].required_attributes.append("fractured glass")
+
+    assert snapshot.props["magic_amulet"].name == initial_prop_name
+    assert "fractured glass" not in snapshot.props["magic_amulet"].required_attributes
+
+    # --------------------------------------------------------------------------
+    # 4. Direct mutation of snapshot.style and nested mutable fields
+    # --------------------------------------------------------------------------
+    snapshot.style.rendering_approach = "hyperrealistic oil painting"
+    snapshot.style.line_art_rules.append("jagged messy chaos lines")
+    snapshot.style.positive_constraints.append("neon fluorescent glow")
+    snapshot.style.negative_constraints.clear()
+
+    assert snapshot.style.rendering_approach == initial_style_approach
+    assert len(snapshot.style.line_art_rules) == initial_style_rules_len
+    assert "jagged messy chaos lines" not in snapshot.style.line_art_rules
+    assert "neon fluorescent glow" not in snapshot.style.positive_constraints
+    assert len(snapshot.style.negative_constraints) > 0
+
+    # --------------------------------------------------------------------------
+    # 5. Direct modification of the dictionaries themselves (must be rejected)
+    # --------------------------------------------------------------------------
+    new_char = snapshot.characters["hero"]
+    new_char.character_id = "villain"
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters["villain"] = new_char
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters["hero"] = new_char
+
+    with pytest.raises(UnauthorizedMutationError):
+        del snapshot.characters["hero"]
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters.clear()
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters.pop("hero")
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters.popitem()
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters.update({"villain": new_char})
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters.setdefault("villain", new_char)
+
+    # Locations mapping mutations
+    new_loc = snapshot.locations["citadel_gate"]
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.locations["mars_outpost"] = new_loc
+
+    with pytest.raises(UnauthorizedMutationError):
+        del snapshot.locations["citadel_gate"]
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.locations.clear()
+
+    # Props mapping mutations
+    new_prop = snapshot.props["magic_amulet"]
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.props["plasma_gun"] = new_prop
+
+    with pytest.raises(UnauthorizedMutationError):
+        del snapshot.props["magic_amulet"]
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.props.clear()
+
+    # --------------------------------------------------------------------------
+    # 6. Direct mutation of top-level snapshot fields (must be rejected)
+    # --------------------------------------------------------------------------
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters = {}
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.style = None
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.locations = {}
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.props = {}
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.canon_hash = "0000000000000000000000000000000000000000000000000000000000000000"
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.bible_version = 42
+
+    with pytest.raises(UnauthorizedMutationError):
+        del snapshot.style
+
+    with pytest.raises(UnauthorizedMutationError):
+        del snapshot.characters
+
+    # --------------------------------------------------------------------------
+    # 7. Mutating an input object after constructing the snapshot
+    # --------------------------------------------------------------------------
+    raw_style = sample_bible.style.model_copy(deep=True)
+    raw_char = sample_bible.characters["hero"].model_copy(deep=True)
+    raw_chars_dict = {"hero": raw_char}
+    raw_locs_dict = {"citadel_gate": sample_bible.locations["citadel_gate"].model_copy(deep=True)}
+    raw_props_dict = {"magic_amulet": sample_bible.props["magic_amulet"].model_copy(deep=True)}
+
+    isolated_snapshot = CanonSnapshot(
+        project_id="test_post_construction_mutation",
+        schema_version="1.0.0",
+        bible_version=1,
+        canon_hash=initial_hash,
+        created_at=sample_bible.updated_at,
+        style=raw_style,
+        characters=raw_chars_dict,
+        locations=raw_locs_dict,
+        props=raw_props_dict
+    )
+
+    # Mutate inputs post-construction
+    raw_style.rendering_approach = "EXTERNAL INPUT POST-CONSTRUCTION MUTATION"
+    raw_char.name = "EXTERNAL CHAR POST-CONSTRUCTION MUTATION"
+    raw_char.clothing_attributes.append("external spikes")
+    raw_chars_dict["intruder"] = raw_char
+    del raw_chars_dict["hero"]
+    raw_locs_dict["citadel_gate"].name = "EXTERNAL LOC MUTATION"
+    raw_props_dict["magic_amulet"].name = "EXTERNAL PROP MUTATION"
+
+    # Verify snapshot state is 100% immune to external input changes
+    assert isolated_snapshot.characters["hero"].name == initial_char_name
+    assert "external spikes" not in isolated_snapshot.characters["hero"].clothing_attributes
+    assert "intruder" not in isolated_snapshot.characters
+    assert "hero" in isolated_snapshot.characters
+    assert isolated_snapshot.locations["citadel_gate"].name == initial_loc_name
+    assert isolated_snapshot.props["magic_amulet"].name == initial_prop_name
+    assert isolated_snapshot.style.rendering_approach == initial_style_approach
+
+    # --------------------------------------------------------------------------
+    # 8. Mutating a reconstructed StoryBible and its child objects
+    # --------------------------------------------------------------------------
+    reconstructed_bible = snapshot.to_story_bible()
+    reconstructed_bible.characters["hero"].name = "RECONSTRUCTED MUTANT HERO"
+    reconstructed_bible.characters["hero"].clothing_attributes.append("reconstructed neon wings")
+    reconstructed_bible.style.rendering_approach = "RECONSTRUCTED MUTATED STYLE"
+    reconstructed_bible.locations["citadel_gate"].name = "RECONSTRUCTED MUTATED GATE"
+    reconstructed_bible.props["magic_amulet"].name = "RECONSTRUCTED MUTATED AMULET"
+    reconstructed_bible.characters["new_sidekick"] = new_char
+
+    assert snapshot.characters["hero"].name == initial_char_name
+    assert "reconstructed neon wings" not in snapshot.characters["hero"].clothing_attributes
+    assert "new_sidekick" not in snapshot.characters
+    assert snapshot.locations["citadel_gate"].name == initial_loc_name
+    assert snapshot.props["magic_amulet"].name == initial_prop_name
+    assert snapshot.style.rendering_approach == initial_style_approach
+
+    # --------------------------------------------------------------------------
+    # 9. Verify hash, versions, and serialization remain pristine throughout
+    # --------------------------------------------------------------------------
+    assert snapshot.canon_hash == initial_hash
+    assert snapshot.bible_version == initial_version
+    assert snapshot.schema_version == initial_schema_version
+    assert snapshot.model_dump_json() == initial_json
+
+    # Recomputing the hash over snapshot properties yields the identical digest
+    recomputed_hash = CanonSnapshot.compute_canon_hash(
+        style=snapshot.style,
+        characters=snapshot.characters,
+        locations=snapshot.locations,
+        props=snapshot.props
+    )
+    assert recomputed_hash == initial_hash
+
+
+

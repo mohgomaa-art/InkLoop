@@ -172,10 +172,89 @@ class CanonMutationProposal(BaseModel):
     approved_at: Optional[str] = Field(default=None, description="ISO 8601 approval timestamp")
     approved_by: Optional[str] = Field(default=None, description="User or role authorizing the mutation")
 
+class ReadOnlyDict(dict):
+    """
+    Immutable mapping used by CanonSnapshot to protect entity registries
+    from direct item assignment, in-place deletion, clearing, or mutation.
+    Returns deep copies of stored models and collections on item access to ensure
+    nested mutations cannot alter the snapshot's internal canonical state.
+    """
+    def __init__(self, data: Optional[Dict[str, Any]] = None):
+        super().__init__(data or {})
+
+    def __getitem__(self, key: str) -> Any:
+        val = super().__getitem__(key)
+        if hasattr(val, "model_copy"):
+            return val.model_copy(deep=True)
+        elif isinstance(val, (dict, list, set)):
+            import copy
+            return copy.deepcopy(val)
+        return val
+
+    def get(self, key: str, default: Any = None) -> Any:
+        if key in self:
+            return self[key]
+        return default
+
+    def values(self) -> List[Any]:
+        return [self[k] for k in self.keys()]
+
+    def items(self) -> List[tuple[str, Any]]:
+        return [(k, self[k]) for k in self.keys()]
+
+    def copy(self) -> Dict[str, Any]:
+        return {k: self[k] for k in self.keys()}
+
+    def __copy__(self) -> "ReadOnlyDict":
+        return ReadOnlyDict({k: self[k] for k in self.keys()})
+
+    def __deepcopy__(self, memo: Any) -> "ReadOnlyDict":
+        return ReadOnlyDict({k: self[k] for k in self.keys()})
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        raise UnauthorizedMutationError(
+            f"Cannot modify CanonSnapshot mapping: canon is immutable. "
+            f"Attempted to set key '{key}'. Canonical changes must use propose_canon_mutation and apply_canon_mutation."
+        )
+
+    def __delitem__(self, key: str) -> None:
+        raise UnauthorizedMutationError(
+            f"Cannot modify CanonSnapshot mapping: canon is immutable. "
+            f"Attempted to delete key '{key}'. Canonical changes must use propose_canon_mutation and apply_canon_mutation."
+        )
+
+    def clear(self) -> None:
+        raise UnauthorizedMutationError(
+            "Cannot modify CanonSnapshot mapping: canon is immutable. Attempted to clear mapping."
+        )
+
+    def pop(self, *args: Any, **kwargs: Any) -> Any:
+        raise UnauthorizedMutationError(
+            "Cannot modify CanonSnapshot mapping: canon is immutable. Attempted to pop item."
+        )
+
+    def popitem(self) -> Any:
+        raise UnauthorizedMutationError(
+            "Cannot modify CanonSnapshot mapping: canon is immutable. Attempted to pop item."
+        )
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        raise UnauthorizedMutationError(
+            "Cannot modify CanonSnapshot mapping: canon is immutable. Attempted to update mapping."
+        )
+
+    def setdefault(self, *args: Any, **kwargs: Any) -> Any:
+        raise UnauthorizedMutationError(
+            "Cannot modify CanonSnapshot mapping: canon is immutable. Attempted to call setdefault."
+        )
+
+
 class CanonSnapshot(BaseModel):
     """
-    Deterministic, immutable snapshot of a project's canon at a specific version.
+    Deterministic, deeply immutable snapshot of a project's canon at a specific version.
     Includes a cryptographic content hash computed over sorted canonical definitions.
+    Guarantees that no external consumer can mutate canonical state either through getter methods,
+    public dictionary access, nested attribute mutation, or input reference aliasing.
     """
     project_id: str
     schema_version: str
@@ -190,15 +269,39 @@ class CanonSnapshot(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     def model_post_init(self, __context: Any) -> None:
-        """Enforces deep isolation by deep-copying all nested mutable models and registries."""
+        """Enforces deep isolation by deep-copying all nested mutable models and wrapping registries in ReadOnlyDict."""
         object.__setattr__(self, "style", self.style.model_copy(deep=True))
-        object.__setattr__(self, "characters", {k: v.model_copy(deep=True) for k, v in self.characters.items()})
-        object.__setattr__(self, "locations", {k: v.model_copy(deep=True) for k, v in self.locations.items()})
-        object.__setattr__(self, "props", {k: v.model_copy(deep=True) for k, v in self.props.items()})
+        object.__setattr__(
+            self,
+            "characters",
+            ReadOnlyDict({k: v.model_copy(deep=True) for k, v in self.characters.items()})
+        )
+        object.__setattr__(
+            self,
+            "locations",
+            ReadOnlyDict({k: v.model_copy(deep=True) for k, v in self.locations.items()})
+        )
+        object.__setattr__(
+            self,
+            "props",
+            ReadOnlyDict({k: v.model_copy(deep=True) for k, v in self.props.items()})
+        )
+
+    def __getattribute__(self, name: str) -> Any:
+        val = super().__getattribute__(name)
+        if name == "style" and hasattr(val, "model_copy"):
+            return val.model_copy(deep=True)
+        return val
 
     def __setattr__(self, name: str, value: Any) -> None:
         raise UnauthorizedMutationError(
             f"CanonSnapshot is immutable. Attempted to mutate '{name}' in Canon v{self.bible_version} "
+            f"({self.canon_hash[:12]}...). Canonical changes must use propose_canon_mutation and apply_canon_mutation."
+        )
+
+    def __delattr__(self, name: str) -> None:
+        raise UnauthorizedMutationError(
+            f"CanonSnapshot is immutable. Attempted to delete '{name}' in Canon v{self.bible_version} "
             f"({self.canon_hash[:12]}...). Canonical changes must use propose_canon_mutation and apply_canon_mutation."
         )
 
