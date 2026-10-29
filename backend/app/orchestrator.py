@@ -1,13 +1,13 @@
 """
 Six-Panel Batch Generation Orchestrator for InkLoop.
 Coordinates multi-panel generation with independent context isolation,
-bounded retries, spend cap enforcement, and complete auditable attempt logging.
+bounded retries, spend cap enforcement, resumability, and complete auditable attempt logging.
 """
 import json
 import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Callable, Union
 
 from app.config import InkLoopConfig, PROJECT_ROOT
 from app.schemas import (
@@ -21,10 +21,12 @@ from app.schemas import (
     ErrorCategory,
     RetryDecision,
     ReferenceAsset,
+    VerificationResult,
 )
 from app.context_builder import build_panel_context_packet
 from app.image_adapter import (
     ImageGenerationAdapter,
+    SimulatedImageGenerationAdapter,
     GenerationRequest,
     GenerationResponse,
 )
@@ -36,7 +38,9 @@ class BatchOrchestrator:
     - Pure-code independent context assembly per panel (no cross-panel conversational drift).
     - Bounded retries respecting per-panel retry ceilings and global spend caps.
     - Zero credential leakage in attempts, logs, or persistent records.
-    - Full reproducibility and resumability without redundant re-generation.
+    - Transparent accounting distinguishing live provider costs from synthetic simulation fixtures.
+    - Full reproducibility and safe resumability without redundant re-generation.
+    - Distinct semantics between generation success, visual verification, and panel acceptance.
     """
 
     def __init__(
@@ -44,11 +48,13 @@ class BatchOrchestrator:
         config: InkLoopConfig,
         adapter: ImageGenerationAdapter,
         run_log_dir: Optional[Path] = None,
+        verifier: Optional[Callable[[Optional[ReferenceAsset], bytes, Any], VerificationResult]] = None,
     ):
         self.config = config
         self.adapter = adapter
         self.run_log_dir = run_log_dir or (PROJECT_ROOT / "runs" / "batches")
         self.run_log_dir.mkdir(parents=True, exist_ok=True)
+        self.verifier = verifier
 
     def _resolve_reference_bytes(self, asset: ReferenceAsset) -> Optional[bytes]:
         """Resolves raw bytes for a canonical reference asset if accessible on disk."""
@@ -80,7 +86,11 @@ class BatchOrchestrator:
             return True
         return False
 
-    def orchestrate_batch(self, batch_spec: BatchSpec) -> BatchSummary:
+    def orchestrate_batch(
+        self,
+        batch_spec: BatchSpec,
+        prior_attempt_offsets: Optional[Dict[str, int]] = None
+    ) -> BatchSummary:
         """
         Executes generation for all scenes in a validated batch specification.
         Maintains canonical scene ordering and logs every attempt independently.
@@ -109,14 +119,22 @@ class BatchOrchestrator:
         accumulated_usage: Dict[str, Any] = {}
         budget_exhausted = False
 
+        # Enforce global spending cap: caller cannot bypass config's global spend cap
+        effective_spend_cap = min(batch_spec.spend_cap_usd, self.config.global_spend_cap_usd)
+
+        # Simulation detection
+        is_simulated = getattr(self.adapter, "is_simulated", False) or isinstance(self.adapter, SimulatedImageGenerationAdapter)
+
         max_retries = min(batch_spec.max_retries_per_panel, self.config.max_retries_per_panel)
         max_attempts = 1 + max_retries
 
         # Estimate per-operation cost for budget enforcement ($0.01 per image baseline)
         estimated_cost_per_op = 0.01
+        attempt_offsets = prior_attempt_offsets or {}
 
         for scene in sorted_scenes:
             panel_id = f"panel_{scene.scene_index + 1:02d}"
+            prior_offset = attempt_offsets.get(panel_id, 0)
 
             # 2. Build independent context packet (pure code, zero hidden state)
             packet = build_panel_context_packet(
@@ -134,20 +152,24 @@ class BatchOrchestrator:
                 ref_bytes = self._resolve_reference_bytes(packet.reference_assets[0])
 
             panel_accepted = False
+            panel_status = PanelStatus.PENDING
             panel_attempts_count = 0
             accepted_attempt_id: Optional[str] = None
             accepted_output_path: Optional[str] = None
             accepted_output_hash: Optional[str] = None
+            accepted_verif_result: Optional[VerificationResult] = None
 
             # 4. Bounded retry loop for this panel
             for attempt_idx in range(1, max_attempts + 1):
                 panel_attempts_count += 1
-                attempt_id = f"{batch_id}_{panel_id}_att{attempt_idx}"
+                total_attempt_number = prior_offset + attempt_idx
+                retry_count = attempt_idx - 1
+                attempt_id = f"{batch_id}_{panel_id}_att{total_attempt_number}"
                 att_start_iso = datetime.now(timezone.utc).isoformat()
                 att_start_t = datetime.now(timezone.utc)
 
                 # Check budget cap before executing
-                if cumulative_cost + estimated_cost_per_op > batch_spec.spend_cap_usd:
+                if cumulative_cost + estimated_cost_per_op > effective_spend_cap:
                     budget_exhausted = True
                     att_end_iso = datetime.now(timezone.utc).isoformat()
                     attempt_rec = GenerationAttemptRecord(
@@ -155,7 +177,9 @@ class BatchOrchestrator:
                         panel_id=panel_id,
                         scene_id=scene.scene_id,
                         attempt_id=attempt_id,
-                        attempt_number=attempt_idx,
+                        attempt_number=total_attempt_number,
+                        retry_count=retry_count,
+                        is_simulated=is_simulated,
                         started_at=att_start_iso,
                         completed_at=att_end_iso,
                         duration_seconds=0.0,
@@ -168,7 +192,7 @@ class BatchOrchestrator:
                         sanitized_request_metadata={"error": "Spend cap exceeded"},
                         http_status=None,
                         error_category=ErrorCategory.BUDGET_EXCEEDED.value,
-                        error_message=f"Global spend cap of ${batch_spec.spend_cap_usd:.2f} reached.",
+                        error_message=f"Effective spend cap of ${effective_spend_cap:.2f} reached.",
                         retry_decision=RetryDecision.BUDGET_EXHAUSTED.value,
                         retry_reason="Cumulative spend cap reached; aborting further attempts.",
                         final_panel_status=PanelStatus.FAILED.value,
@@ -184,6 +208,8 @@ class BatchOrchestrator:
                     model=batch_spec.model,
                     panel_id=panel_id,
                     scene_id=scene.scene_id,
+                    dimensions=packet.dimensions,
+                    aspect_ratio=packet.aspect_ratio,
                 )
 
                 resp: GenerationResponse = self.adapter.generate(gen_req)
@@ -214,42 +240,179 @@ class BatchOrchestrator:
                         out_file.write_bytes(resp.image_bytes)
                         output_path_str = str(out_file)
 
-                    attempt_rec = GenerationAttemptRecord(
-                        batch_id=batch_id,
-                        panel_id=panel_id,
-                        scene_id=scene.scene_id,
-                        attempt_id=attempt_id,
-                        attempt_number=attempt_idx,
-                        started_at=att_start_iso,
-                        completed_at=att_end_iso,
-                        duration_seconds=att_duration,
-                        story_bible_version=bible_version_str,
-                        context_fingerprint=packet.context_fingerprint,
-                        reference_asset_ids=[r.asset_id for r in packet.reference_assets],
-                        reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
-                        model=batch_spec.model,
-                        endpoint=resp.endpoint,
-                        sanitized_request_metadata=resp.sanitized_metadata,
-                        http_status=resp.http_status,
-                        error_category=None,
-                        error_message=None,
-                        retry_decision=RetryDecision.NONE_SUCCESS.value,
-                        retry_reason=None,
-                        usage=resp.usage,
-                        cost_usd=resp.cost_usd,
-                        output_asset_path=output_path_str,
-                        output_asset_id=f"asset_{panel_id}",
-                        output_content_hash=output_hash,
-                        verification_status="UNVERIFIED",
-                        final_panel_status=PanelStatus.ACCEPTED.value,
-                    )
-                    all_attempts.append(attempt_rec)
+                    # Visual verification gate
+                    v_result: Optional[VerificationResult] = None
+                    v_status: str = "UNVERIFIED"
+                    accepted_by_gate = False
+                    current_panel_status = PanelStatus.ACCEPTED
 
-                    panel_accepted = True
-                    accepted_attempt_id = attempt_id
-                    accepted_output_path = output_path_str
-                    accepted_output_hash = output_hash
-                    break  # Success: terminate retry loop for this panel
+                    if self.verifier is not None:
+                        primary_char = packet.character_specs[0] if packet.character_specs else None
+                        primary_ref = packet.reference_assets[0] if packet.reference_assets else None
+                        try:
+                            v_result = self.verifier(primary_ref, resp.image_bytes, primary_char)
+                        except Exception:
+                            v_result = None
+
+                        if v_result and v_result.passed:
+                            v_status = "PASSED"
+                            accepted_by_gate = True
+                            current_panel_status = PanelStatus.ACCEPTED
+                        elif v_result:
+                            has_unsure = any(v.verdict == "unsure" for v in v_result.verdicts)
+                            v_status = "UNSURE" if has_unsure else "FAILED"
+                            accepted_by_gate = False
+                            current_panel_status = PanelStatus.REJECTED_BY_VERIFIER
+                        else:
+                            v_status = "UNVERIFIED"
+                            accepted_by_gate = not batch_spec.require_verification
+                            current_panel_status = PanelStatus.ACCEPTED if accepted_by_gate else PanelStatus.GENERATED_PENDING_VERIFICATION
+                    else:
+                        # Verifier not attached
+                        v_status = "UNVERIFIED"
+                        if batch_spec.require_verification:
+                            accepted_by_gate = False
+                            current_panel_status = PanelStatus.GENERATED_PENDING_VERIFICATION
+                        else:
+                            accepted_by_gate = True
+                            current_panel_status = PanelStatus.ACCEPTED
+
+                    # Handle verification pass or failure
+                    if accepted_by_gate:
+                        attempt_rec = GenerationAttemptRecord(
+                            batch_id=batch_id,
+                            panel_id=panel_id,
+                            scene_id=scene.scene_id,
+                            attempt_id=attempt_id,
+                            attempt_number=total_attempt_number,
+                            retry_count=retry_count,
+                            is_simulated=is_simulated,
+                            started_at=att_start_iso,
+                            completed_at=att_end_iso,
+                            duration_seconds=att_duration,
+                            story_bible_version=bible_version_str,
+                            context_fingerprint=packet.context_fingerprint,
+                            reference_asset_ids=[r.asset_id for r in packet.reference_assets],
+                            reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
+                            model=batch_spec.model,
+                            endpoint=resp.endpoint,
+                            sanitized_request_metadata=resp.sanitized_metadata,
+                            http_status=resp.http_status,
+                            error_category=None,
+                            error_message=None,
+                            retry_decision=RetryDecision.NONE_SUCCESS.value,
+                            retry_reason=None,
+                            usage=resp.usage,
+                            cost_usd=resp.cost_usd,
+                            output_asset_path=output_path_str,
+                            output_asset_id=f"asset_{panel_id}",
+                            output_content_hash=output_hash,
+                            verification_status=v_status,
+                            verification_result=v_result,
+                            final_panel_status=current_panel_status.value,
+                        )
+                        all_attempts.append(attempt_rec)
+
+                        panel_accepted = True
+                        panel_status = current_panel_status
+                        accepted_attempt_id = attempt_id
+                        accepted_output_path = output_path_str
+                        accepted_output_hash = output_hash
+                        accepted_verif_result = v_result
+                        break  # Accepted: terminate retry loop
+
+                    elif batch_spec.require_verification and self.verifier is None:
+                        # Generation succeeded but verification is required and unexecuted
+                        attempt_rec = GenerationAttemptRecord(
+                            batch_id=batch_id,
+                            panel_id=panel_id,
+                            scene_id=scene.scene_id,
+                            attempt_id=attempt_id,
+                            attempt_number=total_attempt_number,
+                            retry_count=retry_count,
+                            is_simulated=is_simulated,
+                            started_at=att_start_iso,
+                            completed_at=att_end_iso,
+                            duration_seconds=att_duration,
+                            story_bible_version=bible_version_str,
+                            context_fingerprint=packet.context_fingerprint,
+                            reference_asset_ids=[r.asset_id for r in packet.reference_assets],
+                            reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
+                            model=batch_spec.model,
+                            endpoint=resp.endpoint,
+                            sanitized_request_metadata=resp.sanitized_metadata,
+                            http_status=resp.http_status,
+                            error_category=None,
+                            error_message=None,
+                            retry_decision=RetryDecision.NONE_SUCCESS.value,
+                            retry_reason="Generated successfully; awaiting verification gate.",
+                            usage=resp.usage,
+                            cost_usd=resp.cost_usd,
+                            output_asset_path=output_path_str,
+                            output_asset_id=f"asset_{panel_id}",
+                            output_content_hash=output_hash,
+                            verification_status=v_status,
+                            verification_result=None,
+                            final_panel_status=PanelStatus.GENERATED_PENDING_VERIFICATION.value,
+                        )
+                        all_attempts.append(attempt_rec)
+
+                        panel_accepted = False
+                        panel_status = PanelStatus.GENERATED_PENDING_VERIFICATION
+                        accepted_attempt_id = attempt_id
+                        accepted_output_path = output_path_str
+                        accepted_output_hash = output_hash
+                        break
+
+                    else:
+                        # Verifier explicitly rejected candidate
+                        if attempt_idx < max_attempts and v_status == "FAILED":
+                            retry_dec = RetryDecision.RETRY_WITH_CORRECTION.value
+                            retry_re = f"Visual verifier rejected candidate: {v_result.rejection_reason if v_result else 'Attribute check failed'}"
+                            fin_status = PanelStatus.PENDING.value
+                        else:
+                            retry_dec = RetryDecision.MAX_RETRIES_REACHED.value
+                            retry_re = f"Verification unresolved after attempt {attempt_idx}: {v_result.rejection_reason if v_result else 'Attribute check failed'}"
+                            fin_status = PanelStatus.NEEDS_HUMAN.value
+
+                        attempt_rec = GenerationAttemptRecord(
+                            batch_id=batch_id,
+                            panel_id=panel_id,
+                            scene_id=scene.scene_id,
+                            attempt_id=attempt_id,
+                            attempt_number=total_attempt_number,
+                            retry_count=retry_count,
+                            is_simulated=is_simulated,
+                            started_at=att_start_iso,
+                            completed_at=att_end_iso,
+                            duration_seconds=att_duration,
+                            story_bible_version=bible_version_str,
+                            context_fingerprint=packet.context_fingerprint,
+                            reference_asset_ids=[r.asset_id for r in packet.reference_assets],
+                            reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
+                            model=batch_spec.model,
+                            endpoint=resp.endpoint,
+                            sanitized_request_metadata=resp.sanitized_metadata,
+                            http_status=resp.http_status,
+                            error_category=ErrorCategory.UNKNOWN.value,
+                            error_message=f"Verification rejection: {v_result.rejection_reason if v_result else 'Failed'}",
+                            retry_decision=retry_dec,
+                            retry_reason=retry_re,
+                            usage=resp.usage,
+                            cost_usd=resp.cost_usd,
+                            output_asset_path=output_path_str,
+                            output_asset_id=f"asset_{panel_id}",
+                            output_content_hash=output_hash,
+                            verification_status=v_status,
+                            verification_result=v_result,
+                            final_panel_status=fin_status,
+                        )
+                        all_attempts.append(attempt_rec)
+
+                        if attempt_idx >= max_attempts or v_status == "UNSURE":
+                            panel_status = PanelStatus.NEEDS_HUMAN
+                            break
+                        continue
 
                 # Handle generation failure
                 is_retryable = self._is_retryable_error(resp.error_category)
@@ -271,7 +434,9 @@ class BatchOrchestrator:
                     panel_id=panel_id,
                     scene_id=scene.scene_id,
                     attempt_id=attempt_id,
-                    attempt_number=attempt_idx,
+                    attempt_number=total_attempt_number,
+                    retry_count=retry_count,
+                    is_simulated=is_simulated,
                     started_at=att_start_iso,
                     completed_at=att_end_iso,
                     duration_seconds=att_duration,
@@ -301,11 +466,13 @@ class BatchOrchestrator:
 
             # Final status for this panel
             if panel_accepted:
-                p_status = PanelStatus.ACCEPTED
+                p_status = panel_status
+            elif panel_status == PanelStatus.GENERATED_PENDING_VERIFICATION:
+                p_status = PanelStatus.GENERATED_PENDING_VERIFICATION
             elif budget_exhausted:
                 p_status = PanelStatus.FAILED
             elif panel_attempts_count >= max_attempts:
-                p_status = PanelStatus.NEEDS_HUMAN
+                p_status = panel_status if panel_status != PanelStatus.PENDING else PanelStatus.NEEDS_HUMAN
             else:
                 p_status = PanelStatus.FAILED
 
@@ -314,13 +481,17 @@ class BatchOrchestrator:
                 scene_id=scene.scene_id,
                 scene_index=scene.scene_index,
                 status=p_status,
-                attempts_count=panel_attempts_count,
+                attempts_count=panel_attempts_count + prior_offset,
                 accepted_attempt_id=accepted_attempt_id,
                 output_asset_path=accepted_output_path,
                 output_content_hash=accepted_output_hash,
                 context_fingerprint=packet.context_fingerprint,
+                verification_result=accepted_verif_result,
             )
             panel_results.append(panel_result)
+
+            # Incremental checkpoint persistence to protect audit history against crashes
+            self._persist_checkpoint(batch_id, batch_spec, sorted_scenes, panel_results, all_attempts, start_time_iso, bible_version_str, is_simulated)
 
             if budget_exhausted:
                 # Fill remaining panels as failed due to budget
@@ -348,8 +519,9 @@ class BatchOrchestrator:
         # 5. Calculate batch completion metrics
         total_panels = len(sorted_scenes)
         successful_panels = sum(1 for p in panel_results if p.status == PanelStatus.ACCEPTED)
-        failed_panels = sum(1 for p in panel_results if p.status == PanelStatus.FAILED)
-        unresolved_panels = sum(1 for p in panel_results if p.status in (PanelStatus.PENDING, PanelStatus.NEEDS_HUMAN))
+        unverified_panels = sum(1 for p in panel_results if p.status == PanelStatus.GENERATED_PENDING_VERIFICATION)
+        failed_panels = sum(1 for p in panel_results if p.status in (PanelStatus.FAILED, PanelStatus.REJECTED_BY_VERIFIER))
+        unresolved_panels = sum(1 for p in panel_results if p.status in (PanelStatus.PENDING, PanelStatus.NEEDS_HUMAN, PanelStatus.GENERATED_PENDING_VERIFICATION))
 
         if successful_panels == total_panels:
             batch_status = BatchStatus.COMPLETED
@@ -362,6 +534,24 @@ class BatchOrchestrator:
         end_time_iso = datetime.now(timezone.utc).isoformat()
         total_duration = round((datetime.now(timezone.utc) - start_t).total_seconds(), 3)
 
+        # Segregate simulated from live provider accounting
+        if is_simulated:
+            known_cost_report = round(cumulative_cost, 4) if not missing_cost else None
+            simulated_cost_report = round(cumulative_cost, 4) if not missing_cost else None
+            known_usage_report = accumulated_usage
+            simulated_usage_report = accumulated_usage
+            cost_mode_str = "synthetic_simulated"
+            missing_cost_flag = missing_cost
+            missing_usage_flag = missing_usage
+        else:
+            known_cost_report = round(cumulative_cost, 4) if not missing_cost else None
+            simulated_cost_report = None
+            known_usage_report = accumulated_usage
+            simulated_usage_report = None
+            cost_mode_str = "real"
+            missing_cost_flag = missing_cost
+            missing_usage_flag = missing_usage
+
         summary = BatchSummary(
             batch_id=batch_id,
             status=batch_status,
@@ -371,15 +561,20 @@ class BatchOrchestrator:
             successful_panels=successful_panels,
             failed_panels=failed_panels,
             unresolved_panels=unresolved_panels,
+            unverified_panels=unverified_panels,
             total_attempts=len(all_attempts),
             attempts_per_panel=attempts_per_panel,
             total_duration_seconds=total_duration,
             started_at=start_time_iso,
             completed_at=end_time_iso,
-            known_cost_usd=round(cumulative_cost, 4) if not missing_cost else None,
-            missing_cost_information=missing_cost,
-            known_usage=accumulated_usage,
-            missing_usage_information=missing_usage,
+            is_simulated=is_simulated,
+            cost_mode=cost_mode_str,
+            known_cost_usd=known_cost_report,
+            simulated_cost_usd=simulated_cost_report,
+            missing_cost_information=missing_cost_flag,
+            known_usage=known_usage_report,
+            simulated_usage=simulated_usage_report,
+            missing_usage_information=missing_usage_flag,
             panel_results=panel_results,
             attempt_history=all_attempts,
         )
@@ -387,6 +582,40 @@ class BatchOrchestrator:
         # 6. Structured Persistence
         self._persist_batch_summary(summary)
         return summary
+
+    def _persist_checkpoint(
+        self,
+        batch_id: str,
+        batch_spec: BatchSpec,
+        sorted_scenes: List[SceneSpec],
+        panel_results: List[PanelResult],
+        all_attempts: List[GenerationAttemptRecord],
+        start_time_iso: str,
+        bible_version_str: str,
+        is_simulated: bool
+    ):
+        """Persists intermediate progress to disk so interrupted runs are durable."""
+        temp_summary = BatchSummary(
+            batch_id=batch_id,
+            status=BatchStatus.RUNNING,
+            story_id=batch_spec.story_id,
+            bible_version=bible_version_str,
+            total_panels=len(sorted_scenes),
+            successful_panels=sum(1 for p in panel_results if p.status == PanelStatus.ACCEPTED),
+            failed_panels=sum(1 for p in panel_results if p.status in (PanelStatus.FAILED, PanelStatus.REJECTED_BY_VERIFIER)),
+            unresolved_panels=sum(1 for p in panel_results if p.status != PanelStatus.ACCEPTED),
+            unverified_panels=sum(1 for p in panel_results if p.status == PanelStatus.GENERATED_PENDING_VERIFICATION),
+            total_attempts=len(all_attempts),
+            attempts_per_panel={p.panel_id: p.attempts_count for p in panel_results},
+            total_duration_seconds=0.0,
+            started_at=start_time_iso,
+            completed_at=None,
+            is_simulated=is_simulated,
+            cost_mode="synthetic_simulated" if is_simulated else "real",
+            panel_results=panel_results,
+            attempt_history=all_attempts,
+        )
+        self._persist_batch_summary(temp_summary)
 
     def _persist_batch_summary(self, summary: BatchSummary) -> Path:
         """Persists structured machine-readable batch summary to runs store."""
@@ -403,6 +632,8 @@ class BatchOrchestrator:
         """
         Resumes a partial or failed batch without regenerating previously accepted panels.
         Validates context fingerprints to ensure inputs have not drifted before reusing results.
+        Validates that referenced asset files physically exist on disk before reuse.
+        Ensures resumed attempt numbering continues seamlessly without ID collisions.
         """
         sorted_scenes = sorted(batch_spec.scenes, key=lambda s: s.scene_index)
         bible_version_str = str(getattr(batch_spec.story_bible, "bible_version", getattr(batch_spec.story_bible, "version", "1.0.0")))
@@ -414,6 +645,7 @@ class BatchOrchestrator:
         scenes_to_run: List[SceneSpec] = []
         reused_panel_results: Dict[str, PanelResult] = {}
         reused_attempts: List[GenerationAttemptRecord] = []
+        prior_attempt_offsets: Dict[str, int] = {}
 
         for scene in sorted_scenes:
             panel_id = f"panel_{scene.scene_index + 1:02d}"
@@ -427,16 +659,28 @@ class BatchOrchestrator:
             )
 
             prior_panel = prior_panels_by_id.get(panel_id)
-            # Reusable if: was ACCEPTED, and context fingerprint exactly matches current inputs
+
+            # Check that output asset file physically exists on disk before deciding to reuse
+            file_exists = True
+            if prior_panel and prior_panel.output_asset_path:
+                p_file = Path(prior_panel.output_asset_path)
+                if not p_file.is_absolute():
+                    p_file = PROJECT_ROOT / p_file
+                file_exists = p_file.exists() and p_file.stat().st_size > 0
+
+            # Reusable if: was ACCEPTED, context fingerprint matches, and output file exists
             if (
                 prior_panel
                 and prior_panel.status == PanelStatus.ACCEPTED
                 and prior_panel.context_fingerprint == cur_packet.context_fingerprint
+                and file_exists
             ):
                 reused_panel_results[panel_id] = prior_panel
                 reused_attempts.extend(prior_attempts_by_panel.get(panel_id, []))
             else:
                 scenes_to_run.append(scene)
+                # Track prior attempts count so resumed attempt IDs continue without collision
+                prior_attempt_offsets[panel_id] = len(prior_attempts_by_panel.get(panel_id, []))
 
         # If everything is already accepted and unchanged, return existing summary
         if not scenes_to_run:
@@ -453,9 +697,10 @@ class BatchOrchestrator:
             max_retries_per_panel=batch_spec.max_retries_per_panel,
             spend_cap_usd=batch_spec.spend_cap_usd,
             output_dir=batch_spec.output_dir,
+            require_verification=batch_spec.require_verification,
         )
 
-        sub_summary = self.orchestrate_batch(sub_spec)
+        sub_summary = self.orchestrate_batch(sub_spec, prior_attempt_offsets=prior_attempt_offsets)
 
         # Merge reused panel results with freshly generated panel results
         fresh_panels_by_id = {p.panel_id: p for p in sub_summary.panel_results}
@@ -471,8 +716,9 @@ class BatchOrchestrator:
 
         total_panels = len(sorted_scenes)
         successful_panels = sum(1 for p in combined_panel_results if p.status == PanelStatus.ACCEPTED)
-        failed_panels = sum(1 for p in combined_panel_results if p.status == PanelStatus.FAILED)
-        unresolved_panels = sum(1 for p in combined_panel_results if p.status in (PanelStatus.PENDING, PanelStatus.NEEDS_HUMAN))
+        unverified_panels = sum(1 for p in combined_panel_results if p.status == PanelStatus.GENERATED_PENDING_VERIFICATION)
+        failed_panels = sum(1 for p in combined_panel_results if p.status in (PanelStatus.FAILED, PanelStatus.REJECTED_BY_VERIFIER))
+        unresolved_panels = sum(1 for p in combined_panel_results if p.status in (PanelStatus.PENDING, PanelStatus.NEEDS_HUMAN, PanelStatus.GENERATED_PENDING_VERIFICATION))
 
         if successful_panels == total_panels:
             b_status = BatchStatus.COMPLETED
@@ -490,14 +736,19 @@ class BatchOrchestrator:
             successful_panels=successful_panels,
             failed_panels=failed_panels,
             unresolved_panels=unresolved_panels,
+            unverified_panels=unverified_panels,
             total_attempts=len(combined_attempts),
             attempts_per_panel={p.panel_id: p.attempts_count for p in combined_panel_results},
             total_duration_seconds=round(prior_summary.total_duration_seconds + sub_summary.total_duration_seconds, 3),
             started_at=prior_summary.started_at,
             completed_at=datetime.now(timezone.utc).isoformat(),
+            is_simulated=sub_summary.is_simulated,
+            cost_mode=sub_summary.cost_mode,
             known_cost_usd=None if (prior_summary.missing_cost_information or sub_summary.missing_cost_information) else round((prior_summary.known_cost_usd or 0) + (sub_summary.known_cost_usd or 0), 4),
+            simulated_cost_usd=round((prior_summary.simulated_cost_usd or 0) + (sub_summary.simulated_cost_usd or 0), 4) if sub_summary.simulated_cost_usd is not None else None,
             missing_cost_information=prior_summary.missing_cost_information or sub_summary.missing_cost_information,
             known_usage={**prior_summary.known_usage, **sub_summary.known_usage},
+            simulated_usage={**(prior_summary.simulated_usage or {}), **(sub_summary.simulated_usage or {})},
             missing_usage_information=prior_summary.missing_usage_information or sub_summary.missing_usage_information,
             panel_results=combined_panel_results,
             attempt_history=combined_attempts,

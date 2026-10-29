@@ -8,6 +8,8 @@
  * - Primary units: Screen/Render Pixels (px) at 300 DPI (print) or 96/72 DPI (web)
  * - Rasterization interval: Half-open [x, x + width) x [y, y + height)
  * - Rotation: Degrees (deg), clockwise positive
+ * - Color spaces: sRGB, Display P3, CMYK (FOGRA39 / SWOP), Grayscale
+ * - Alpha modes: Straight, Premultiplied, Opaque
  */
 
 // --- Error and Validation Contracts ---
@@ -158,6 +160,9 @@ export enum CoordinateSpace {
   PAGE = 'page',
   PANEL_SLOT = 'panel_slot',
   SOURCE_IMAGE = 'source_image',
+  TEXT_LAYER = 'text_layer',
+  BUBBLE = 'bubble',
+  EFFECT_MASK = 'effect_mask',
   VIEWPORT = 'viewport',
   NORMALIZED = 'normalized',
 }
@@ -168,6 +173,48 @@ export enum FitMode {
   CROP_TO_FRAME = 'crop_to_frame',
   STRETCH = 'stretch',
   MANUAL = 'manual',
+}
+
+export enum ColorSpace {
+  SRGB = 'srgb',
+  DISPLAY_P3 = 'display_p3',
+  CMYK_FOGRA39 = 'cmyk_fogra39',
+  CMYK_SWOP = 'cmyk_swop',
+  GRAYSCALE = 'grayscale',
+}
+
+export enum AlphaMode {
+  STRAIGHT = 'straight',
+  PREMULTIPLIED = 'premultiplied',
+  OPAQUE = 'opaque',
+}
+
+export enum BlendMode {
+  NORMAL = 'normal',
+  MULTIPLY = 'multiply',
+  SCREEN = 'screen',
+  OVERLAY = 'overlay',
+  DARKEN = 'darken',
+  LIGHTEN = 'lighten',
+  COLOR_DODGE = 'color_dodge',
+  COLOR_BURN = 'color_burn',
+  HARD_LIGHT = 'hard_light',
+  SOFT_LIGHT = 'soft_light',
+}
+
+export enum AssetFormat {
+  PNG = 'png',
+  WEBP = 'webp',
+  JPEG = 'jpeg',
+  SVG = 'svg',
+  PDF = 'pdf',
+  TIFF = 'tiff',
+}
+
+export enum ClipMode {
+  CLIP_TO_PANEL = 'clip_to_panel',
+  BLEED_TO_PAGE_EDGE = 'bleed_to_page_edge',
+  BREAK_FRAME = 'break_frame',
 }
 
 export interface Point {
@@ -266,10 +313,21 @@ export enum EngineStatus {
   RUNNING = 'running',
   SUCCESS = 'success',
   FAILED = 'failed',
+  BLOCKED = 'blocked',
   CANCELLED = 'cancelled',
+  NOT_IMPLEMENTED = 'not_implemented',
   NOT_IMPLEMENTED_YET = 'not_implemented_yet',
   EXPERIMENTAL = 'experimental',
   NEEDS_REVIEW = 'needs_review',
+}
+
+export enum QualityVerdict {
+  PENDING = 'pending',
+  PASSED = 'passed',
+  FAILED = 'failed',
+  UNSURE = 'unsure',
+  NEEDS_REVIEW = 'needs_review',
+  BLOCKED = 'blocked',
 }
 
 export interface UsageMetrics {
@@ -285,6 +343,7 @@ export interface UsageMetrics {
 export interface ProvenanceRecord {
   engine_id: EngineId;
   engine_version: string;
+  schema_version: string;
   config_hash: string;
   input_artifact_ids: string[];
   story_bible_version?: string | null;
@@ -297,6 +356,7 @@ export interface EngineRunRequest<TParams = unknown> {
   attempt_id: string;
   engine_id: EngineId;
   engine_version: string;
+  schema_version: string;
   project_id: string;
   scope_id?: string | null;
   input_artifact_ids: string[];
@@ -311,7 +371,9 @@ export interface EngineRunResponse<TOutput = unknown> {
   attempt_id: string;
   engine_id: EngineId;
   engine_version: string;
+  schema_version: string;
   status: EngineStatus;
+  quality_verdict?: QualityVerdict | null;
   created_at: string;
   completed_at: string;
   latency_seconds: number;

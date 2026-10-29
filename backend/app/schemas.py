@@ -100,6 +100,8 @@ class SceneSpec(BaseModel):
     character_ids: List[str] = Field(default_factory=list, description="List of character IDs present in this scene")
     scene_state: Dict[str, Any] = Field(default_factory=dict, description="Explicit narrative state deltas (e.g. outfit variations, props held)")
     panel_instructions: Optional[str] = Field(default=None, description="Panel-specific composition directives")
+    dimensions: Optional[List[int]] = Field(default=None, description="Target pixel dimensions [width, height]")
+    aspect_ratio: Optional[str] = Field(default=None, description="Aspect ratio constraint (e.g. 2:3, 3:2, 1:1)")
     previous_panel_id: Optional[str] = Field(default=None, description="Preceding panel ID if applicable")
     previous_panel_summary: Optional[str] = Field(default=None, description="Explicit summary of prior panel beat")
 
@@ -120,6 +122,8 @@ class PanelContextPacket(BaseModel):
     character_ids: List[str]
     character_specs: List[CharacterSpec]
     reference_assets: List[ReferenceAsset]
+    dimensions: Optional[List[int]] = None
+    aspect_ratio: Optional[str] = None
     previous_panel_continuity: Optional[str] = None
     scene_state: Dict[str, Any] = Field(default_factory=dict)
     visual_invariants: List[str] = Field(default_factory=list)
@@ -147,8 +151,19 @@ class RetryDecision(str, Enum):
     NONE_SUCCESS = "NONE_SUCCESS"
 
 class PanelStatus(str, Enum):
+    """
+    Status of an individual panel slot.
+    - PENDING: Generation not yet attempted.
+    - GENERATED_PENDING_VERIFICATION: Image generation succeeded, but visual verification has not passed or is pending.
+    - ACCEPTED: Image generated AND passed verification gate (or accepted by downstream pipeline).
+    - REJECTED_BY_VERIFIER: Image generated but failed visual checklist check.
+    - FAILED: Generation error or budget exceeded.
+    - NEEDS_HUMAN: Bounded retries exhausted or verifier returned inconclusive judgment.
+    """
     PENDING = "PENDING"
+    GENERATED_PENDING_VERIFICATION = "GENERATED_PENDING_VERIFICATION"
     ACCEPTED = "ACCEPTED"
+    REJECTED_BY_VERIFIER = "REJECTED_BY_VERIFIER"
     FAILED = "FAILED"
     NEEDS_HUMAN = "NEEDS_HUMAN"
 
@@ -166,6 +181,8 @@ class GenerationAttemptRecord(BaseModel):
     scene_id: str
     attempt_id: str
     attempt_number: int
+    retry_count: int = Field(default=0, description="0-based retry counter (0 for initial call)")
+    is_simulated: bool = Field(default=False, description="True if simulated test adapter; False for live Meta API calls")
     started_at: str
     completed_at: Optional[str] = None
     duration_seconds: Optional[float] = None
@@ -214,6 +231,7 @@ class BatchSpec(BaseModel):
     max_retries_per_panel: int = Field(default=2)
     spend_cap_usd: float = Field(default=25.0)
     output_dir: Optional[str] = None
+    require_verification: bool = Field(default=False, description="If True, panels without passing verifier verdict stay in GENERATED_PENDING_VERIFICATION")
 
 class BatchSummary(BaseModel):
     """Auditable batch execution summary with complete attempt provenance."""
@@ -225,14 +243,19 @@ class BatchSummary(BaseModel):
     successful_panels: int
     failed_panels: int
     unresolved_panels: int
+    unverified_panels: int = Field(default=0, description="Panels generated but awaiting visual verification")
     total_attempts: int
     attempts_per_panel: Dict[str, int]
     total_duration_seconds: float
     started_at: str
     completed_at: Optional[str] = None
+    is_simulated: bool = Field(default=False, description="True if simulated test run; False if executed against live provider")
+    cost_mode: str = Field(default="real", description="Cost accounting mode: 'real', 'synthetic_simulated', or 'unknown'")
     known_cost_usd: Optional[float] = None
+    simulated_cost_usd: Optional[float] = None
     missing_cost_information: bool = False
     known_usage: Dict[str, Any] = Field(default_factory=dict)
+    simulated_usage: Optional[Dict[str, Any]] = None
     missing_usage_information: bool = False
     panel_results: List[PanelResult] = Field(default_factory=list)
     attempt_history: List[GenerationAttemptRecord] = Field(default_factory=list)

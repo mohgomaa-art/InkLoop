@@ -135,7 +135,7 @@ This baseline reflects reports supplied in the conversation. Confirm actual repo
 2. **Coordinator / Agent Layer** — eventually invokes tools and engines according to approved contracts. Design its detailed tool catalogue only after the owner-led discussion.
 3. **Shared Core** — project configuration, Story Bible, canon snapshots, state timeline, schemas/contracts, coordinates, budgets, events, errors, and run execution.
 4. **Research & Knowledge Layer** — the 60-group image-generation knowledge catalogue, research evidence registry, recipes, compatibility rules, experiment registry, source traceability, and versioning.
-5. **Seven Specialist Production Engines** — Image Generation, Canvas Generation, Image–Canvas Integration, Speech Bubbles, Text Generation, Typography/Fonts, Effects/Motion.
+5. **Seven Specialist Production Engines** — Image Generation (E1), Canvas Generation (E2), Image–Canvas Integration (E3), Text Generation (E4), Typography/Fonts (E5), Speech Bubbles (E6), Effects/Motion (E7).
 6. **Final Compositor** — layer graph and final rendering.
 7. **Quality & Verification** — visual, typography, geometry, continuity, policy, and output validation.
 8. **Export & Delivery** — PDF, page PNGs, supported long-scroll/web formats, and project artifacts.
@@ -152,14 +152,14 @@ Owns the creation of canvas/page/panel geometry and the canvas artifact itself: 
 #### Engine E3 — Image–Canvas Integration Engine
 Owns precise placement of generated images inside canvas/panel slots: coordinate transforms, scale, fit/crop policy, anchor/focal preservation, clipping, positioning, output size, resampling, and transformation audit. It must preserve aspect ratio unless an explicit user-approved distortion operation is requested.
 
-#### Engine E4 — Speech Bubble Engine
-Owns balloon geometry and rendering, bubble category and shape, tail routing, speaker association, candidate regions, collision checks, reading order, multiple/connected/overlapping bubbles, safe margins, and final bubble-shape layers. It consumes real text metrics; it does not generate dialogue or own glyph rendering.
-
-#### Engine E5 — Text Generation Engine
+#### Engine E4 — Text Generation Engine
 Owns narrative text artifacts: dialogue, narration, captions, internal monologue, off-panel dialogue, interruption/fading rules, SFX words, tone, character voice, and consistency with the story's canon/state. It records text provenance and must respect user-supplied text as immutable when exact preservation is required.
 
-#### Engine E6 — Typography & Font Generation Engine
+#### Engine E5 — Typography & Font Generation Engine
 Owns font discovery/catalogue and licenses, creation of new typeface/font assets when technically achievable, lettering styles, glyph coverage, Arabic shaping and mixed-direction text, text shaping, metrics, kerning, line breaks, text fit, style application, and rendering text into independent layers. Creating a visual lettering specimen is not automatically equivalent to producing a valid font file; the system must distinguish those outputs.
+
+#### Engine E6 — Speech Bubble Engine
+Owns balloon geometry and rendering, bubble category and shape, tail routing, speaker association, candidate regions, collision checks, reading order, multiple/connected/overlapping bubbles, safe margins, and final bubble-shape layers. It consumes real text metrics; it does not generate dialogue or own glyph rendering.
 
 #### Engine E7 — Effects & Motion Engine
 Owns independently controllable effects and their parameters/masks/layers: motion and speed lines, action arcs, impact effects, motion smears, blur families, glow, bloom, glare, lens flare, lighting rays, particles, smoke/steam, rain/snow/fog, sparks/debris, electricity/energy aura, environmental effects, and other approved catalogue elements. It must not silently modify the source art, text, character identity, or bubble content.

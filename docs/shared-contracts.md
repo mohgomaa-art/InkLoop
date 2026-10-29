@@ -127,17 +127,47 @@ Default DPI for print is **300.0 DPI** ($1\text{ mm} \approx 11.811\text{ px}$);
 | `PAGE` | Full canvas space including margins, gutters, and bleed. Origin at page top-left. | $2480 \times 3508\text{ px}$ (A4 @ 300 DPI) |
 | `PANEL_SLOT` | Local coordinate space inside a specific panel frame. Origin `(0, 0)` at panel slot top-left. | $1000 \times 800\text{ px}$ |
 | `SOURCE_IMAGE` | Intrinsic raw pixel buffer of generated artwork. Origin `(0, 0)` at image top-left. | $1280 \times 1920\text{ px}$ |
+| `TEXT_LAYER` | Coordinate space local to text box / glyph layout. Origin `(0, 0)` at text bounding box. | Variable |
+| `BUBBLE` | Coordinate space local to speech bubble envelope. Origin `(0, 0)` at bubble bounds top-left. | Variable |
+| `EFFECT_MASK` | Coordinate space for motion/effect procedural layers. Origin `(0, 0)` at effect layer top-left. | Variable |
 | `VIEWPORT` | Frontend/client display coordinates scaled for viewing. | $800 \times 1131\text{ px}$ |
 | `NORMALIZED` | Unit square $[0.0, 1.0] \times [0.0, 1.0]$ for relative bounding boxes and anchors. | $1.0 \times 1.0$ |
 
-### 3.6 Coordinate Space Transformations
+### 3.6 Color, Alpha, Blend, and Asset Formats
+
+To ensure deterministic color reproduction and cross-layer rendering fidelity:
+- **Color Spaces (`ColorSpace`):**
+  - `SRGB`: Standard display color space (default for web and previews).
+  - `DISPLAY_P3`: Wide gamut color space.
+  - `CMYK_FOGRA39`: European standard offset print CMYK.
+  - `CMYK_SWOP`: US standard commercial web offset print CMYK.
+  - `GRAYSCALE`: Monochrome / 1-channel halftone or manga ink space.
+- **Alpha Modes (`AlphaMode`):**
+  - `STRAIGHT`: RGB channels are unmultiplied by alpha. Standard for PNG/SVG source assets.
+  - `PREMULTIPLIED`: RGB channels are multiplied by alpha $A \cdot [R, G, B]$. Required by high-performance compositors to prevent edge fringing.
+  - `OPAQUE`: Alpha channel ignored ($A = 1.0$).
+- **Blend Modes (`BlendMode`):**
+  - `NORMAL`, `MULTIPLY` (screentones, shading), `SCREEN` (highlights, blasts), `OVERLAY` (contrast blend), `DARKEN`, `LIGHTEN`, `COLOR_DODGE`, `COLOR_BURN`, `HARD_LIGHT`, `SOFT_LIGHT`.
+- **Asset Formats (`AssetFormat`):**
+  - Raster: `PNG`, `WEBP`, `JPEG`, `TIFF`.
+  - Vector / Document: `SVG`, `PDF`.
+- **Clipping Modes (`ClipMode`):**
+  - `CLIP_TO_PANEL`: Strict clipping to panel slot rectangle.
+  - `BLEED_TO_PAGE_EDGE`: Artwork extends past trim into bleed margin.
+  - `BREAK_FRAME`: Deliberate frame-breaking artwork (e.g. character limb or weapon extending over gutter).
+
+### 3.7 Coordinate Space Transformations
 - `panel_to_page(point: Point, panel_rect: Rect) -> Point`: $x_{\text{page}} = x_{\text{panel\_rect}} + x_{\text{local}}$, $y_{\text{page}} = y_{\text{panel\_rect}} + y_{\text{local}}$
 - `page_to_panel(point: Point, panel_rect: Rect) -> Point`: $x_{\text{local}} = x_{\text{page}} - x_{\text{panel\_rect}}$, $y_{\text{local}} = y_{\text{page}} - y_{\text{panel\_rect}}$
-- `normalize_point(point: Point, container: Rect) -> Point`
-- `denormalize_point(norm_point: Point, container: Rect) -> Point`
+- `bubble_to_page(point: Point, bubble_rect: Rect) -> Point` / `page_to_bubble(point: Point, bubble_rect: Rect) -> Point`
+- `text_to_bubble(point: Point, text_rect: Rect) -> Point` / `bubble_to_text(point: Point, text_rect: Rect) -> Point`
+- `effect_to_page(point: Point, effect_rect: Rect) -> Point` / `page_to_effect(point: Point, effect_rect: Rect) -> Point`
+- `normalize_point(point: Point, container: Rect) -> Point` / `denormalize_point(norm_point: Point, container: Rect) -> Point`
+- `normalize_rect(rect: Rect, container: Rect) -> Rect` / `denormalize_rect(norm_rect: Rect, container: Rect) -> Rect`
 - `snap_to_pixel_grid(rect: Rect) -> Rect`: Integer snapping: $x = \lfloor x + 0.5 \rfloor$, $w = \max(1.0, \lfloor w + 0.5 \rfloor)$.
+- `clip_rect(rect: Rect, bounds: Rect) -> Optional[Rect]`: Clips rectangle to bounds, returning `None` if completely outside.
 
-### 3.7 Fit Modes (`FitMode`)
+### 3.8 Fit Modes (`FitMode`)
 When Engine E3 (Image–Canvas Integration) places a source image into a panel slot:
 - `CONTAIN`: Scale uniformly by $\min(s_x, s_y)$. Entire image is visible; letterboxing may occur.
 - `COVER`: Scale uniformly by $\max(s_x, s_y)$. Slot is completely filled; cropping occurs along excess edges.
@@ -168,10 +198,49 @@ EngineRunRequest[TParams] -> EngineRunResponse[TOutput]
 - `s8_export_delivery`: PDF generation, page PNG export, packaging, and delivery.
 
 ### 4.2 Standard Request & Response Protocol
-- **`EngineRunRequest[TParams]`**: Contains `run_id`, `attempt_id`, `engine_id`, `project_id`, `input_artifact_ids`, `parameters: TParams`, `config_hash`, `budget_limit_usd`, and `dry_run: bool`.
-- **`EngineRunResponse[TOutput]`**: Contains `status: EngineStatus`, `output_artifact_ids`, `output: TOutput`, `usage: UsageMetrics`, `provenance: ProvenanceRecord`, `validation_errors: List[ValidationErrorDetail]`, and `error: Optional[EngineFailure]`.
-- **Status Lifecycle (`EngineStatus`):**
-  - `PENDING` $\to$ `RUNNING` $\to$ `SUCCESS` | `FAILED` | `CANCELLED` | `NEEDS_REVIEW` | `NOT_IMPLEMENTED_YET` | `EXPERIMENTAL`.
+- **`EngineRunRequest[TParams]`**: Contains `run_id`, `attempt_id`, `engine_id`, `project_id`, `input_artifact_ids`, `parameters: TParams`, `schema_version = "1.0.0"`, `config_hash`, `budget_limit_usd`, and `dry_run: bool`.
+- **`EngineRunResponse[TOutput]`**: Contains `status: EngineStatus`, `quality_verdict: QualityVerdict`, `output_artifact_ids`, `output: TOutput`, `schema_version = "1.0.0"`, `usage: UsageMetrics`, `provenance: ProvenanceRecord`, `validation_errors: List[ValidationErrorDetail]`, and `error: Optional[EngineFailure]`.
+
+### 4.3 Execution Status vs Quality Verdict Separation
+To avoid conflating execution health with creative/quality assessment, InkLoop maintains a strict invariant separating pipeline status from quality verdicts:
+- **`EngineStatus` (Pipeline Execution State):**
+  - `PENDING`, `RUNNING`, `SUCCESS`, `FAILED`, `CANCELLED`, `NEEDS_REVIEW`, `NOT_IMPLEMENTED_YET`, `EXPERIMENTAL`, `BLOCKED`, `NOT_IMPLEMENTED`.
+  - Reflects whether the software executed without unhandled crashes, provider errors, or contract violations.
+- **`QualityVerdict` (Content & Gate Evaluation State):**
+  - `PENDING`: Evaluation not yet performed.
+  - `PASSED`: Meets all visual, typographic, or layout criteria.
+  - `FAILED`: Violated quality heuristics or consistency thresholds.
+  - `UNSURE`: Confidence score fell within indeterminate threshold interval.
+  - `NEEDS_REVIEW`: Requires human approval / manual editorial signoff.
+  - `BLOCKED`: Upstream quality gate failure prevents evaluation.
+
+> [!IMPORTANT]
+> An engine run can execute to technical completion (`status == EngineStatus.SUCCESS`), but fail quality verification (`quality_verdict == QualityVerdict.FAILED`). Downstream pipelines must inspect both.
+
+### 4.4 Typed Engine Parameter & Output Schemas
+
+Every engine and supporting subsystem defines strictly typed Pydantic models for its parameters and outputs:
+
+| Engine / Subsystem | Parameter Schema | Output Schema | Key Fields |
+| :--- | :--- | :--- | :--- |
+| **E1: Image Generation** | `ImageGenerationParams` | `ImageGenerationOutput` | `prompt`, `negative_prompt`, `reference_asset_ids`, `aspect_ratio`, `guidance_scale`, `seed`, `primary_artifact_id`, `detections` |
+| **E2: Canvas Generation** | `CanvasGenerationParams` | `CanvasGenerationOutput` | `page_dimensions`, `margins`, `bleed`, `reading_direction`, `panel_slots`, `gutter_horizontal`, `gutter_vertical` |
+| **E3: Image-Canvas Integration** | `ImageCanvasIntegrationParams` | `ImageCanvasIntegrationOutput` | `source_artifact_id`, `target_panel_rect`, `fit_mode`, `anchor`, `clip_mode`, `transform`, `clipped_rect`, `break_frame_overflow` |
+| **E4: Text Generation** | `TextGenerationParams` | `TextGenerationOutput` | `script_prompt`, `characters_present`, `scene_context`, `blocks`, `dialogue_count`, `sfx_count` |
+| **E5: Typography & Fonts** | `TypographyParams` | `TypographyOutput` | `blocks`, `font_family`, `reading_direction`, `target_dpi`, `shaped_blocks`, `metrics` |
+| **E6: Speech Bubbles** | `SpeechBubbleParams` | `SpeechBubbleOutput` | `shaped_blocks`, `panel_rect`, `avoidance_regions`, `bubble_slots`, `tail_points`, `reading_order` |
+| **E7: Effects & Motion** | `EffectsMotionParams` | `EffectsMotionOutput` | `effect_type`, `target_rect`, `blend_mode`, `intensity`, `direction_degrees`, `effect_artifact_id` |
+| **S6: Final Compositor** | `CompositorParams` | `CompositorOutput` | `page_dimensions`, `layers`, `color_space`, `alpha_mode`, `composite_artifact_id`, `dpi` |
+| **S7: Verification Gate** | `VerificationParams` | `VerificationOutput` | `verdict`, `confidence`, `discrepancies`, `reference_comparison_id`, `metrics` |
+| **S8: Export & Delivery** | `ExportParams` | `ExportOutput` | `target_format`, `dpi`, `color_profile`, `bleed_included`, `export_artifact_id`, `checksum` |
+
+### 4.5 Provenance and Reproducibility
+Every `EngineRunResponse` embeds a `ProvenanceRecord`:
+- `engine_id`, `engine_version`, `schema_version = "1.0.0"`.
+- `config_hash`: SHA-256 of execution parameters and model settings.
+- `source_asset_ids`: Explicit parent asset lineage.
+- `seed`: Random seed for deterministic reproducibility.
+- `timestamp`: ISO-8601 execution timestamp.
 
 ---
 
@@ -212,9 +281,16 @@ The completed M0 Image Generation Engine is integrated via [`ImageGenerationEngi
 
 ### Verified Integration Capabilities:
 1. **Pre-flight Validation:** Verifies non-empty prompt and existence of reference image before any network dispatch.
-2. **Dry-Run Mode:** Returns complete, valid `EngineRunResponse[ImageGenerationOutput]` without consuming API quota.
+2. **Dry-Run Mode Guard:** Returns complete, valid `EngineRunResponse[ImageGenerationOutput]` with strictly `image_ops: 0`, `compute_seconds: 0.001`, `cost: 0.0`, and mock SHA hashes, preventing dry-run outputs from ever being mistaken for billable productions.
 3. **Payload Builder Compatibility:** Reuses `build_image_edit_payload` from `backend/app/parsers.py` without modifying working M0 behavior.
 4. **SAM Bounding Box Bridge:** `BoundingBox.to_rect()` converts segmentation detections into canonical `Rect` models.
+5. **Offline Mock Response Harness & Error Mapping:**
+   - Evaluated without live API calls using `handle_mock_response`.
+   - `HTTP 200`: `EngineStatus.SUCCESS`, `output_artifact_ids` populated, `image_ops: 1`.
+   - `HTTP 400` (Content Policy): `EngineStatus.FAILED`, `ErrorCode.CONTENT_POLICY_VIOLATION`, `retryable: True` (can retry with modified prompt).
+   - `HTTP 401` (Auth Failure): `EngineStatus.FAILED`, `ErrorCode.PROVIDER_AUTH_FAILED`, `retryable: False` (hard fail, immediate halt).
+   - `HTTP 429` (Rate Limit): `EngineStatus.FAILED`, `ErrorCode.PROVIDER_RATE_LIMITED`, `retryable: True` (retryable with backoff).
+   - `HTTP 500` (Internal Server Error): `EngineStatus.FAILED`, `ErrorCode.PROVIDER_TIMEOUT`, `retryable: True` (transient provider failure).
 
 ---
 

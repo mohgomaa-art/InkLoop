@@ -189,8 +189,13 @@ def build_panel_context_packet(
         prohibited_deviations=prohibited_deviations,
     )
 
-    # 6. Deterministic continuity summary
+    # 6. Extract geometry and continuity
     continuity_summary = scene.previous_panel_summary
+    dimensions = getattr(scene, "dimensions", None) or gen_params.get("dimensions")
+    aspect_ratio = getattr(scene, "aspect_ratio", None) or gen_params.get("aspect_ratio")
+    style_obj = getattr(story_bible, "style", None)
+    style_id = getattr(style_obj, "id", getattr(style_obj, "style_id", "default_style")) if style_obj else "default_style"
+    style_medium = getattr(style_obj, "medium", "") if style_obj else ""
 
     # 7. Construct semantic payload for reproducible fingerprint computation
     fingerprint_payload = {
@@ -198,10 +203,20 @@ def build_panel_context_packet(
         "project_id": project_id,
         "bible_id": bible_id,
         "bible_version": bible_version,
+        "style_id": style_id,
+        "style_medium": style_medium,
+        "style_line_and_tone": line_and_tone,
         "panel_id": panel_id,
         "scene_id": scene.scene_id,
         "scene_index": scene.scene_index,
         "scene_description": f"{scene.title}: {scene.action} ({scene.shot_type})",
+        "scene_action": scene.action,
+        "scene_shot_type": scene.shot_type,
+        "camera_angle": scene.camera_angle,
+        "lighting": scene.lighting,
+        "panel_instructions": scene.panel_instructions,
+        "dimensions": dimensions,
+        "aspect_ratio": aspect_ratio,
         "generation_prompt": prompt,
         "character_ids": sorted(scene.character_ids),
         "character_specs": [
@@ -215,6 +230,7 @@ def build_panel_context_packet(
             {"asset_id": r.asset_id, "content_hash": r.content_hash}
             for r in reference_assets
         ],
+        "previous_panel_id": scene.previous_panel_id,
         "previous_panel_continuity": continuity_summary,
         "scene_state": scene.scene_state,
         "visual_invariants": visual_invariants,
@@ -238,6 +254,8 @@ def build_panel_context_packet(
         character_ids=scene.character_ids,
         character_specs=character_specs,
         reference_assets=reference_assets,
+        dimensions=dimensions,
+        aspect_ratio=aspect_ratio,
         previous_panel_continuity=continuity_summary,
         scene_state=scene.scene_state,
         visual_invariants=visual_invariants,

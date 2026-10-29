@@ -26,6 +26,8 @@ class GenerationRequest(BaseModel):
     panel_id: str = ""
     scene_id: str = ""
     n: int = 1
+    dimensions: Optional[List[int]] = None
+    aspect_ratio: Optional[str] = None
     parameters: Dict[str, Any] = Field(default_factory=dict)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -40,6 +42,7 @@ class GenerationResponse(BaseModel):
     error_category: Optional[ErrorCategory] = None
     error_message: Optional[str] = None
     duration_seconds: float = 0.0
+    is_simulated: bool = False
     usage: Optional[Dict[str, Any]] = None
     cost_usd: Optional[float] = None
     sanitized_metadata: Dict[str, Any] = Field(default_factory=dict)
@@ -48,19 +51,23 @@ class GenerationResponse(BaseModel):
 
 class ImageGenerationAdapter(ABC):
     """Abstract interface for image generation engines."""
+    is_simulated: bool = False
 
     @abstractmethod
     def generate(self, request: GenerationRequest) -> GenerationResponse:
         """Execute image generation synchronously."""
         pass
 
-def sanitize_error_text(text: str) -> str:
-    """Removes sensitive authorization tokens or keys from error strings."""
+def sanitize_error_text(text: str, sensitive_strings: Optional[List[str]] = None) -> str:
+    """Removes sensitive authorization tokens, keys, or credentials from error strings."""
     if not text:
         return ""
-    # Truncate and strip
     clean = text.strip()
-    for sensitive_keyword in ["Bearer", "sk-", "key=", "api_key="]:
+    if sensitive_strings:
+        for s in sensitive_strings:
+            if s and len(s) > 3 and s in clean:
+                clean = clean.replace(s, "[REDACTED_SECRET]")
+    for sensitive_keyword in ["Bearer", "sk-", "key=", "api_key=", "authorization:"]:
         if sensitive_keyword.lower() in clean.lower():
             clean = "[REDACTED_ERROR_MESSAGE]"
     return clean[:400]
@@ -71,11 +78,16 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
     Uses POST /v1/images/edits for reference-anchored generation or
     POST /v1/images/generations for text-only baseline generation.
     """
+    is_simulated: bool = False
 
     def __init__(self, config: InkLoopConfig, timeout_seconds: float = 60.0):
         self.config = config
         self.timeout_seconds = timeout_seconds
         self.base_url = config.meta_base_url.rstrip("/")
+
+    def _sanitize(self, text: str) -> str:
+        sensitive = [self.config.model_api_key] if self.config.model_api_key else []
+        return sanitize_error_text(text, sensitive_strings=sensitive)
 
     def generate(self, request: GenerationRequest) -> GenerationResponse:
         if not self.config.has_credentials:
@@ -85,6 +97,7 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
                 endpoint="/images/edits" if request.reference_bytes else "/images/generations",
                 error_category=ErrorCategory.AUTHENTICATION_ERROR,
                 error_message="Meta Model API key is not configured.",
+                is_simulated=False,
                 sanitized_metadata={"model": request.model, "panel_id": request.panel_id}
             )
 
@@ -128,7 +141,7 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
             req_id = resp.headers.get("x-request-id")
 
             if status_code != 200:
-                raw_err = sanitize_error_text(resp.text)
+                raw_err = self._sanitize(resp.text)
                 err_category = self._classify_error(status_code, raw_err)
                 return GenerationResponse(
                     success=False,
@@ -138,6 +151,7 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
                     error_category=err_category,
                     error_message=raw_err,
                     duration_seconds=duration,
+                    is_simulated=False,
                     sanitized_metadata=sanitized_meta
                 )
 
@@ -152,6 +166,7 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
                     error_category=ErrorCategory.SERVER_ERROR,
                     error_message="Provider returned 200 OK but payload missing b64_json image data.",
                     duration_seconds=duration,
+                    is_simulated=False,
                     sanitized_metadata=sanitized_meta
                 )
 
@@ -166,6 +181,7 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
                 request_id=req_id,
                 endpoint=endpoint,
                 duration_seconds=duration,
+                is_simulated=False,
                 usage=reported_usage,
                 cost_usd=None, # Only set if genuinely returned/billed by provider
                 sanitized_metadata=sanitized_meta
@@ -179,6 +195,7 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
                 error_category=ErrorCategory.NETWORK_TIMEOUT,
                 error_message=f"Request timed out after {self.timeout_seconds}s.",
                 duration_seconds=duration,
+                is_simulated=False,
                 sanitized_metadata=sanitized_meta
             )
         except Exception as exc:
@@ -187,8 +204,9 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
                 success=False,
                 endpoint=endpoint,
                 error_category=ErrorCategory.UNKNOWN,
-                error_message=sanitize_error_text(str(exc)),
+                error_message=self._sanitize(str(exc)),
                 duration_seconds=duration,
+                is_simulated=False,
                 sanitized_metadata=sanitized_meta
             )
 
@@ -211,7 +229,9 @@ class SimulatedImageGenerationAdapter(ImageGenerationAdapter):
     Deterministic fake adapter for unit and integration testing.
     Produces valid PNG outputs without external API calls or credit consumption.
     Supports scripted error sequences per panel.
+    Clearly marked as simulated to prevent confusion with actual provider operations.
     """
+    is_simulated: bool = True
 
     def __init__(
         self,
@@ -245,6 +265,7 @@ class SimulatedImageGenerationAdapter(ImageGenerationAdapter):
         # Check if there is a scripted sequence for this panel
         if request.panel_id in self._scripted_responses and self._scripted_responses[request.panel_id]:
             resp = self._scripted_responses[request.panel_id].pop(0)
+            resp.is_simulated = True
             return resp
 
         if not self.default_success:
@@ -255,6 +276,7 @@ class SimulatedImageGenerationAdapter(ImageGenerationAdapter):
                 error_category=ErrorCategory.SERVER_ERROR,
                 error_message="Simulated internal server error",
                 duration_seconds=self.duration_seconds,
+                is_simulated=True,
                 sanitized_metadata={"panel_id": request.panel_id, "model": request.model}
             )
 
@@ -266,6 +288,7 @@ class SimulatedImageGenerationAdapter(ImageGenerationAdapter):
             request_id=f"sim_req_{request.panel_id}_{len(self.request_history)}",
             endpoint="POST /v1/images/edits" if request.reference_bytes else "POST /v1/images/generations",
             duration_seconds=self.duration_seconds,
+            is_simulated=True,
             usage=self.simulated_usage,
             cost_usd=self.simulated_cost,
             sanitized_metadata={"panel_id": request.panel_id, "model": request.model}

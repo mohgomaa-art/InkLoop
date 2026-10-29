@@ -22,9 +22,13 @@ class AssetType(str, Enum):
     BUBBLE_LAYER = "bubble_layer"             # Speech bubble vector/raster layer from E6 Bubble Engine
     EFFECT_LAYER = "effect_layer"             # Independent motion/visual effect layer from E7 Effects Engine
     COMPOSITE_PAGE = "composite_page"         # Fully assembled page bitmap/vector from S6 Compositor
+    PAGE_PREVIEW = "page_preview"             # Lower-resolution preview raster for UI/inspection
+    MASK_ARTIFACT = "mask_artifact"           # Segmentation mask, bbox map, or alpha matte
     QA_REPORT = "qa_report"                   # Quality assurance verdict and evidence log from S7 QA
     EXPORT_PDF = "export_pdf"                 # Final published book/page PDF from S8 Export Engine
     EXPORT_PNG = "export_png"                 # High-resolution raster export from S8 Export Engine
+    EXPORT_MANIFEST = "export_manifest"       # Machine-readable publication/export manifest
+    GENERIC_ARTIFACT = "generic_artifact"     # Arbitrary engine artifact conforming to schema
 
 class LifecycleStatus(str, Enum):
     """Lifecycle and approval state of an artifact."""

@@ -1,12 +1,14 @@
 """
 InkLoop Shared Specialist Engine Execution Contracts.
-Defines typed request/response protocols, run tracking, usage metrics, and provenance.
+Defines typed request/response protocols, run tracking, usage metrics, provenance,
+and typed parameter/output schemas for all seven specialist engines and supporting services.
 """
 from datetime import datetime, timezone
 from enum import Enum
 from typing import TypeVar, Generic, Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 from app.contracts.errors import ValidationErrorDetail, EngineFailure
+from app.contracts.geometry import Size, Rect, Point, Transform2D, FitMode, BlendMode, ColorSpace, AssetFormat
 
 TParams = TypeVar("TParams")
 TOutput = TypeVar("TOutput")
@@ -30,10 +32,24 @@ class EngineStatus(str, Enum):
     RUNNING = "running"
     SUCCESS = "success"
     FAILED = "failed"
+    BLOCKED = "blocked"
     CANCELLED = "cancelled"
+    NOT_IMPLEMENTED = "not_implemented"
     NOT_IMPLEMENTED_YET = "not_implemented_yet"
     EXPERIMENTAL = "experimental"
     NEEDS_REVIEW = "needs_review"
+
+class QualityVerdict(str, Enum):
+    """
+    Distinct verification outcome for an artifact or page.
+    Kept strictly separate from EngineStatus so execution success does not imply artifact approval.
+    """
+    PENDING = "pending"
+    PASSED = "passed"
+    FAILED = "failed"
+    UNSURE = "unsure"
+    NEEDS_REVIEW = "needs_review"
+    BLOCKED = "blocked"
 
 class UsageMetrics(BaseModel):
     """Resource and financial accounting metrics for an execution."""
@@ -49,6 +65,7 @@ class ProvenanceRecord(BaseModel):
     """Immutable audit trail recording the origin and dependencies of an execution."""
     engine_id: EngineId
     engine_version: str = Field(default="1.0.0", description="Semver of the executing engine implementation")
+    schema_version: str = Field(default="1.0.0", description="Semver of the contract schema")
     config_hash: str = Field(..., description="SHA-256 digest of parameters, canon state, and configuration")
     input_artifact_ids: List[str] = Field(default_factory=list, description="IDs of artifacts consumed as input")
     story_bible_version: Optional[str] = Field(default=None, description="Story Bible snapshot version at execution time")
@@ -61,6 +78,7 @@ class EngineRunRequest(BaseModel, Generic[TParams]):
     attempt_id: str = Field(default="att_01", description="Attempt counter/identifier within run")
     engine_id: EngineId = Field(..., description="Target specialist engine")
     engine_version: str = Field(default="1.0.0", description="Expected engine semver")
+    schema_version: str = Field(default="1.0.0", description="Contract schema version")
     project_id: str = Field(..., description="Parent project identifier")
     scope_id: Optional[str] = Field(default=None, description="Target scene_id, panel_id, or page_id if applicable")
     input_artifact_ids: List[str] = Field(default_factory=list, description="Prerequisite input artifact references")
@@ -75,7 +93,9 @@ class EngineRunResponse(BaseModel, Generic[TOutput]):
     attempt_id: str
     engine_id: EngineId
     engine_version: str
+    schema_version: str = Field(default="1.0.0")
     status: EngineStatus
+    quality_verdict: Optional[QualityVerdict] = Field(default=None, description="Quality approval outcome, distinct from execution status")
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     completed_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     latency_seconds: float = Field(default=0.0)
@@ -86,3 +106,176 @@ class EngineRunResponse(BaseModel, Generic[TOutput]):
     validation_errors: List[ValidationErrorDetail] = Field(default_factory=list)
     error: Optional[EngineFailure] = Field(default=None, description="Failure details if status is FAILED")
     retryable: bool = Field(default=False, description="Whether retry is permitted under budget bounds")
+
+# ==============================================================================
+# Typed Parameter and Output Contracts for Every Specialist Engine
+# ==============================================================================
+
+# --- E1: Image Generation Engine ---
+class ImageGenerationParams(BaseModel):
+    prompt: str = Field(..., description="Compiled prompt with character and style directives")
+    reference_image_path: Optional[str] = Field(default=None, description="Relative path to canonical reference image")
+    model: str = Field(default="muse-image-1.0")
+    output_filename_base: str = Field(default="panel_art")
+    n: int = Field(default=1)
+
+class ImageGenerationOutput(BaseModel):
+    primary_artifact_id: str
+    png_path: str
+    webp_path: str
+    dimensions: Size
+    sha256: str
+    is_reference_anchored: bool
+    request_id: Optional[str] = None
+
+# --- E2: Canvas Generation Engine ---
+class CanvasGenerationParams(BaseModel):
+    page_format: str = Field(default="A4", description="Standard format (e.g. 'A4', 'B5', 'webtoon_scroll')")
+    width_px: float = Field(default=2480.0)
+    height_px: float = Field(default=3508.0)
+    dpi: float = Field(default=300.0)
+    margins_px: Dict[str, float] = Field(default_factory=lambda: {"top": 120.0, "bottom": 120.0, "left": 100.0, "right": 100.0})
+    gutters_px: Dict[str, float] = Field(default_factory=lambda: {"horizontal": 40.0, "vertical": 40.0})
+    bleed_px: float = Field(default=35.0)
+    layout_template: str = Field(default="4_panel_grid")
+    reading_direction: str = Field(default="rtl", description="'rtl' (manga) or 'ltr' (western)")
+
+class CanvasGenerationOutput(BaseModel):
+    canvas_spec_artifact_id: str
+    dimensions: Size
+    dpi: float
+    panel_slots: List[Rect]
+    safe_area: Rect
+    bleed_box: Rect
+    reading_order_panel_ids: List[str]
+
+# --- E3: Image-Canvas Integration Engine ---
+class ImageCanvasIntegrationParams(BaseModel):
+    source_image_artifact_id: str
+    target_panel_id: str
+    target_slot_rect: Rect
+    fit_mode: FitMode = Field(default=FitMode.COVER)
+    anchor: Point = Field(default_factory=lambda: Point(x=0.5, y=0.5))
+    allow_bleed: bool = Field(default=False)
+
+class ImageCanvasIntegrationOutput(BaseModel):
+    panel_layer_artifact_id: str
+    placed_rect: Rect
+    transform_applied: Transform2D
+    fit_mode_applied: FitMode
+    clipped: bool
+
+# --- E4: Text Generation Engine ---
+class TextGenerationParams(BaseModel):
+    story_id: str
+    scene_id: str
+    panel_id: str
+    text_type: str = Field(default="dialogue", description="'dialogue', 'narration', 'inner_monologue', 'sfx'")
+    speaker_id: Optional[str] = None
+    script_beat: str = Field(..., description="Narrative action or dialogue intent")
+    language: str = Field(default="ar", description="Language code ('ar' or 'en')")
+    tone: Optional[str] = None
+    exact_user_text: Optional[str] = Field(default=None, description="Immutable user text if override requested")
+
+class TextGenerationOutput(BaseModel):
+    text_block_artifact_id: str
+    text_content: str
+    speaker_id: Optional[str]
+    language: str
+    character_count: int
+    word_count: int
+    is_exact_user_text: bool
+
+# --- E5: Typography & Font Generation Engine ---
+class TypographyParams(BaseModel):
+    text_block_artifact_id: str
+    text_content: str
+    font_family: str = Field(default="Cairo")
+    font_size_pt: float = Field(default=12.0)
+    line_height_multiplier: float = Field(default=1.3)
+    max_width_px: float = Field(default=400.0)
+    language: str = Field(default="ar")
+    color_hex: str = Field(default="#000000")
+
+class TypographyOutput(BaseModel):
+    lettering_layer_artifact_id: str
+    measured_bounds: Rect
+    line_count: int
+    actual_font_used: str
+    text_overflow: bool
+
+# --- E6: Speech Bubble Engine ---
+class SpeechBubbleParams(BaseModel):
+    text_block_artifact_id: str
+    lettering_layer_artifact_id: str
+    measured_text_bounds: Rect
+    panel_slot_rect: Rect
+    bubble_shape: str = Field(default="rounded_rectangle")
+    tail_target: Optional[Point] = None
+    padding_px: Dict[str, float] = Field(default_factory=lambda: {"x": 20.0, "y": 15.0})
+
+class SpeechBubbleOutput(BaseModel):
+    bubble_layer_artifact_id: str
+    bubble_bounds: Rect
+    tail_anchor: Optional[Point]
+    collision_detected: bool
+
+# --- E7: Effects & Motion Engine ---
+class EffectsMotionParams(BaseModel):
+    effect_category: str = Field(default="speed_lines", description="'speed_lines', 'impact', 'blur', 'glow', 'weather'")
+    target_panel_rect: Rect
+    intensity: float = Field(default=1.0)
+    direction_deg: float = Field(default=0.0)
+    blend_mode: BlendMode = Field(default=BlendMode.NORMAL)
+    focal_point: Optional[Point] = None
+
+class EffectsMotionOutput(BaseModel):
+    effect_layer_artifact_id: str
+    effect_bounds: Rect
+    blend_mode: BlendMode
+
+# --- S6: Final Compositor ---
+class CompositorParams(BaseModel):
+    canvas_spec_artifact_id: str
+    ordered_layer_artifact_ids: List[str]
+    output_format: AssetFormat = Field(default=AssetFormat.PNG)
+    color_space: ColorSpace = Field(default=ColorSpace.SRGB)
+    dpi: float = Field(default=300.0)
+
+class CompositorOutput(BaseModel):
+    composite_page_artifact_id: str
+    dimensions: Size
+    dpi: float
+    output_file_path: str
+    sha256: str
+    layer_count: int
+
+# --- S7: Quality & Verification ---
+class VerificationParams(BaseModel):
+    target_artifact_id: str
+    verification_type: str = Field(default="multimodal_character_spec")
+    spec_id: str
+    tolerances: Dict[str, Any] = Field(default_factory=dict)
+
+class VerificationOutput(BaseModel):
+    qa_report_artifact_id: str
+    verdict: QualityVerdict
+    passed: bool
+    rejection_reason: Optional[str] = None
+    attribute_verdicts: List[Dict[str, Any]] = Field(default_factory=list)
+
+# --- S8: Export & Delivery ---
+class ExportParams(BaseModel):
+    project_id: str
+    page_composite_artifact_ids: List[str]
+    target_format: AssetFormat = Field(default=AssetFormat.PDF)
+    target_dpi: float = Field(default=300.0)
+    color_profile: ColorSpace = Field(default=ColorSpace.CMYK_FOGRA39)
+
+class ExportOutput(BaseModel):
+    export_artifact_id: str
+    file_path: str
+    target_format: AssetFormat
+    page_count: int
+    byte_size: int
+    sha256: str

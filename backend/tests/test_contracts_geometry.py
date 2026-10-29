@@ -11,6 +11,11 @@ from app.contracts.geometry import (
     Transform2D,
     FitMode,
     CoordinateSpace,
+    ColorSpace,
+    AlphaMode,
+    BlendMode,
+    AssetFormat,
+    ClipMode,
     mm_to_px,
     px_to_mm,
     pt_to_px,
@@ -20,8 +25,15 @@ from app.contracts.geometry import (
     rect_intersection,
     rect_union,
     snap_to_pixel_grid,
+    clip_rect,
     panel_to_page,
     page_to_panel,
+    bubble_to_page,
+    page_to_bubble,
+    text_to_bubble,
+    bubble_to_text,
+    effect_to_page,
+    page_to_effect,
     normalize_point,
     denormalize_point,
     normalize_rect,
@@ -126,7 +138,7 @@ def test_unit_conversions():
     assert pytest.approx(pt_to_px(72.0, 300.0), 0.001) == 300.0
     assert pytest.approx(px_to_pt(300.0, 300.0), 0.001) == 72.0
 
-# --- Coordinate Space Transformations ---
+# --- Coordinate Space Transformations Across All Spaces ---
 
 def test_panel_page_coordinate_reversibility():
     panel_rect = Rect(x=200.0, y=350.0, width=600.0, height=400.0)
@@ -137,6 +149,30 @@ def test_panel_page_coordinate_reversibility():
 
     reversed_pt = page_to_panel(page_pt, panel_rect)
     assert reversed_pt == local_pt
+
+def test_bubble_page_coordinate_reversibility():
+    bubble_rect = Rect(x=400.0, y=200.0, width=250.0, height=150.0)
+    local_bbl_pt = Point(x=20.0, y=30.0)
+
+    page_pt = bubble_to_page(local_bbl_pt, bubble_rect)
+    assert page_pt == Point(x=420.0, y=230.0)
+    assert page_to_bubble(page_pt, bubble_rect) == local_bbl_pt
+
+def test_text_bubble_coordinate_reversibility():
+    text_pad = Point(x=15.0, y=10.0)
+    text_local_pt = Point(x=5.0, y=20.0)
+
+    bbl_pt = text_to_bubble(text_local_pt, text_pad)
+    assert bbl_pt == Point(x=20.0, y=30.0)
+    assert bubble_to_text(bbl_pt, text_pad) == text_local_pt
+
+def test_effect_page_coordinate_reversibility():
+    fx_rect = Rect(x=100.0, y=500.0, width=800.0, height=600.0)
+    fx_pt = Point(x=50.0, y=50.0)
+
+    page_pt = effect_to_page(fx_pt, fx_rect)
+    assert page_pt == Point(x=150.0, y=550.0)
+    assert page_to_effect(page_pt, fx_rect) == fx_pt
 
 def test_normalize_denormalize_reversibility():
     container = Rect(x=100.0, y=200.0, width=800.0, height=600.0)
@@ -193,7 +229,7 @@ def test_calculate_fit_cover():
     assert pytest.approx(t.translate_x, 0.001) == expected_tx
     assert t.translate_y == 0.0
 
-# --- Boundary Validation & Snapping Tests ---
+# --- Boundary Validation, Clipping & Snapping Tests ---
 
 def test_validate_panel_in_canvas_strict():
     canvas = Rect(x=0.0, y=0.0, width=2480.0, height=3508.0)
@@ -215,6 +251,20 @@ def test_validate_panel_with_bleed_margin():
     # Passes with 35px bleed allowance
     validate_panel_in_canvas(bleed_panel, canvas, allow_bleed=True, bleed_margin_px=35.0)
 
+def test_clip_rect():
+    boundary = Rect(x=0.0, y=0.0, width=500.0, height=500.0)
+    overflow_art = Rect(x=400.0, y=400.0, width=200.0, height=200.0)
+
+    clipped = clip_rect(overflow_art, boundary, ClipMode.CLIP_TO_PANEL)
+    assert clipped is not None
+    assert clipped.x == 400.0
+    assert clipped.y == 400.0
+    assert clipped.width == 100.0
+    assert clipped.height == 100.0
+
+    break_frame = clip_rect(overflow_art, boundary, ClipMode.BREAK_FRAME)
+    assert break_frame == overflow_art
+
 def test_snap_to_pixel_grid():
     subpixel_rect = Rect(x=10.4, y=20.6, width=100.2, height=199.8)
     snapped = snap_to_pixel_grid(subpixel_rect)
@@ -235,3 +285,11 @@ def test_bounding_box_rect_bridge():
     restored_bbox = BoundingBox.from_rect(rect, label="character", confidence=1.0)
     assert restored_bbox.x == 81.0
     assert restored_bbox.label == "character"
+
+def test_color_and_format_enums():
+    assert ColorSpace.SRGB == "srgb"
+    assert ColorSpace.CMYK_FOGRA39 == "cmyk_fogra39"
+    assert AlphaMode.STRAIGHT == "straight"
+    assert BlendMode.MULTIPLY == "multiply"
+    assert AssetFormat.PNG == "png"
+    assert AssetFormat.SVG == "svg"
