@@ -225,3 +225,46 @@
   - 20 dedicated unit and integration tests passing in `backend/tests/test_image_knowledge_catalogue.py`.
   - Full backend test suite: 209 passing tests with zero regressions.
   - Zero paid API spend incurred.
+
+---
+
+## ADR-013: Experimental Design, Blind Human Evaluation Protocol, Repeatability Accounting & Visual Regression Corpus
+- **Status:** [VERIFIED ARCHITECTURE & IMPLEMENTED IN T6.2]
+- **Context:** To ensure controlled, scientifically rigorous, and reproducible comic visual evaluation without unbacked quality claims, InkLoop requires a standardized experimental design and visual-evaluation subsystem. The framework must enforce pre-declared hypotheses, immutable frozen configurations, complete sample denominator accounting, file-based blind human evaluation, honest statistical uncertainty intervals, and a 7-domain visual regression corpus that prevents unimplemented engines from falsely reporting test passes.
+- **Architectural Invariants & Decisions:**
+  1. **Separation of Plans from Executions & Frozen Configurations:**
+     - Pre-declared specifications (`ExperimentPlan`) remain strictly distinct from executed summaries (`ExperimentExecutionSummary`). A plan retains `is_executed=False` and cannot be mistaken for an empirical result.
+     - Configurations are frozen (`FrozenConfig`, `ConfigDict(frozen=True)`). Any change to prompt, parameters, seed, or input artifact hashes produces a distinct `config_hash` via deterministic SHA-256.
+     - Secret hygiene is strictly enforced: nested dictionary/list auditing rejects raw credentials, bearer tokens, or API keys in configurations.
+     - Bitwise determinism is never falsely promised for hosted diffusion models; reproducibility is explicitly classified (`REPRODUCIBLE`, `PARTIALLY_REPRODUCIBLE`, `CANNOT_BE_REPRODUCED`).
+  2. **Strict Denominator Reconciliation & Failure Accounting:**
+     - Denominator integrity: `planned == completed + failed + filtered + unresolved + unfinished` (`reconcile_sample_denominator`). Every started attempt must be preserved in reporting denominators; selective deletion of failed or inconvenient runs is structurally forbidden.
+     - Samples marked `SUCCESS` must provide output hashes; samples marked `FAILED` or `FILTERED` must record explicit reason codes.
+     - Statistical uncertainty for binomial pass rates is calculated via Wilson score confidence intervals, accurately reflecting small-sample variance without inflating exploratory trials.
+  3. **File-Based Blind Human Evaluation Protocol:**
+     - `BlindEvaluationSheet` presents opaque sample IDs (`bld_...`) and sanitized relative image paths free of arm keywords, prompt clauses, or condition tokens (`arm_a`, `arm_b`, `baseline`, `anchored`).
+     - Presentation order is reproducibly randomized via recorded integer seed (`random_seed`).
+     - Confidential unblinding keys (`BlindingKeyMap`) are maintained separately until ratings are locked.
+     - Preserves individual rater judgments (`HumanJudgmentRecord`), computing consensus verdicts, disagreement logs, and inter-rater reliability via Cohen's Kappa ($\kappa$). Documents what $\kappa$ proves (agreement above chance) and what it does not prove (ground truth).
+     - Provides clean machine-readable CSV and JSON exports for downstream analysis.
+  4. **Seven-Domain Visual Regression Corpus & Engine Readiness Invariant:**
+     - `VisualRegressionCorpus` establishes versioned test specifications (`VisualRegressionCase`) across all 7 comic production domains:
+       1. Composition & Framing (E1 Image Gen - READY)
+       2. Character / Reference Consistency (E1 Image Gen - READY)
+       3. Generation Defects & Artifacts (E1 Image Gen - READY)
+       4. Text Rendering & Arabic Shaping (E5 Typography - BLOCKED_BY_ENGINE)
+       5. Speech Bubble Geometry & Placement (E6 Speech Bubble - BLOCKED_BY_ENGINE)
+       6. Effects & Motion Lines (E7 Effects - BLOCKED_BY_ENGINE)
+       7. Export & Delivery Reconstruction (S8 Export - BLOCKED_BY_ENGINE)
+     - **Fail-Closed Engine Readiness Guard:** Unimplemented engines (E2, E4, E5, E6, E7, S8) cannot be instantiated with `readiness="ready"`, cannot register baseline hashes, and strictly evaluate as `NOT_EVALUABLE` / `is_blocked=True`. They are structurally barred from reporting passing regression results.
+  5. **Truthful M0 Historical Experiment Ingestion:**
+     - Ingests historical feasibility trials (`runs/m0_visual/benchmark_results.json`) into canonical schemas (`m0_adapter.py`) preserving exact sample-level request IDs, latencies, token counts, and artifact hashes (`nour_reference.png` hash `b2c2c4dc...`).
+     - Documents exact outcomes: Arm A 0/6 (0.0%, 95% CI [0.0, 0.4096]), Arm B 6/6 (100.0%, 95% CI [0.5904, 1.0]).
+     - Retains explicit scientific limits: N=6 per arm constitutes exploratory visual feasibility, not a universal guarantee. Confirmed billing invoices are recorded as `UNAVAILABLE`.
+  6. **Zero Duplicate Infrastructure:**
+     - Reuses shared `ExecutionManager` (`CostRecord`, `run_id`, `attempt_id`), `AssetRegistry` (`art_...`, content hashes), `TaxonomyRegister`, and `IdPrefix`. Zero parallel databases created.
+- **Verification Evidence:**
+  - 14 dedicated unit and integration tests passing in `backend/tests/test_visual_evaluation_framework.py`.
+  - 20 catalogue tests passing in `backend/tests/test_image_knowledge_catalogue.py`.
+  - Full backend test suite: 225 passing tests with zero regressions.
+  - Zero live model API spend incurred.

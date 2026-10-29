@@ -110,7 +110,7 @@ class LicenseRegistry:
                 attribution_required=False,
                 attribution_text=None,
                 copyleft_or_sharealike=False,
-                restrictions_or_notes="Commercial output generation allowed subject to Meta Acceptable Use Policy.",
+                restrictions_or_notes="Commercial generation permitted under Meta API Terms of Service (accessed 2026-04). Does not grant intellectual property rights over third-party trademarks, copyrighted prompt inputs, or unconsented likenesses. Output clearance is contingent upon user-supplied prompt inputs complying with Meta Acceptable Use Policy and applicable IP laws.",
                 verified_by="lead_governance_agent",
                 verified_at=utc_now_iso(),
             ),

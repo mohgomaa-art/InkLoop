@@ -260,13 +260,13 @@ Research is not a decorative bibliography. It must influence engine behavior and
 - **Acceptance:** every production-critical research rule has a traceable basis and a clear confidence/evidence status. (SATISFIED: `backend/app/catalogue/` (`enums.py`, `models.py`, `governance.py`, `register.py`, `data_loader.py`, `data/taxonomy_60_groups.json`), `scripts/generate_taxonomy.py`, `backend/tests/test_image_knowledge_catalogue.py`, 20 catalogue tests passing, 209 total suite passing).
 
 ### T6.2 — Experimental design and visual evaluation
-- [ ] Define controlled prompt/model experiments with frozen inputs and parameter records.
-- [ ] Define blind human evaluation protocol for artistic quality and consistency where appropriate.
-- [ ] Define repeatability, sample size, failure capture, and uncertainty reporting.
-- [ ] Define visual regression sets for composition, edge cases, text render, bubble placement, and effects.
-- [ ] Maintain canonical test artifacts that are original and created for InkLoop.
-- [ ] Do not make universal quality claims from the small M0 sample.
-- **Acceptance:** research claims can be reproduced or clearly marked exploratory; failures are preserved and included.
+- [x] Define controlled prompt/model experiments with frozen inputs and parameter records (`FrozenConfig`, `ExperimentArm`, `ExperimentPlan`, `compute_deterministic_hash()`, secret hygiene validator).
+- [x] Define blind human evaluation protocol for artistic quality and consistency where appropriate (`BlindEvaluationSheet`, `BlindingKeyMap`, `HumanJudgmentRecord`, `BlindingService`, `cohens_kappa()`, machine-readable CSV/JSON export).
+- [x] Define repeatability, sample size, failure capture, and uncertainty reporting (`ReproducibilityLevel`, `reconcile_sample_denominator()`, `wilson_score_interval()`, `UncertaintySummary`, `ExperimentExecutionSummary`).
+- [x] Define visual regression sets for composition, edge cases, text render, bubble placement, and effects (`VisualRegressionCase`, `VisualRegressionCorpus`, 7 production domains, fail-closed engine readiness checks).
+- [x] Maintain canonical test artifacts that are original and created for InkLoop (`nour_reference.png` hash `b2c2c4dc...`, `art_nour_panel_01` baseline output).
+- [x] Do not make universal quality claims from the small M0 sample (preserved exact N=6 exploratory feasibility trials in `m0_adapter.py`, documented Wilson CIs [0.0, 0.4096] vs [0.5904, 1.0], marked billing unavailable).
+- **Acceptance:** research claims can be reproduced or clearly marked exploratory; failures are preserved and included. (SATISFIED: `backend/app/evaluation/` (`enums.py`, `models.py`, `uncertainty.py`, `blinding.py`, `regression.py`, `m0_adapter.py`), `backend/tests/test_visual_evaluation_framework.py`, 14 evaluation tests passing, 225 total suite passing).
 
 ### T6.3 — Research-backed image-generation knowledge catalogue
 - [ ] Preserve all 60 taxonomy groups listed in Section 7.
