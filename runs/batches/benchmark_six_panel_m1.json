@@ -1,0 +1,352 @@
+{
+  "batch_id": "benchmark_six_panel_m1",
+  "status": "COMPLETED",
+  "story_id": "story_nour_m0",
+  "bible_version": "1.0.0",
+  "total_panels": 6,
+  "successful_panels": 6,
+  "failed_panels": 0,
+  "unresolved_panels": 0,
+  "total_attempts": 6,
+  "attempts_per_panel": {
+    "panel_01": 1,
+    "panel_02": 1,
+    "panel_03": 1,
+    "panel_04": 1,
+    "panel_05": 1,
+    "panel_06": 1
+  },
+  "total_duration_seconds": 0.049,
+  "started_at": "2026-10-29T00:55:39.727866+00:00",
+  "completed_at": "2026-10-29T00:55:39.777133+00:00",
+  "known_cost_usd": 0.06,
+  "missing_cost_information": false,
+  "known_usage": {
+    "input_tokens": 74400,
+    "output_tokens": 6000,
+    "total_tokens": 80400
+  },
+  "missing_usage_information": false,
+  "panel_results": [
+    {
+      "panel_id": "panel_01",
+      "scene_id": "scene_01",
+      "scene_index": 0,
+      "status": "ACCEPTED",
+      "attempts_count": 1,
+      "accepted_attempt_id": "benchmark_six_panel_m1_panel_01_att1",
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_01.png",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "context_fingerprint": "f9f7f33dcc9840f20ef69cf6842742acb34de11a6b10a5d9f1d3e6744391ade8",
+      "verification_result": null
+    },
+    {
+      "panel_id": "panel_02",
+      "scene_id": "scene_02",
+      "scene_index": 1,
+      "status": "ACCEPTED",
+      "attempts_count": 1,
+      "accepted_attempt_id": "benchmark_six_panel_m1_panel_02_att1",
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_02.png",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "context_fingerprint": "72430e94dc8f04886b549a2fac56271579857820b8450b1c45c01e3a18c66632",
+      "verification_result": null
+    },
+    {
+      "panel_id": "panel_03",
+      "scene_id": "scene_03",
+      "scene_index": 2,
+      "status": "ACCEPTED",
+      "attempts_count": 1,
+      "accepted_attempt_id": "benchmark_six_panel_m1_panel_03_att1",
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_03.png",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "context_fingerprint": "8a9fdd3c36cefeea90f8aec6c01d152bcec979683a45cc42fe0b611e446ec0eb",
+      "verification_result": null
+    },
+    {
+      "panel_id": "panel_04",
+      "scene_id": "scene_04",
+      "scene_index": 3,
+      "status": "ACCEPTED",
+      "attempts_count": 1,
+      "accepted_attempt_id": "benchmark_six_panel_m1_panel_04_att1",
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_04.png",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "context_fingerprint": "d6e9b64b7194d4a7ece3cb17137d93523c2de99926cba94289d4219cc0b94910",
+      "verification_result": null
+    },
+    {
+      "panel_id": "panel_05",
+      "scene_id": "scene_05",
+      "scene_index": 4,
+      "status": "ACCEPTED",
+      "attempts_count": 1,
+      "accepted_attempt_id": "benchmark_six_panel_m1_panel_05_att1",
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_05.png",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "context_fingerprint": "190d8ceddf79e51567636dca694f902544343aa27efd248147b1bba92b567b09",
+      "verification_result": null
+    },
+    {
+      "panel_id": "panel_06",
+      "scene_id": "scene_06",
+      "scene_index": 5,
+      "status": "ACCEPTED",
+      "attempts_count": 1,
+      "accepted_attempt_id": "benchmark_six_panel_m1_panel_06_att1",
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_06.png",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "context_fingerprint": "a5e0a904451de412572586008b3f9550b3cdd55366edfc9a951f0c0929ee763f",
+      "verification_result": null
+    }
+  ],
+  "attempt_history": [
+    {
+      "batch_id": "benchmark_six_panel_m1",
+      "panel_id": "panel_01",
+      "scene_id": "scene_01",
+      "attempt_id": "benchmark_six_panel_m1_panel_01_att1",
+      "attempt_number": 1,
+      "started_at": "2026-10-29T00:55:39.729172+00:00",
+      "completed_at": "2026-10-29T00:55:39.752116+00:00",
+      "duration_seconds": 0.05,
+      "story_bible_version": "1.0.0",
+      "context_fingerprint": "f9f7f33dcc9840f20ef69cf6842742acb34de11a6b10a5d9f1d3e6744391ade8",
+      "reference_asset_ids": [
+        "nour_reference"
+      ],
+      "reference_asset_hashes": {
+        "nour_reference": "b2c2c4dc003a9db32a4847a1dab46bda801ce3a9b69ff0c0381c5ab8a203e644"
+      },
+      "model": "muse-image-1.0",
+      "endpoint": "POST /v1/images/edits",
+      "sanitized_request_metadata": {
+        "panel_id": "panel_01",
+        "model": "muse-image-1.0"
+      },
+      "http_status": 200,
+      "error_category": null,
+      "error_message": null,
+      "retry_decision": "NONE_SUCCESS",
+      "retry_reason": null,
+      "usage": {
+        "input_tokens": 12400,
+        "output_tokens": 1000,
+        "total_tokens": 13400
+      },
+      "cost_usd": 0.01,
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_01.png",
+      "output_asset_id": "asset_panel_01",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "verification_status": "UNVERIFIED",
+      "verification_result": null,
+      "final_panel_status": "ACCEPTED"
+    },
+    {
+      "batch_id": "benchmark_six_panel_m1",
+      "panel_id": "panel_02",
+      "scene_id": "scene_02",
+      "attempt_id": "benchmark_six_panel_m1_panel_02_att1",
+      "attempt_number": 1,
+      "started_at": "2026-10-29T00:55:39.754772+00:00",
+      "completed_at": "2026-10-29T00:55:39.754772+00:00",
+      "duration_seconds": 0.05,
+      "story_bible_version": "1.0.0",
+      "context_fingerprint": "72430e94dc8f04886b549a2fac56271579857820b8450b1c45c01e3a18c66632",
+      "reference_asset_ids": [
+        "nour_reference"
+      ],
+      "reference_asset_hashes": {
+        "nour_reference": "b2c2c4dc003a9db32a4847a1dab46bda801ce3a9b69ff0c0381c5ab8a203e644"
+      },
+      "model": "muse-image-1.0",
+      "endpoint": "POST /v1/images/edits",
+      "sanitized_request_metadata": {
+        "panel_id": "panel_02",
+        "model": "muse-image-1.0"
+      },
+      "http_status": 200,
+      "error_category": null,
+      "error_message": null,
+      "retry_decision": "NONE_SUCCESS",
+      "retry_reason": null,
+      "usage": {
+        "input_tokens": 12400,
+        "output_tokens": 1000,
+        "total_tokens": 13400
+      },
+      "cost_usd": 0.01,
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_02.png",
+      "output_asset_id": "asset_panel_02",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "verification_status": "UNVERIFIED",
+      "verification_result": null,
+      "final_panel_status": "ACCEPTED"
+    },
+    {
+      "batch_id": "benchmark_six_panel_m1",
+      "panel_id": "panel_03",
+      "scene_id": "scene_03",
+      "attempt_id": "benchmark_six_panel_m1_panel_03_att1",
+      "attempt_number": 1,
+      "started_at": "2026-10-29T00:55:39.756782+00:00",
+      "completed_at": "2026-10-29T00:55:39.757785+00:00",
+      "duration_seconds": 0.05,
+      "story_bible_version": "1.0.0",
+      "context_fingerprint": "8a9fdd3c36cefeea90f8aec6c01d152bcec979683a45cc42fe0b611e446ec0eb",
+      "reference_asset_ids": [
+        "nour_reference"
+      ],
+      "reference_asset_hashes": {
+        "nour_reference": "b2c2c4dc003a9db32a4847a1dab46bda801ce3a9b69ff0c0381c5ab8a203e644"
+      },
+      "model": "muse-image-1.0",
+      "endpoint": "POST /v1/images/edits",
+      "sanitized_request_metadata": {
+        "panel_id": "panel_03",
+        "model": "muse-image-1.0"
+      },
+      "http_status": 200,
+      "error_category": null,
+      "error_message": null,
+      "retry_decision": "NONE_SUCCESS",
+      "retry_reason": null,
+      "usage": {
+        "input_tokens": 12400,
+        "output_tokens": 1000,
+        "total_tokens": 13400
+      },
+      "cost_usd": 0.01,
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_03.png",
+      "output_asset_id": "asset_panel_03",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "verification_status": "UNVERIFIED",
+      "verification_result": null,
+      "final_panel_status": "ACCEPTED"
+    },
+    {
+      "batch_id": "benchmark_six_panel_m1",
+      "panel_id": "panel_04",
+      "scene_id": "scene_04",
+      "attempt_id": "benchmark_six_panel_m1_panel_04_att1",
+      "attempt_number": 1,
+      "started_at": "2026-10-29T00:55:39.758785+00:00",
+      "completed_at": "2026-10-29T00:55:39.758785+00:00",
+      "duration_seconds": 0.05,
+      "story_bible_version": "1.0.0",
+      "context_fingerprint": "d6e9b64b7194d4a7ece3cb17137d93523c2de99926cba94289d4219cc0b94910",
+      "reference_asset_ids": [
+        "nour_reference"
+      ],
+      "reference_asset_hashes": {
+        "nour_reference": "b2c2c4dc003a9db32a4847a1dab46bda801ce3a9b69ff0c0381c5ab8a203e644"
+      },
+      "model": "muse-image-1.0",
+      "endpoint": "POST /v1/images/edits",
+      "sanitized_request_metadata": {
+        "panel_id": "panel_04",
+        "model": "muse-image-1.0"
+      },
+      "http_status": 200,
+      "error_category": null,
+      "error_message": null,
+      "retry_decision": "NONE_SUCCESS",
+      "retry_reason": null,
+      "usage": {
+        "input_tokens": 12400,
+        "output_tokens": 1000,
+        "total_tokens": 13400
+      },
+      "cost_usd": 0.01,
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_04.png",
+      "output_asset_id": "asset_panel_04",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "verification_status": "UNVERIFIED",
+      "verification_result": null,
+      "final_panel_status": "ACCEPTED"
+    },
+    {
+      "batch_id": "benchmark_six_panel_m1",
+      "panel_id": "panel_05",
+      "scene_id": "scene_05",
+      "attempt_id": "benchmark_six_panel_m1_panel_05_att1",
+      "attempt_number": 1,
+      "started_at": "2026-10-29T00:55:39.760787+00:00",
+      "completed_at": "2026-10-29T00:55:39.761298+00:00",
+      "duration_seconds": 0.05,
+      "story_bible_version": "1.0.0",
+      "context_fingerprint": "190d8ceddf79e51567636dca694f902544343aa27efd248147b1bba92b567b09",
+      "reference_asset_ids": [
+        "nour_reference"
+      ],
+      "reference_asset_hashes": {
+        "nour_reference": "b2c2c4dc003a9db32a4847a1dab46bda801ce3a9b69ff0c0381c5ab8a203e644"
+      },
+      "model": "muse-image-1.0",
+      "endpoint": "POST /v1/images/edits",
+      "sanitized_request_metadata": {
+        "panel_id": "panel_05",
+        "model": "muse-image-1.0"
+      },
+      "http_status": 200,
+      "error_category": null,
+      "error_message": null,
+      "retry_decision": "NONE_SUCCESS",
+      "retry_reason": null,
+      "usage": {
+        "input_tokens": 12400,
+        "output_tokens": 1000,
+        "total_tokens": 13400
+      },
+      "cost_usd": 0.01,
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_05.png",
+      "output_asset_id": "asset_panel_05",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "verification_status": "UNVERIFIED",
+      "verification_result": null,
+      "final_panel_status": "ACCEPTED"
+    },
+    {
+      "batch_id": "benchmark_six_panel_m1",
+      "panel_id": "panel_06",
+      "scene_id": "scene_06",
+      "attempt_id": "benchmark_six_panel_m1_panel_06_att1",
+      "attempt_number": 1,
+      "started_at": "2026-10-29T00:55:39.776113+00:00",
+      "completed_at": "2026-10-29T00:55:39.776113+00:00",
+      "duration_seconds": 0.05,
+      "story_bible_version": "1.0.0",
+      "context_fingerprint": "a5e0a904451de412572586008b3f9550b3cdd55366edfc9a951f0c0929ee763f",
+      "reference_asset_ids": [
+        "nour_reference"
+      ],
+      "reference_asset_hashes": {
+        "nour_reference": "b2c2c4dc003a9db32a4847a1dab46bda801ce3a9b69ff0c0381c5ab8a203e644"
+      },
+      "model": "muse-image-1.0",
+      "endpoint": "POST /v1/images/edits",
+      "sanitized_request_metadata": {
+        "panel_id": "panel_06",
+        "model": "muse-image-1.0"
+      },
+      "http_status": 200,
+      "error_category": null,
+      "error_message": null,
+      "retry_decision": "NONE_SUCCESS",
+      "retry_reason": null,
+      "usage": {
+        "input_tokens": 12400,
+        "output_tokens": 1000,
+        "total_tokens": 13400
+      },
+      "cost_usd": 0.01,
+      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_06.png",
+      "output_asset_id": "asset_panel_06",
+      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "verification_status": "UNVERIFIED",
+      "verification_result": null,
+      "final_panel_status": "ACCEPTED"
+    }
+  ]
+}

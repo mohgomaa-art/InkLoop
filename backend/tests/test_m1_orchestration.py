@@ -502,3 +502,30 @@ def test_full_m0_six_panel_benchmark_orchestration(tmp_path):
     assert loaded_data["status"] == "COMPLETED"
     assert len(loaded_data["panel_results"]) == 6
     assert len(loaded_data["attempt_history"]) == 6
+
+def test_interoperability_with_project_story_bible(tmp_path):
+    """
+    Verifies that the orchestrator seamlessly consumes the StoryBible from
+    backend/app/project/bible.py (created by Agent 1/2) without contract friction.
+    """
+    from app.project import create_canonical_nour_bible
+
+    project_bible = create_canonical_nour_bible("proj_nour_m1")
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    spec = BatchSpec(
+        batch_id="test_interop_batch",
+        story_bible=project_bible,
+        scenes=CANONICAL_M0_SIX_SCENES[:2],
+        output_dir=str(tmp_path / "out")
+    )
+
+    summary = orchestrator.orchestrate_batch(spec)
+    assert summary.status == BatchStatus.COMPLETED
+    assert summary.total_panels == 2
+    assert summary.successful_panels == 2
+    assert summary.bible_version == "1"
+    assert summary.story_id == "story_01"
+

@@ -91,6 +91,7 @@ class BatchOrchestrator:
 
         # 1. Preserve canonical scene ordering
         sorted_scenes = sorted(batch_spec.scenes, key=lambda s: s.scene_index)
+        bible_version_str = str(getattr(batch_spec.story_bible, "bible_version", getattr(batch_spec.story_bible, "version", "1.0.0")))
 
         # Setup output storage if requested
         output_dir_path: Optional[Path] = None
@@ -158,7 +159,7 @@ class BatchOrchestrator:
                         started_at=att_start_iso,
                         completed_at=att_end_iso,
                         duration_seconds=0.0,
-                        story_bible_version=batch_spec.story_bible.version,
+                        story_bible_version=bible_version_str,
                         context_fingerprint=packet.context_fingerprint,
                         reference_asset_ids=[r.asset_id for r in packet.reference_assets],
                         reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
@@ -222,7 +223,7 @@ class BatchOrchestrator:
                         started_at=att_start_iso,
                         completed_at=att_end_iso,
                         duration_seconds=att_duration,
-                        story_bible_version=batch_spec.story_bible.version,
+                        story_bible_version=bible_version_str,
                         context_fingerprint=packet.context_fingerprint,
                         reference_asset_ids=[r.asset_id for r in packet.reference_assets],
                         reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
@@ -274,7 +275,7 @@ class BatchOrchestrator:
                     started_at=att_start_iso,
                     completed_at=att_end_iso,
                     duration_seconds=att_duration,
-                    story_bible_version=batch_spec.story_bible.version,
+                    story_bible_version=bible_version_str,
                     context_fingerprint=packet.context_fingerprint,
                     reference_asset_ids=[r.asset_id for r in packet.reference_assets],
                     reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
@@ -365,7 +366,7 @@ class BatchOrchestrator:
             batch_id=batch_id,
             status=batch_status,
             story_id=batch_spec.story_id,
-            bible_version=batch_spec.story_bible.version,
+            bible_version=bible_version_str,
             total_panels=total_panels,
             successful_panels=successful_panels,
             failed_panels=failed_panels,
@@ -404,6 +405,7 @@ class BatchOrchestrator:
         Validates context fingerprints to ensure inputs have not drifted before reusing results.
         """
         sorted_scenes = sorted(batch_spec.scenes, key=lambda s: s.scene_index)
+        bible_version_str = str(getattr(batch_spec.story_bible, "bible_version", getattr(batch_spec.story_bible, "version", "1.0.0")))
         prior_panels_by_id = {p.panel_id: p for p in prior_summary.panel_results}
         prior_attempts_by_panel: Dict[str, List[GenerationAttemptRecord]] = {}
         for att in prior_summary.attempt_history:
@@ -483,7 +485,7 @@ class BatchOrchestrator:
             batch_id=batch_spec.batch_id,
             status=b_status,
             story_id=batch_spec.story_id,
-            bible_version=batch_spec.story_bible.version,
+            bible_version=bible_version_str,
             total_panels=total_panels,
             successful_panels=successful_panels,
             failed_panels=failed_panels,
