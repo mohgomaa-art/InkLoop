@@ -639,3 +639,27 @@ def test_continuity_context_assembly(tmp_path):
     nour_ctx = context["active_characters"]["nour"]
     assert nour_ctx["current_state"]["held_object"] == "transparent rain umbrella"
     assert "no color" in context["negative_constraints"]
+
+
+def test_project_spec_and_orchestrator_bridge(sample_bible):
+    """
+    Proves that StoryBible exports ProjectSpec and converts cleanly to
+    Agent 1's orchestrator StoryBible contract (app.schemas.StoryBible).
+    """
+    from app.project.canon import ProjectSpec
+    from app.schemas import StoryBible as SchemasStoryBible
+
+    # Test ProjectSpec conversion
+    ps = sample_bible.to_project_spec()
+    assert isinstance(ps, ProjectSpec)
+    assert ps.project_id == "test_project"
+    assert ps.language == "ar"
+    assert ps.reading_direction == "rtl"
+
+    # Test Orchestrator StoryBible bridge
+    orch_bible = sample_bible.to_orchestrator_bible()
+    assert isinstance(orch_bible, SchemasStoryBible)
+    assert orch_bible.bible_id == "test_project"
+    assert "hero" in orch_bible.characters
+    assert orch_bible.characters["hero"].id == "hero"
+

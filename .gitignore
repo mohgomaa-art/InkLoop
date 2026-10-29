@@ -36,3 +36,5 @@ Thumbs.db
 # Run artifacts and temporary outputs
 *.log
 runs/local_temp/
+runs/m1_orchestrations/
+runs/test_project/

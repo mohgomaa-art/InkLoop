@@ -130,6 +130,65 @@ class StoryBible(BaseModel):
             props=self.props
         )
 
+    def to_project_spec(self) -> ProjectSpec:
+        """Extracts high-level project metadata and configuration."""
+        return ProjectSpec(
+            project_id=self.project_id,
+            schema_version=self.schema_version,
+            bible_version=self.bible_version,
+            title=getattr(self, "title", "Untitled Comic"),
+            language=self.language,
+            reading_direction=self.reading_direction,
+            user_story_text=self.user_story_text,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+            status=self.status
+        )
+
+    def to_orchestrator_bible(self) -> Any:
+        """
+        Bridges the rich Story Bible to the simplified Orchestrator StoryBible contract in app.schemas,
+        ensuring 100% interoperability with Agent 1's orchestrator and context builder.
+        """
+        from app.schemas import (
+            StoryBible as SchemasStoryBible,
+            StyleBible as SchemasStyleBible,
+            ReferenceAsset as SchemasReferenceAsset
+        )
+        schemas_style = SchemasStyleBible(
+            id=self.style.style_id,
+            name=self.style.name,
+            medium=self.style.medium,
+            line_and_tone=self.style.rendering_approach,
+            palette=str(self.style.palette_or_screentone),
+            negative_rules=self.style.negative_constraints,
+            version=str(self.style.version)
+        )
+
+        char_specs = {}
+        char_assets = {}
+        for cid, char in self.characters.items():
+            char_specs[cid] = char.to_character_spec()
+            if char.reference_assets:
+                primary_asset = char.reference_assets[0]
+                char_assets[cid] = SchemasReferenceAsset(
+                    asset_id=primary_asset.asset_id,
+                    file_path=primary_asset.path,
+                    content_hash=primary_asset.expected_hash,
+                    mime_type=primary_asset.mime_type,
+                    description=primary_asset.provenance.get("description") if primary_asset.provenance else None
+                )
+
+        return SchemasStoryBible(
+            bible_id=self.project_id,
+            version=str(self.bible_version),
+            project_id=self.project_id,
+            style=schemas_style,
+            characters=char_specs,
+            character_assets=char_assets,
+            story_facts=self.style.positive_constraints
+        )
+
     def validate(
         self,
         project_root: Optional[Path] = None,
@@ -654,7 +713,7 @@ def apply_canon_mutation(
             if k != "action" and hasattr(bible.style, k):
                 setattr(bible.style, k, v)
 
-    save_bible(bible, expected_version=old_version)
+    save_bible(bible, target_path=base_dir, expected_version=old_version)
     return bible
 
 

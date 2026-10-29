@@ -218,14 +218,14 @@ Final scope includes an Agent that can orchestrate approved engines/tools. Detai
 - **Acceptance:** contract fixtures and tests validate a good result, reject malformed results, and preserve backward compatibility rules. (SATISFIED: `backend/app/contracts/engine.py`, `backend/app/contracts/errors.py`, `backend/tests/test_contracts_engine.py`).
 
 ### T5.3 — Story Bible and canonical state
-- [ ] Define versioned `ProjectSpec`, `StyleBible`, `CharacterSpec`, `LocationSpec`, `PropSpec`, and `StoryStateEvent` schemas.
-- [ ] Separate immutable canonical attributes from mutable per-story state.
-- [ ] Store approved reference image IDs and hashes for characters, style, locations, and key props.
-- [ ] Define explicit canon mutation proposal, approval, version, and audit flow.
-- [ ] Define allowed cast, props, and locations so generators cannot silently introduce undeclared entities.
-- [ ] Define deterministic state snapshot per scene/panel.
-- [ ] Define file-based JSON source of truth; keep binary asset bytes in the artifact store, not inline in JSON.
-- **Acceptance:** a project can be loaded, validated, snapshotted, and reconstructed; canonical definitions are not mutated by generation runs.
+- [x] Define versioned `ProjectSpec`, `StyleBible`, `CharacterSpec`, `LocationSpec`, `PropSpec`, and `StoryStateEvent` schemas.
+- [x] Separate immutable canonical attributes from mutable per-story state.
+- [x] Store approved reference image IDs and hashes for characters, style, locations, and key props.
+- [x] Define explicit canon mutation proposal, approval, version, and audit flow.
+- [x] Define allowed cast, props, and locations so generators cannot silently introduce undeclared entities.
+- [x] Define deterministic state snapshot per scene/panel.
+- [x] Define file-based JSON source of truth; keep binary asset bytes in the artifact store, not inline in JSON.
+- **Acceptance:** a project can be loaded, validated, snapshotted, and reconstructed; canonical definitions are not mutated by generation runs. (SATISFIED: `backend/app/project/` (`asset_refs.py`, `canon.py`, `story_state.py`, `bible.py`), `backend/tests/test_story_bible.py`, `backend/tests/test_story_bible_advanced.py`).
 
 ### T5.4 — Asset registry, content hashes, and reproducibility
 - [ ] Define an asset manifest schema for all image, canvas, font, text, mask, effect, composite, and export artifacts.

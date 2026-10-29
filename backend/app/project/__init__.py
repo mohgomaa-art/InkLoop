@@ -14,6 +14,7 @@ from app.project.asset_refs import (
     InvalidAssetTypeError
 )
 from app.project.canon import (
+    ProjectSpec,
     StyleDefinition,
     CharacterDefinition,
     LocationDefinition,
@@ -28,12 +29,15 @@ from app.project.canon import (
 from app.project.story_state import (
     StoryStateEvent,
     StateResolutionResult,
+    StoryStateSnapshot,
+    StoryStateTimeline,
     resolve_timeline_state,
     validate_event_against_bible,
     StateTimelineError,
     InvalidStateEventError,
     UndeclaredEntityError,
     ContradictoryTransitionError,
+    ContradictoryStateError,
     DuplicateEventConflictError
 )
 from app.project.bible import (
@@ -57,6 +61,7 @@ from app.project.bible import (
     validate_state_transition,
     propose_canon_mutation,
     apply_canon_mutation,
+    reject_canon_mutation,
     get_continuity_context,
     create_canonical_nour_bible
 )
@@ -72,6 +77,7 @@ __all__ = [
     "PathTraversalError",
     "InvalidAssetTypeError",
     # Canon
+    "ProjectSpec",
     "StyleDefinition",
     "CharacterDefinition",
     "LocationDefinition",
@@ -80,16 +86,20 @@ __all__ = [
     "CanonSnapshot",
     "CanonError",
     "UnauthorizedMutationError",
+    "CanonImmutabilityError",
     "CanonValidationError",
     # Story State
     "StoryStateEvent",
     "StateResolutionResult",
+    "StoryStateSnapshot",
+    "StoryStateTimeline",
     "resolve_timeline_state",
     "validate_event_against_bible",
     "StateTimelineError",
     "InvalidStateEventError",
     "UndeclaredEntityError",
     "ContradictoryTransitionError",
+    "ContradictoryStateError",
     "DuplicateEventConflictError",
     # Story Bible & Services
     "StoryBible",
@@ -112,6 +122,7 @@ __all__ = [
     "validate_state_transition",
     "propose_canon_mutation",
     "apply_canon_mutation",
+    "reject_canon_mutation",
     "get_continuity_context",
     "create_canonical_nour_bible"
 ]

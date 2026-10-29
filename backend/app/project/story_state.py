@@ -22,6 +22,8 @@ class ContradictoryTransitionError(StateTimelineError):
     """Raised when a state event contradicts previous state or asserts an invalid transition."""
     pass
 
+ContradictoryStateError = ContradictoryTransitionError
+
 class DuplicateEventConflictError(StateTimelineError):
     """Raised when an event ID is duplicated with conflicting payload."""
     pass
@@ -277,3 +279,40 @@ def resolve_timeline_state(
         contributing_events=contributing,
         unresolved_conflicts=conflicts
     )
+
+
+StoryStateSnapshot = StateResolutionResult
+
+
+class StoryStateTimeline(BaseModel):
+    """
+    Encapsulated timeline managing an ordered sequence of narrative state events
+    for a specific execution run. Guarantees deterministic state resolution and run isolation.
+    """
+    run_id: str = Field(default="default_run", description="Execution run identifier")
+    project_id: str = Field(..., description="Target project identifier")
+    canon_version: int = Field(default=1, description="Canon version this timeline is anchored to")
+    events: List[StoryStateEvent] = Field(default_factory=list, description="Ordered timeline events")
+
+    def append_event(self, event: StoryStateEvent, canon: Optional[Any] = None) -> StoryStateEvent:
+        """Appends an event after validating against canon entities and transition invariants."""
+        if canon is not None:
+            char_keys = set(canon.characters.keys()) if hasattr(canon, "characters") else set()
+            loc_keys = set(canon.locations.keys()) if hasattr(canon, "locations") else set()
+            prop_keys = set(canon.props.keys()) if hasattr(canon, "props") else set()
+            validate_event_against_bible(event, char_keys, loc_keys, prop_keys)
+
+        # Contradiction and ordering check
+        new_events = self.events + [event]
+        resolve_timeline_state(new_events, strict_transitions=True)
+        self.events.append(event)
+        return event
+
+    def resolve_state_at(
+        self,
+        scene_or_panel_id: Optional[str] = None,
+        sequence_threshold: Optional[int] = None
+    ) -> StateResolutionResult:
+        """Deterministically resolves effective state at the specified boundary."""
+        target = str(sequence_threshold) if sequence_threshold is not None else scene_or_panel_id
+        return resolve_timeline_state(self.events, target_scene_or_panel=target, strict_transitions=False)
