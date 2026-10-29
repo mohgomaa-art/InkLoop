@@ -887,6 +887,9 @@ def test_direct_public_field_mutation_rejection_and_isolation(sample_bible):
     with pytest.raises(UnauthorizedMutationError):
         snapshot.characters.setdefault("villain", new_char)
 
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters |= {"villain": new_char}
+
     # Locations mapping mutations
     new_loc = snapshot.locations["citadel_gate"]
     with pytest.raises(UnauthorizedMutationError):
@@ -898,6 +901,9 @@ def test_direct_public_field_mutation_rejection_and_isolation(sample_bible):
     with pytest.raises(UnauthorizedMutationError):
         snapshot.locations.clear()
 
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.locations |= {"mars_outpost": new_loc}
+
     # Props mapping mutations
     new_prop = snapshot.props["magic_amulet"]
     with pytest.raises(UnauthorizedMutationError):
@@ -908,6 +914,9 @@ def test_direct_public_field_mutation_rejection_and_isolation(sample_bible):
 
     with pytest.raises(UnauthorizedMutationError):
         snapshot.props.clear()
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.props |= {"plasma_gun": new_prop}
 
     # --------------------------------------------------------------------------
     # 6. Direct mutation of top-level snapshot fields (must be rejected)
@@ -1009,6 +1018,66 @@ def test_direct_public_field_mutation_rejection_and_isolation(sample_bible):
         props=snapshot.props
     )
     assert recomputed_hash == initial_hash
+
+
+def test_readonly_dict_augmented_assignment_mutation_blocked(sample_bible):
+    """
+    T5.3 Final Micro-Check: Augmented Assignment (|=) Mutation Resistance
+    Verifies that:
+    1. snapshot.characters |= {...} raises UnauthorizedMutationError.
+    2. snapshot.locations |= {...} raises UnauthorizedMutationError.
+    3. snapshot.props |= {...} raises UnauthorizedMutationError.
+    4. For all three cases, the internal mappings, cryptographic canon_hash,
+       and serialized snapshot JSON remain strictly unchanged, even after
+       the attempted augmented assignment.
+    """
+    snapshot = sample_bible.get_canon_snapshot()
+    initial_hash = snapshot.canon_hash
+    initial_json = snapshot.model_dump_json()
+    initial_char_keys = set(snapshot.characters.keys())
+    initial_loc_keys = set(snapshot.locations.keys())
+    initial_prop_keys = set(snapshot.props.keys())
+
+    # 1. Characters |= augmented assignment
+    new_char = snapshot.characters["hero"]
+    new_char.character_id = "unexpected_char"
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.characters |= {"unexpected_char": new_char}
+
+    # Verify internal mapping, keys, hash, and JSON remain completely unchanged
+    assert "unexpected_char" not in snapshot.characters
+    assert set(snapshot.characters.keys()) == initial_char_keys
+    assert snapshot.canon_hash == initial_hash
+    assert snapshot.model_dump_json() == initial_json
+    assert CanonSnapshot.compute_canon_hash(snapshot.style, snapshot.characters, snapshot.locations, snapshot.props) == initial_hash
+
+    # 2. Locations |= augmented assignment
+    new_loc = snapshot.locations["citadel_gate"]
+    new_loc.location_id = "unexpected_loc"
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.locations |= {"unexpected_loc": new_loc}
+
+    assert "unexpected_loc" not in snapshot.locations
+    assert set(snapshot.locations.keys()) == initial_loc_keys
+    assert snapshot.canon_hash == initial_hash
+    assert snapshot.model_dump_json() == initial_json
+    assert CanonSnapshot.compute_canon_hash(snapshot.style, snapshot.characters, snapshot.locations, snapshot.props) == initial_hash
+
+    # 3. Props |= augmented assignment
+    new_prop = snapshot.props["magic_amulet"]
+    new_prop.prop_id = "unexpected_prop"
+
+    with pytest.raises(UnauthorizedMutationError):
+        snapshot.props |= {"unexpected_prop": new_prop}
+
+    assert "unexpected_prop" not in snapshot.props
+    assert set(snapshot.props.keys()) == initial_prop_keys
+    assert snapshot.canon_hash == initial_hash
+    assert snapshot.model_dump_json() == initial_json
+    assert CanonSnapshot.compute_canon_hash(snapshot.style, snapshot.characters, snapshot.locations, snapshot.props) == initial_hash
+
 
 
 

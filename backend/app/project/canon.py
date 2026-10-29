@@ -248,6 +248,12 @@ class ReadOnlyDict(dict):
             "Cannot modify CanonSnapshot mapping: canon is immutable. Attempted to call setdefault."
         )
 
+    def __ior__(self, other: Any) -> "ReadOnlyDict":
+        raise UnauthorizedMutationError(
+            "Cannot modify CanonSnapshot mapping: canon is immutable. "
+            "Attempted in-place |= merge. Canonical changes must use propose_canon_mutation and apply_canon_mutation."
+        )
+
 
 class CanonSnapshot(BaseModel):
     """
