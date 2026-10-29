@@ -28,6 +28,9 @@ class IdPrefix(str, Enum):
     EFFECT = "fx"
     CANVAS = "canvas"
     TAXONOMY = "tax"
+    OPERATION = "op"
+    EVENT = "evt"
+    RESERVATION = "res"
 
 # Strict slug and identifier regex pattern: prefix_slug_random or prefix_number
 # e.g., 'proj_inkloop_01', 'panel_scene01_02', 'art_01h8x...'

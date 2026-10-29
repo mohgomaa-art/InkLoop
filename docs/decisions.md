@@ -136,3 +136,35 @@
 - **Verification Evidence:**
   - 16 dedicated unit and integration tests passing in `backend/tests/test_storage_registry.py`.
   - Total test suite: 123 passing tests with zero regressions.
+
+---
+
+## ADR-010: Run Execution Lifecycle, Multi-Scope Decimal Budget Manager & Crash Recovery Engine
+- **Status:** [VERIFIED ARCHITECTURE & IMPLEMENTED IN M1]
+- **Context:** Automated comic production dispatches paid provider API requests, runs complex multi-step pipelines (canvas layout, panel generation, segmentation, bubble placement, lettering, and quality verification), and must guard against unbounded runaway loops, double billing, lost responses, and unobservable crashes. Financial accounting must be exact, and execution history must remain auditable without leaking credentials.
+- **Architectural Invariants & Decisions:**
+  1. **Strict State Machine Envelopes:**
+     - **Run Lifecycle (`RunStatus`):** `created` -> `queued` -> `running` -> `[succeeded, failed, cancelled, interrupted, needs_review]`. Terminal states (`succeeded`, `failed`, `cancelled`) are immutable and strictly reject re-execution or status mutations (`RunTerminalError`).
+     - **Attempt Lifecycle (`AttemptStatus`):** `started` -> `[succeeded, failed, cancelled, interrupted]`. Every retry or re-attempt generates a distinct, non-overwriting attempt record.
+     - **Operation Lifecycle (`OperationStatus`):** `pending` -> `running` -> `[succeeded, failed, blocked, interrupted, reconciliation_required, needs_review]`. Partial runs with uncompleted operations cannot be marked `SUCCEEDED`.
+  2. **Atomic Multi-Scope Budget Reservation & Exact Decimal Accounting:**
+     - Pre-dispatch reservation: operations cannot run unless estimated spend is atomically reserved in `BudgetManager` before provider dispatch (`BudgetExceededError`).
+     - Hierarchical scopes: Global, Project, Run, Operation. Effective allowance is `min(global, project, run, operation)`. Child scopes cannot exceed stricter parent caps (`BudgetScopeViolationError`).
+     - Exactly-once settlement: duplicate settlements are rejected (`DuplicateSettlementError`). Unused funds on cancelled/unbilled operations are released back to available allowance.
+     - All financial calculations use Python `Decimal` (minor units / 4 decimal places) to completely eliminate binary floating-point drift.
+     - Cost classifications are strictly distinguished: `estimated`, `reserved`, `provider_reported`, `billing_confirmed`, `unknown`. Estimates are never conflated with confirmed billing.
+     - When pricing is unknown (`unknown`), hard operation-count ceilings are enforced without fabricating fictitious prices.
+  3. **Bounded Retries & Permanent Failure Circuit Breakers:**
+     - Deterministic errors (`AUTHENTICATION_ERROR`, `BAD_REQUEST`, `BUDGET_EXCEEDED`, `DEPENDENCY_FAILED`) are classified as permanent and immediately halt without entering retry loops (`PermanentErrorNotRetryableError`).
+     - Transient errors (`RATE_LIMIT_EXCEEDED`, `NETWORK_TIMEOUT`, `SERVER_ERROR`, `CONTENT_POLICY_VIOLATION`) permit bounded retries up to configured ceilings (`max_retries_per_panel`).
+     - Downstream dependent operations are blocked if a prerequisite fails (`DependencyFailedError`).
+  4. **Crash Recovery & Uncertain Outcome Reconciliation:**
+     - Process restarts run `recover_on_startup()` to detect runs and operations left in `running` or `queued` status, transitioning them safely to `interrupted`.
+     - Lost responses or remote timeouts mark attempts as `interrupted` with `reconciliation_required=True`. Reserved funds are held (never assumed free or refunded) until external reconciliation.
+     - Safe resumption (`resume_run`) preserves already `succeeded` operations without redundant re-generation, revalidates input asset hashes, and resets only interrupted operations to `pending`.
+  5. **Append-Only Event Ledger & Secret Hygiene:**
+     - All state transitions, budget reservations, settlements, releases, and recovery discoveries append typed events to `events` table in SQLite (`WAL` mode).
+     - Run summaries (`RunSummary`) serialize deterministically with zero API keys, headers, or raw binary payloads.
+- **Verification Evidence:**
+  - 21 dedicated unit and integration tests passing in `backend/tests/test_execution_manager.py`.
+  - Total test suite: 166 passing tests across all subsystems with zero regressions.

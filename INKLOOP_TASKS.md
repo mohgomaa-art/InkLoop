@@ -236,14 +236,14 @@ Final scope includes an Agent that can orchestrate approved engines/tools. Detai
 - **Acceptance:** a final page can be traced back to the exact project state, engine configurations, inputs, and source assets. (SATISFIED: `backend/app/storage/` (`artifact_store.py`, `registry_db.py`, `registry.py`, `models.py`, `format_validator.py`, `errors.py`), `backend/tests/test_storage_registry.py`, 16 tests passing, 123 total suite passing).
 
 ### T5.5 — Run execution and budgets
-- [ ] Standardize run IDs and attempt IDs.
-- [ ] Record every attempt's start time, end time, latency, status, request ID, usage, estimated/confirmed cost, and sanitized error.
-- [ ] Distinguish provider-reported costs from estimates.
-- [ ] Enforce retry ceilings, concurrency caps, timeouts, cancellation, and global/project/per-run budget ceilings.
-- [ ] Add kill switches for repeated or runaway generation.
-- [ ] Record interrupted operations as incomplete rather than deleting them.
-- [ ] Add a dry-run/validation mode for workflows that can be validated without provider calls.
-- **Acceptance:** successful, failed, cancelled, and interrupted operations remain traceable without secrets in the log.
+- [x] Standardize run IDs and attempt IDs (`IdPrefix.RUN`, `IdPrefix.ATTEMPT`, `IdPrefix.OPERATION`, `IdPrefix.EVENT`, `IdPrefix.RESERVATION`).
+- [x] Record every attempt's start time, end time, latency, status, request ID, usage, estimated/confirmed cost, and sanitized error (`AttemptRecord`, `ExecutionEvent`).
+- [x] Distinguish provider-reported costs from estimates (`CostClassification` enum: `ESTIMATED`, `RESERVED`, `PROVIDER_REPORTED`, `BILLING_CONFIRMED`, `UNKNOWN`).
+- [x] Enforce retry ceilings, concurrency caps, timeouts, cancellation, and global/project/per-run budget ceilings (`BudgetManager`, `ExecutionManager`, multi-scope Decimal arithmetic).
+- [x] Add kill switches for repeated or runaway generation (`cancel_run()`, `PERMANENT_ERROR_CATEGORIES` blocking blind retries, `RetryExhaustedError`).
+- [x] Record interrupted operations as incomplete rather than deleting them (`INTERRUPTED` and `RECONCILIATION_REQUIRED` states, startup crash discovery).
+- [x] Add a dry-run/validation mode for workflows that can be validated without provider calls (`dry_run` flag on `RunRecord`, `RunSummary`).
+- **Acceptance:** successful, failed, cancelled, and interrupted operations remain traceable without secrets in the log. (SATISFIED: `backend/app/execution/` (`states.py`, `models.py`, `errors.py`, `budget_manager.py`, `execution_db.py`, `manager.py`), `backend/tests/test_execution_manager.py`, 21 tests passing, 166 total suite passing).
 
 ---
 
