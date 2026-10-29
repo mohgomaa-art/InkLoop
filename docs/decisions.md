@@ -193,3 +193,35 @@
 - **Verification Evidence:**
   - 12 dedicated unit and integration tests passing in `backend/tests/test_image_knowledge_catalogue.py`.
   - Total test suite: 179 passing tests with zero regressions.
+
+---
+
+## ADR-012: Research Governance Hardening, Structured Licensing Tracking, Promotion Workflow & Group 60 Status Reconciliation
+- **Status:** [VERIFIED ARCHITECTURE & IMPLEMENTED IN T6.1]
+- **Context:** Following the establishment of the catalogue foundation, research governance (Task T6.1) required full hardening: task boundaries needed explicit reconciliation against T6.2/T6.3, source claims required verifiable boundaries (what they establish vs what they do not establish), licensing rights across all asset families required strict tracking without assuming commercial clearance for unknown assets, formal peer/lead promotion workflows needed audit trails, and Group 60's coverage classification required truthful adjustment to avoid premature group-level validation claims from a narrow single-character trial.
+- **Architectural Invariants & Decisions:**
+  1. **Reconciliation of Research Tasks:**
+     - `T6.1 — Research governance`: data models, confidence/evidence separation, claim mapping, licensing tracking (`LicenseRecord`, `LicenseRegistry`), promotion workflow (`PromotionReviewRecord`, `PromotionWorkflow`), and catalogue foundation register.
+     - `T6.2 — Experimental design and visual evaluation`: controlled prompt experiments, blind human evaluation, visual regression sets, and failure analysis protocols.
+     - `T6.3 — Research-backed image-generation knowledge catalogue`: comprehensive research across all 60 groups, prompt recipes, runtime scene-relevance retrieval, and generation integration.
+  2. **Truthful Group 60 Coverage Downgrade & Broad Group Anti-Gaming Rule:**
+     - Group 60 contains 14 canonical elements (`Character Identity`, `Style Consistency`, `Character Count`, `Attribute Presence`, `Reference Matching`, `Pose Continuity`, `Clothing Continuity`, `Prop Continuity`, `Location Continuity`, `Lighting Continuity`, `State Tracking`, `Composition Drift`, `Verifier Confidence`, `Retry Policy`).
+     - The M0 trial evaluated a single recipe (`rec_60_reference_anchored_portrait`) on single-character Nour portraits. Labeling the entire group `VALIDATED` was premature.
+     - Group 60 is now classified truthfully as `EXPERIMENTALLY_TESTED` (`is_empirically_validated=False` at the group level, `has_recorded_experiments=True`). The passing recipe and claim remain verified and tested.
+     - **Anti-Gaming Invariant (`TaxonomyGroupRecord`):** Any broad group (>3 canonical elements) cannot attain `CoverageStatus.VALIDATED` with fewer than 2 passing, empirically validated recipes across diverse elements.
+  3. **Granular Source & Claim Provenance:**
+     - `SourceRecord` enforces explicit documentation of `source_location` (chapter, section, doc URL, experiment artifact path), `what_it_establishes`, and `what_it_does_not_establish`.
+     - `ResearchClaim` explicitly distinguishes `artistic_theory` (sequential art theory literature) from `empirical_observation` (model API runs and metric benchmarks).
+  4. **Structured Licensing & Commercial Safety Governance:**
+     - `LicenseRecord` and `LicenseRegistry` manage formal rights tracking across fonts (`LicenseTargetType.FONT`), software libraries (`SOFTWARE_LIBRARY`), model outputs (`MODEL_GENERATED`), reference images (`REFERENCE_IMAGE`), and external datasets (`EXTERNAL_DATASET`).
+     - **Fail-Closed Commercial Rule:** `LicenseRecord` validator rejects any configuration where `license_type == LicenseType.UNKNOWN` and `is_commercial_use_permitted == True`. Unknown rights cannot be silently assumed.
+     - Default baseline assets registered and cleared: Amiri font (SIL-OFL-1.1), Pillow (HPND), Pydantic (MIT), HTTPX (BSD), Meta Muse/Spark terms (provider commercial terms), and Nour reference image (proprietary original created for InkLoop by Mohamed Gomaa).
+  5. **Formal Promotion & Review Workflow:**
+     - `PromotionWorkflow` audits status upgrades for claims and groups, generating immutable `PromotionReviewRecord` entries with reviewer identity, reviewer role, decision, rationale, verified evidence IDs, and timestamps.
+     - Baseless promotion requests without evidence or violating integrity invariants fail closed with `ReviewDecision.REJECTED` and clear error diagnostics.
+  6. **Self-Contained CLI Scripting:**
+     - `scripts/generate_taxonomy.py` provides supported CLI operations (`--check`, `--audit`, `--rebuild`, `--export`) with automatic backend `sys.path` bootstrapping to prevent import errors regardless of invocation working directory.
+- **Verification Evidence:**
+  - 20 dedicated unit and integration tests passing in `backend/tests/test_image_knowledge_catalogue.py`.
+  - Full backend test suite: 209 passing tests with zero regressions.
+  - Zero paid API spend incurred.

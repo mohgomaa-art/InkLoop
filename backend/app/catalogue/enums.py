@@ -64,3 +64,31 @@ class ConflictPriority(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
+
+
+class LicenseType(str, Enum):
+    """Classification of asset and software licensing terms."""
+    OPEN_FONT_LICENSE = "open_font_license"
+    OPEN_SOURCE_PERMISSIVE = "open_source_permissive"
+    PROPRIETARY_ORIGINAL = "proprietary_original"
+    MODEL_PROVIDER_TERMS = "model_provider_terms"
+    CREATIVE_COMMONS = "creative_commons"
+    PUBLIC_DOMAIN = "public_domain"
+    UNKNOWN = "unknown"
+
+
+class LicenseTargetType(str, Enum):
+    """Target entity subject to licensing governance."""
+    FONT = "font"
+    SOFTWARE_LIBRARY = "software_library"
+    MODEL_GENERATED = "model_generated"
+    REFERENCE_IMAGE = "reference_image"
+    EXTERNAL_DATASET = "external_dataset"
+
+
+class ReviewDecision(str, Enum):
+    """Decision outcome of a research promotion review."""
+    APPROVED_PROMOTION = "approved_promotion"
+    REJECTED = "rejected"
+    MORE_EVIDENCE_NEEDED = "more_evidence_needed"
+

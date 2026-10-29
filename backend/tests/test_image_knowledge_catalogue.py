@@ -6,6 +6,8 @@ truthful coverage inventory, and deterministic serialization.
 """
 from pathlib import Path
 import json
+import subprocess
+import sys
 import pytest
 from pydantic import ValidationError
 
@@ -15,6 +17,9 @@ from app.catalogue.enums import (
     ClaimConfidence,
     RuleType,
     OutcomeVerdict,
+    LicenseType,
+    LicenseTargetType,
+    ReviewDecision,
 )
 from app.catalogue.models import (
     TaxonomyGroupRecord,
@@ -23,8 +28,15 @@ from app.catalogue.models import (
     GenerationRule,
     RecipeRecord,
     CoverageSummary,
+    LicenseRecord,
+    PromotionReviewRecord,
 )
 from app.catalogue.register import TaxonomyRegister
+from app.catalogue.governance import (
+    LicenseRegistry,
+    PromotionWorkflow,
+    create_default_license_registry,
+)
 from app.image_adapter import GenerationRequest, GenerationResponse, SimulatedImageGenerationAdapter
 from app.contracts.engine import EngineRunRequest, ImageGenerationParams, EngineId
 
@@ -170,17 +182,19 @@ def test_coverage_summary_counts_match_real_data(register):
     summary = register.get_summary()
 
     # Truthful baseline verification:
-    # Exactly 1 group (60) is VALIDATED from M0 feasibility experiment.
+    # Exactly 0 groups are VALIDATED (Group 60 contains 14 elements; M0 tested solo portrait anchoring).
+    # Exactly 1 group (60) is EXPERIMENTALLY_TESTED with documented M0 empirical trials and passing recipe.
     # Exactly 4 groups (07, 08, 19, 28) are RESEARCHED with documented comic theory/style rules.
     # Exactly 55 groups are UNRESEARCHED with explicit gaps documented.
     assert summary.total_groups == 60
-    assert summary.validated_count == 1, "Only Group 60 is validated at baseline"
+    assert summary.validated_count == 0, "No broad group is fully validated without multi-element recipes"
+    assert summary.experimentally_tested_count == 1, "Group 60 is experimentally tested from M0 trials"
     assert summary.researched_count == 4, "Groups 07, 08, 19, and 28 are researched"
     assert summary.unresearched_count == 55, "55 groups remain unresearched at baseline"
-    assert summary.experimentally_tested_count == 0
     assert summary.deprecated_count == 0
 
-    assert summary.status_breakdown["validated"] == 1
+    assert summary.status_breakdown["validated"] == 0
+    assert summary.status_breakdown["experimentally_tested"] == 1
     assert summary.status_breakdown["researched"] == 4
     assert summary.status_breakdown["unresearched"] == 55
 
@@ -239,3 +253,240 @@ def test_no_duplicate_infrastructure():
         taxonomy_rule_ids=["rul_60_pass_reference_image", "rul_19_screentone_linework"]
     )
     assert len(prov.taxonomy_rule_ids) == 2
+
+
+# ==============================================================================
+# 5. Research Governance, Provenance, Licensing & Promotion Tests (T6.1)
+# ==============================================================================
+
+def test_detailed_source_provenance_and_scope_limits(register):
+    """Proves that sources capture exact locations, what they establish, and what they do NOT establish."""
+    g60 = register.get_group(60)
+    assert len(g60.sources) >= 2
+
+    # Check Meta documentation source
+    src_meta = next(s for s in g60.sources if s.source_id == "src_meta_muse_docs_2026")
+    assert src_meta.source_location is not None
+    assert src_meta.what_it_establishes is not None
+    assert "edits" in src_meta.what_it_establishes
+    assert src_meta.what_it_does_not_establish is not None
+    assert "comic" in src_meta.what_it_does_not_establish.lower()
+
+    # Check M0 experiment source
+    src_m0 = next(s for s in g60.sources if s.source_id == "src_inkloop_m0_feasibility")
+    assert "runs/m0_visual" in src_m0.source_location
+    assert "nour_reference.png" in src_m0.what_it_establishes
+    assert "multi-character" in src_m0.what_it_does_not_establish.lower()
+
+
+def test_claims_distinguish_artistic_theory_vs_empirical(register):
+    """Proves that claims explicitly distinguish artistic theory from empirical observation."""
+    g60 = register.get_group(60)
+    for claim in g60.claims:
+        assert claim.artistic_theory_vs_empirical == "empirical_observation"
+
+    g19 = register.get_group(19)
+    for claim in g19.claims:
+        assert claim.artistic_theory_vs_empirical == "artistic_theory"
+
+
+def test_broad_group_anti_gaming_validation_guard():
+    """
+    Proves that a broad group (>3 elements) cannot be marked VALIDATED with only 1 passing recipe.
+    Requires comprehensive multi-element validation (>= 2 passing recipes).
+    """
+    r1 = RecipeRecord(
+        recipe_id="rec_test_01",
+        taxonomy_group_id="tax_60_visual_continuity_validation",
+        intended_outcome="Portrait consistency",
+        use_case="Solo portrait",
+        required_prompt_components=["clean linework"],
+        target_model="muse-image-1.0",
+        experiment_id="exp_01",
+        result=OutcomeVerdict.PASS,
+        is_empirically_validated=True,
+    )
+    src = SourceRecord(
+        source_id="src_test_primary",
+        title="Test Doc",
+        evidence_class=EvidenceClass.PRIMARY_PROVIDER_DOC,
+    )
+
+    # 1 recipe on a 14-element group must fail validation
+    with pytest.raises(ValidationError) as exc:
+        TaxonomyGroupRecord(
+            group_id="tax_60_visual_continuity_validation",
+            group_number=60,
+            canonical_name="60. Visual Continuity & Validation",
+            image_generation_relevance="Test relevance",
+            canonical_elements=["E1", "E2", "E3", "E4", "E5"],  # 5 elements (>3)
+            status=CoverageStatus.VALIDATED,
+            is_empirically_validated=True,
+            recipes=[r1],  # Only 1 recipe
+            sources=[src],
+        )
+    assert "Broad groups (>3 elements) require comprehensive element validation" in str(exc.value)
+
+    # 2 passing recipes across broad group satisfies the anti-gaming guard
+    r2 = RecipeRecord(
+        recipe_id="rec_test_02",
+        taxonomy_group_id="tax_60_visual_continuity_validation",
+        intended_outcome="Lighting consistency",
+        use_case="Lighting transition",
+        required_prompt_components=["monochrome lighting"],
+        target_model="muse-image-1.0",
+        experiment_id="exp_02",
+        result=OutcomeVerdict.PASS,
+        is_empirically_validated=True,
+    )
+    valid_broad_group = TaxonomyGroupRecord(
+        group_id="tax_60_visual_continuity_validation",
+        group_number=60,
+        canonical_name="60. Visual Continuity & Validation",
+        image_generation_relevance="Test relevance",
+        canonical_elements=["E1", "E2", "E3", "E4", "E5"],
+        status=CoverageStatus.VALIDATED,
+        is_empirically_validated=True,
+        recipes=[r1, r2],  # 2 recipes!
+        sources=[src],
+    )
+    assert valid_broad_group.status == CoverageStatus.VALIDATED
+
+
+def test_license_governance_and_unknown_commercial_safety():
+    """Proves that LicenseRecord prevents silent commercial use of unknown license terms."""
+    with pytest.raises(ValidationError) as exc:
+        LicenseRecord(
+            license_id="lic_bad_unknown",
+            target_type=LicenseTargetType.EXTERNAL_DATASET,
+            target_identifier="unverified_faces_dataset",
+            license_type=LicenseType.UNKNOWN,
+            license_name="Unknown Internet Scraping",
+            is_commercial_use_permitted=True,  # Illegal: UNKNOWN cannot permit commercial use!
+        )
+    assert "cannot permit commercial use when license_type is 'UNKNOWN'" in str(exc.value)
+
+
+def test_license_registry_and_commercial_clearance():
+    """Proves that LicenseRegistry tracks font, library, model, and reference assets."""
+    registry = create_default_license_registry()
+
+    # Verify default known assets
+    assert registry.is_target_commercially_cleared(LicenseTargetType.FONT, "Amiri") is True
+    assert registry.is_target_commercially_cleared(LicenseTargetType.SOFTWARE_LIBRARY, "Pillow") is True
+    assert registry.is_target_commercially_cleared(LicenseTargetType.SOFTWARE_LIBRARY, "pydantic") is True
+    assert registry.is_target_commercially_cleared(LicenseTargetType.SOFTWARE_LIBRARY, "httpx") is True
+    assert registry.is_target_commercially_cleared(LicenseTargetType.MODEL_GENERATED, "muse-image-1.0") is True
+    assert registry.is_target_commercially_cleared(LicenseTargetType.REFERENCE_IMAGE, "nour_reference.png") is True
+
+    # Unknown asset is not cleared
+    assert registry.is_target_commercially_cleared(LicenseTargetType.EXTERNAL_DATASET, "random_asset") is False
+
+    # Register an unknown dataset without commercial clearance
+    unknown_record = LicenseRecord(
+        license_id="lic_dataset_scraped_art",
+        target_type=LicenseTargetType.EXTERNAL_DATASET,
+        target_identifier="scraped_art_pack",
+        license_type=LicenseType.UNKNOWN,
+        license_name="Unclear Web Scrape",
+        is_commercial_use_permitted=False,
+    )
+    registry.register_license(unknown_record)
+    assert registry.is_target_commercially_cleared(LicenseTargetType.EXTERNAL_DATASET, "scraped_art_pack") is False
+
+    audit = registry.audit_licenses()
+    assert audit["total_registered_licenses"] == 7
+    assert audit["commercial_cleared_count"] == 6
+    assert audit["uncleared_or_unknown_count"] == 1
+
+
+def test_promotion_workflow_claim_and_audit_trail():
+    """Proves that PromotionWorkflow logs formal review records and prevents baseless claim promotion."""
+    workflow = PromotionWorkflow()
+
+    claim = ResearchClaim(
+        claim_id="clm_speculative_01",
+        taxonomy_group_id="tax_01_comic_formats",
+        claim_text="Webtoon vertical canvas reduces diffusion boundary artifacts by 50%.",
+        confidence=ClaimConfidence.HYPOTHESIS,
+        source_ids=[],
+    )
+
+    # Attempt promotion without verified evidence or sources -> REJECTED
+    rec1, updated_claim1 = workflow.review_claim(
+        claim=claim,
+        target_confidence=ClaimConfidence.EXPERIMENTAL_RESULT,
+        reviewer_id="reviewer_lead",
+        reviewer_role="Project Lead",
+        rationale="Promoting based on hunch without run log.",
+        evidence_verified=[],
+    )
+    assert rec1.decision == ReviewDecision.REJECTED
+    assert updated_claim1.confidence == ClaimConfidence.HYPOTHESIS
+
+    # Promotion with verified experiment artifact -> APPROVED
+    rec2, updated_claim2 = workflow.review_claim(
+        claim=claim,
+        target_confidence=ClaimConfidence.EXPERIMENTAL_RESULT,
+        reviewer_id="reviewer_lead",
+        reviewer_role="Project Lead",
+        rationale="Verified against run benchmark artifact runs/exp_webtoon_01.json",
+        evidence_verified=["runs/exp_webtoon_01.json"],
+    )
+    assert rec2.decision == ReviewDecision.APPROVED_PROMOTION
+    assert updated_claim2.confidence == ClaimConfidence.EXPERIMENTAL_RESULT
+    assert updated_claim2.reviewed_by == "reviewer_lead"
+    assert updated_claim2.reviewed_at is not None
+
+    # Check reviews retrieved
+    reviews = workflow.get_reviews_for_target("clm_speculative_01")
+    assert len(reviews) == 2
+
+
+def test_promotion_workflow_group_rejection_and_approval(register):
+    """Proves that PromotionWorkflow validates group coverage rules before approving status change."""
+    workflow = PromotionWorkflow()
+    g1 = register.get_group(1)  # UNRESEARCHED
+
+    # Attempt to promote UNRESEARCHED to VALIDATED without evidence -> REJECTED
+    rec, group_result = workflow.review_group(
+        group=g1,
+        target_status=CoverageStatus.VALIDATED,
+        reviewer_id="reviewer_lead",
+        reviewer_role="Project Lead",
+        rationale="Want to fast-track comic formats",
+        evidence_verified=[],
+    )
+    assert rec.decision == ReviewDecision.REJECTED
+    assert group_result.status == CoverageStatus.UNRESEARCHED
+
+    # Check that rejection rationale details the integrity violation
+    assert "invariant violation" in rec.rationale
+
+
+def test_taxonomy_cli_script_runs_cleanly():
+    """Proves that scripts/generate_taxonomy.py runs with --check and --audit returning exit code 0."""
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    script_path = repo_root / "scripts" / "generate_taxonomy.py"
+    assert script_path.is_file(), "scripts/generate_taxonomy.py must exist"
+
+    # Run --check
+    proc_check = subprocess.run(
+        [sys.executable, str(script_path), "--check"],
+        cwd=str(repo_root),
+        capture_output=True,
+        text=True,
+    )
+    assert proc_check.returncode == 0, f"generate_taxonomy.py --check failed: {proc_check.stderr}"
+    assert "AUDIT PASSED" in proc_check.stdout
+
+    # Run --audit
+    proc_audit = subprocess.run(
+        [sys.executable, str(script_path), "--audit"],
+        cwd=str(repo_root),
+        capture_output=True,
+        text=True,
+    )
+    assert proc_audit.returncode == 0, f"generate_taxonomy.py --audit failed: {proc_audit.stderr}"
+    assert "LICENSING & GOVERNANCE AUDIT" in proc_audit.stdout
+

@@ -252,12 +252,12 @@ Final scope includes an Agent that can orchestrate approved engines/tools. Detai
 Research is not a decorative bibliography. It must influence engine behavior and be verified through experiments.
 
 ### T6.1 — Research governance
-- [x] Define a consistent research record with claim, source, date accessed, source type, evidence classification, limits, relevance, and engine/taxonomy IDs (`SourceRecord`, `ResearchClaim`, `GenerationRule`, `RecipeRecord`, `TaxonomyGroupRecord`).
+- [x] Define a consistent research record with claim, source, date accessed, source type, evidence classification, limits, relevance, and engine/taxonomy IDs (`SourceRecord`, `ResearchClaim`, `GenerationRule`, `RecipeRecord`, `TaxonomyGroupRecord`; captures source location, what source establishes vs what it does not establish; distinguishes artistic theory vs empirical observation).
 - [x] Maintain `FACT`, `INFERENCE`, `HYPOTHESIS`, `EXPERIMENTAL RESULT`, and `UNKNOWN` separately (`ClaimConfidence` enum).
 - [x] Record why a source supports each rule; do not attach citations without a claim mapping (`supported_claim_ids`, `source_ids`, strict model validation).
-- [x] Track licenses for fonts, libraries, model-generated assets, reference assets, and any external datasets (`license_or_access` on `SourceRecord`).
-- [x] Create a review process to promote a rule from hypothesis to experimentally supported (`CoverageStatus` lifecycle, `validate_recipe_integrity()`, `validate_group_coverage_integrity()`).
-- **Acceptance:** every production-critical research rule has a traceable basis and a clear confidence/evidence status. (SATISFIED: `backend/app/catalogue/` (`enums.py`, `models.py`, `register.py`, `data_loader.py`, `data/taxonomy_60_groups.json`), `backend/tests/test_image_knowledge_catalogue.py`, 12 tests passing, 179 total suite passing).
+- [x] Track licenses for fonts, libraries, model-generated assets, reference assets, and any external datasets (`LicenseRecord`, `LicenseRegistry`, fail-closed validation prohibiting commercial assumption for unknown rights).
+- [x] Create a review process to promote a rule from hypothesis to experimentally supported (`CoverageStatus` lifecycle, `validate_recipe_integrity()`, `validate_group_coverage_integrity()` with broad-group anti-gaming guards, `PromotionReviewRecord`, `PromotionWorkflow`).
+- **Acceptance:** every production-critical research rule has a traceable basis and a clear confidence/evidence status. (SATISFIED: `backend/app/catalogue/` (`enums.py`, `models.py`, `governance.py`, `register.py`, `data_loader.py`, `data/taxonomy_60_groups.json`), `scripts/generate_taxonomy.py`, `backend/tests/test_image_knowledge_catalogue.py`, 20 catalogue tests passing, 209 total suite passing).
 
 ### T6.2 — Experimental design and visual evaluation
 - [ ] Define controlled prompt/model experiments with frozen inputs and parameter records.
@@ -344,7 +344,7 @@ This is the catalogue coverage register. Preserve every element in the previousl
 - [ ] **57. Story World State** — Time of Day, Location, Weather, Character Position, Clothing State, Carried Objects, Open/Closed Doors, Object Placement, Environmental Damage, Physical Contact, Action Outcome, State Continuity.
 - [ ] **58. Page Geometry & Layout Rules** — Page Size, Aspect Ratio, Margins, Bleed, Safe Area, Panel Borders, Border Width, Gutters, Panel Padding, Clipping, Reading Order, RTL/LTR, Balloon Placement, Tail Position.
 - [ ] **59. Lettering & Export Quality** — Text Fit, Line Breaks, Text Integrity, Font Embedding, Font Licensing, Overflow Detection, Image Resolution, DPI, PDF Export, PNG Export, Page Numbering, Cover, Title Page, End Page.
-- [ ] **60. Visual Continuity & Validation** — Character Identity, Style Consistency, Character Count, Attribute Presence, Reference Matching, Pose Continuity, Clothing Continuity, Prop Continuity, Location Continuity, Lighting Continuity, State Tracking, Composition Drift, Verifier Confidence, Retry Policy.
+- [~] **60. Visual Continuity & Validation** — Character Identity, Style Consistency, Character Count, Attribute Presence, Reference Matching, Pose Continuity, Clothing Continuity, Prop Continuity, Location Continuity, Lighting Continuity, State Tracking, Composition Drift, Verifier Confidence, Retry Policy. (STATUS: EXPERIMENTALLY TESTED in M0 solo portrait anchoring trials; broad-group validation of all 14 elements pending T6.3).
 
 ---
 

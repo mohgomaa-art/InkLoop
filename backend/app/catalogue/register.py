@@ -37,9 +37,15 @@ class TaxonomyRegister:
     - Stable identifiers, deterministic serialization, and Pydantic validation.
     """
 
-    def __init__(self, data_file: Optional[Path] = None):
+    def __init__(self, data_file: Optional[Path] = None, force_rebuild: bool = False):
         self.data_file = data_file or DEFAULT_REGISTER_FILE
         self._groups: Dict[str, TaxonomyGroupRecord] = {}
+        if force_rebuild or not self.data_file.exists():
+            from app.catalogue.data_loader import build_canonical_60_groups
+            groups = build_canonical_60_groups()
+            self._groups = {g.group_id: g for g in groups}
+            self.save()
+            return
         self._load()
 
     def _load(self) -> None:
@@ -61,6 +67,13 @@ class TaxonomyRegister:
             loaded_groups[rec.group_id] = rec
 
         self._groups = loaded_groups
+
+    def rebuild_baseline(self) -> None:
+        """Forces recreation of all 60 groups from canonical data_loader and saves to disk."""
+        from app.catalogue.data_loader import build_canonical_60_groups
+        groups = build_canonical_60_groups()
+        self._groups = {g.group_id: g for g in groups}
+        self.save()
 
     def save(self, target_path: Optional[Path] = None) -> None:
         """Saves register to target path with deterministic key ordering."""

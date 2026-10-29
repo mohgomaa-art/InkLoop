@@ -31,6 +31,9 @@ SRC_META_MUSE_2026 = SourceRecord(
     publication_date="2026-04",
     evidence_class=EvidenceClass.PRIMARY_PROVIDER_DOC,
     supported_claim_ids=["clm_60_anchor_composition", "clm_19_screentone_style"],
+    source_location="Meta AI Developer Documentation: Muse API v1.0 Reference, Image Edits Specification",
+    what_it_establishes="Establishes API contracts for /v1/images/edits endpoint, reference multipart attachment, and spark-1.3 checklist parameters.",
+    what_it_does_not_establish="Does not establish comic storytelling conventions, panel layout mechanics, or multi-panel pacing.",
     notes="Official API specifications for image generation, edits endpoint, and reference anchoring."
 )
 
@@ -43,6 +46,9 @@ SRC_MCCLOUD_1993 = SourceRecord(
     publication_date="1993",
     evidence_class=EvidenceClass.SECONDARY_TECHNICAL,
     supported_claim_ids=["clm_07_framing_scales", "clm_11_panel_transitions", "clm_19_comic_linework"],
+    source_location="Chapters 2-4: Visual Iconography, Blood in the Gutter, and Panel Transitions",
+    what_it_establishes="Establishes sequential art grammar, transition classifications, framing scale taxonomy, and reader closure theory.",
+    what_it_does_not_establish="Does not establish generative model prompt weights, diffusion noise schedules, or digital inking algorithms.",
     notes="Foundational sequential art theory for framing, closures, and visual iconography."
 )
 
@@ -55,6 +61,9 @@ SRC_EISNER_1985 = SourceRecord(
     publication_date="1985",
     evidence_class=EvidenceClass.SECONDARY_TECHNICAL,
     supported_claim_ids=["clm_08_camera_angles", "clm_56_narrative_pacing"],
+    source_location="Chapters 1, 3, and 5: Framing, Perspective, and Encapsulation",
+    what_it_establishes="Establishes visual narrative mechanics, dramatic camera angles, expressive posture, and panel encapsulation.",
+    what_it_does_not_establish="Does not establish AI image synthesis behavior, automated rendering pipelines, or software interfaces.",
     notes="Pioneering analysis of visual grammar, camera perspectives, and panel encapsulation."
 )
 
@@ -67,6 +76,9 @@ SRC_M0_EXPERIMENT_2026 = SourceRecord(
     publication_date="2026-10-29",
     evidence_class=EvidenceClass.INKLOOP_EXPERIMENT,
     supported_claim_ids=["clm_60_anchor_composition", "clm_60_spark_verification"],
+    source_location="runs/m0_visual/summary.json and benchmark candidate artifacts",
+    what_it_establishes="Establishes that passing nour_reference.png to muse-image-1.0 /v1/images/edits reduces single-character facial drift from 100% to 0% across 6 diverse scenes.",
+    what_it_does_not_establish="Does not establish multi-character co-presence consistency, full 14-element validation of Group 60, or arbitrary character references beyond Nour.",
     notes="Empirical trial: Arm A (unanchored) 0/6 pass rate vs Arm B (anchored with nour_reference.png) 6/6 pass rate evaluated with muse-spark-1.3 tri-state verifier."
 )
 
@@ -382,17 +394,22 @@ def build_canonical_60_groups() -> List[TaxonomyGroupRecord]:
     for num, group_id, name, relevance, elements in groups_data:
         # Determine truthful baseline status and evidence mapping
         if num == 60:
-            # Group 60: VALIDATED in M0 (ADR-007)
-            status = CoverageStatus.VALIDATED
+            # Group 60: EXPERIMENTALLY TESTED in M0 (ADR-007)
+            # Downgraded from VALIDATED: M0 tested 1 recipe (solo portrait reference anchoring for Nour),
+            # but Group 60 contains 14 canonical elements. Broad groups (>3 elements) require comprehensive
+            # multi-element validation (>=2 passing recipes) before attaining group-level VALIDATED status.
+            status = CoverageStatus.EXPERIMENTALLY_TESTED
             has_primary = True
             has_rules = True
             has_failure = True
             has_recipes = True
             has_exp = True
-            is_val = True
+            is_val = False
             gaps = [
                 "Multi-character co-presence identity drift rate under reference anchoring",
                 "High-angle / low-angle camera perspective drift with front-view reference image",
+                "Pose and lighting continuity validation across dynamic panel transitions",
+                "Clothing and prop continuity validation across story timeline state deltas",
             ]
 
             sources = [SRC_META_MUSE_2026, SRC_M0_EXPERIMENT_2026]
@@ -405,6 +422,7 @@ def build_canonical_60_groups() -> List[TaxonomyGroupRecord]:
                     source_ids=["src_inkloop_m0_feasibility", "src_meta_muse_docs_2026"],
                     model_applicability=["muse-image-1.0"],
                     verification_status="empirically_verified",
+                    artistic_theory_vs_empirical="empirical_observation",
                     empirical_notes="Demonstrated on character Nour across 6 scenes (ADR-007): Arm A 0/6 pass rate, Arm B 6/6 pass rate."
                 ),
                 ResearchClaim(
@@ -415,6 +433,7 @@ def build_canonical_60_groups() -> List[TaxonomyGroupRecord]:
                     source_ids=["src_inkloop_m0_feasibility"],
                     model_applicability=["muse-spark-1.3"],
                     verification_status="empirically_verified",
+                    artistic_theory_vs_empirical="empirical_observation",
                     empirical_notes="Correctly returned passed=True on Arm B valid output and passed=False on corrupted test candidate."
                 ),
             ]
@@ -501,6 +520,7 @@ def build_canonical_60_groups() -> List[TaxonomyGroupRecord]:
                     source_ids=["src_meta_muse_docs_2026", "src_mccloud_1993"],
                     model_applicability=["muse-image-1.0"],
                     verification_status="hypothesized",
+                    artistic_theory_vs_empirical="artistic_theory",
                     empirical_notes="Integrated into canonical StyleBible defaults in M1."
                 )
             ]
@@ -545,6 +565,7 @@ def build_canonical_60_groups() -> List[TaxonomyGroupRecord]:
                     source_ids=["src_mccloud_1993", "src_eisner_1985"],
                     model_applicability=["muse-image-1.0"],
                     verification_status="hypothesized",
+                    artistic_theory_vs_empirical="artistic_theory",
                 )
             ]
             rules = [

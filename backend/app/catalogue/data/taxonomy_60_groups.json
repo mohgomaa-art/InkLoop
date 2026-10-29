@@ -34,7 +34,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.639607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -71,7 +71,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.639607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -111,7 +111,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -151,7 +151,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -192,7 +192,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -230,7 +230,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -252,6 +252,7 @@
     "canonical_name": "07. Camera Shot Scales",
     "claims": [
       {
+        "artistic_theory_vs_empirical": "artistic_theory",
         "claim_id": "clm_07_framing_grammar",
         "claim_text": "Sequential framing terms in 07. Camera Shot Scales govern visual distance and narrative focus.",
         "confidence": "fact",
@@ -259,6 +260,8 @@
         "model_applicability": [
           "muse-image-1.0"
         ],
+        "reviewed_at": null,
+        "reviewed_by": null,
         "source_ids": [
           "src_mccloud_1993",
           "src_eisner_1985"
@@ -307,7 +310,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "Scott McCloud"
         ],
@@ -317,16 +320,19 @@
         "publication_date": "1993",
         "publisher": "Tundra Publishing / HarperPerennial",
         "source_id": "src_mccloud_1993",
+        "source_location": "Chapters 2-4: Visual Iconography, Blood in the Gutter, and Panel Transitions",
         "supported_claim_ids": [
           "clm_07_framing_scales",
           "clm_11_panel_transitions",
           "clm_19_comic_linework"
         ],
         "title": "Understanding Comics: The Invisible Art",
-        "url_or_doi": "ISBN 0-06-097625-X"
+        "url_or_doi": "ISBN 0-06-097625-X",
+        "what_it_does_not_establish": "Does not establish generative model prompt weights, diffusion noise schedules, or digital inking algorithms.",
+        "what_it_establishes": "Establishes sequential art grammar, transition classifications, framing scale taxonomy, and reader closure theory."
       },
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "Will Eisner"
         ],
@@ -336,16 +342,19 @@
         "publication_date": "1985",
         "publisher": "Poorhouse Press",
         "source_id": "src_eisner_1985",
+        "source_location": "Chapters 1, 3, and 5: Framing, Perspective, and Encapsulation",
         "supported_claim_ids": [
           "clm_08_camera_angles",
           "clm_56_narrative_pacing"
         ],
         "title": "Comics and Sequential Art",
-        "url_or_doi": "ISBN 0-9614728-1-2"
+        "url_or_doi": "ISBN 0-9614728-1-2",
+        "what_it_does_not_establish": "Does not establish AI image synthesis behavior, automated rendering pipelines, or software interfaces.",
+        "what_it_establishes": "Establishes visual narrative mechanics, dramatic camera angles, expressive posture, and panel encapsulation."
       }
     ],
     "status": "researched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -370,6 +379,7 @@
     "canonical_name": "08. Camera Angles & Views",
     "claims": [
       {
+        "artistic_theory_vs_empirical": "artistic_theory",
         "claim_id": "clm_08_framing_grammar",
         "claim_text": "Sequential framing terms in 08. Camera Angles & Views govern visual distance and narrative focus.",
         "confidence": "fact",
@@ -377,6 +387,8 @@
         "model_applicability": [
           "muse-image-1.0"
         ],
+        "reviewed_at": null,
+        "reviewed_by": null,
         "source_ids": [
           "src_mccloud_1993",
           "src_eisner_1985"
@@ -425,7 +437,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "Scott McCloud"
         ],
@@ -435,16 +447,19 @@
         "publication_date": "1993",
         "publisher": "Tundra Publishing / HarperPerennial",
         "source_id": "src_mccloud_1993",
+        "source_location": "Chapters 2-4: Visual Iconography, Blood in the Gutter, and Panel Transitions",
         "supported_claim_ids": [
           "clm_07_framing_scales",
           "clm_11_panel_transitions",
           "clm_19_comic_linework"
         ],
         "title": "Understanding Comics: The Invisible Art",
-        "url_or_doi": "ISBN 0-06-097625-X"
+        "url_or_doi": "ISBN 0-06-097625-X",
+        "what_it_does_not_establish": "Does not establish generative model prompt weights, diffusion noise schedules, or digital inking algorithms.",
+        "what_it_establishes": "Establishes sequential art grammar, transition classifications, framing scale taxonomy, and reader closure theory."
       },
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "Will Eisner"
         ],
@@ -454,16 +469,19 @@
         "publication_date": "1985",
         "publisher": "Poorhouse Press",
         "source_id": "src_eisner_1985",
+        "source_location": "Chapters 1, 3, and 5: Framing, Perspective, and Encapsulation",
         "supported_claim_ids": [
           "clm_08_camera_angles",
           "clm_56_narrative_pacing"
         ],
         "title": "Comics and Sequential Art",
-        "url_or_doi": "ISBN 0-9614728-1-2"
+        "url_or_doi": "ISBN 0-9614728-1-2",
+        "what_it_does_not_establish": "Does not establish AI image synthesis behavior, automated rendering pipelines, or software interfaces.",
+        "what_it_establishes": "Establishes visual narrative mechanics, dramatic camera angles, expressive posture, and panel encapsulation."
       }
     ],
     "status": "researched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -501,7 +519,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -547,7 +565,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -592,7 +610,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -639,7 +657,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -680,7 +698,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -724,7 +742,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -760,7 +778,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -801,7 +819,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -848,7 +866,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -885,7 +903,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -909,6 +927,7 @@
     "canonical_name": "19. Stroke & Line Art Types",
     "claims": [
       {
+        "artistic_theory_vs_empirical": "artistic_theory",
         "claim_id": "clm_19_screentone_style",
         "claim_text": "Screentone shading directives enforce consistent manga-style tonal gradations without introducing gray muddy blur.",
         "confidence": "fact",
@@ -916,6 +935,8 @@
         "model_applicability": [
           "muse-image-1.0"
         ],
+        "reviewed_at": null,
+        "reviewed_by": null,
         "source_ids": [
           "src_meta_muse_docs_2026",
           "src_mccloud_1993"
@@ -972,7 +993,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "Meta AI"
         ],
@@ -982,15 +1003,18 @@
         "publication_date": "2026-04",
         "publisher": "Meta Platforms, Inc.",
         "source_id": "src_meta_muse_docs_2026",
+        "source_location": "Meta AI Developer Documentation: Muse API v1.0 Reference, Image Edits Specification",
         "supported_claim_ids": [
           "clm_60_anchor_composition",
           "clm_19_screentone_style"
         ],
         "title": "Meta AI Muse Image 1.0 & Spark 1.3 Technical Documentation",
-        "url_or_doi": "https://api.meta.ai/v1/docs"
+        "url_or_doi": "https://api.meta.ai/v1/docs",
+        "what_it_does_not_establish": "Does not establish comic storytelling conventions, panel layout mechanics, or multi-panel pacing.",
+        "what_it_establishes": "Establishes API contracts for /v1/images/edits endpoint, reference multipart attachment, and spark-1.3 checklist parameters."
       },
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "Scott McCloud"
         ],
@@ -1000,17 +1024,20 @@
         "publication_date": "1993",
         "publisher": "Tundra Publishing / HarperPerennial",
         "source_id": "src_mccloud_1993",
+        "source_location": "Chapters 2-4: Visual Iconography, Blood in the Gutter, and Panel Transitions",
         "supported_claim_ids": [
           "clm_07_framing_scales",
           "clm_11_panel_transitions",
           "clm_19_comic_linework"
         ],
         "title": "Understanding Comics: The Invisible Art",
-        "url_or_doi": "ISBN 0-06-097625-X"
+        "url_or_doi": "ISBN 0-06-097625-X",
+        "what_it_does_not_establish": "Does not establish generative model prompt weights, diffusion noise schedules, or digital inking algorithms.",
+        "what_it_establishes": "Establishes sequential art grammar, transition classifications, framing scale taxonomy, and reader closure theory."
       }
     ],
     "status": "researched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1049,7 +1076,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1087,7 +1114,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1129,7 +1156,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1177,7 +1204,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1210,7 +1237,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1257,7 +1284,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1297,7 +1324,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1336,7 +1363,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1362,6 +1389,7 @@
     "canonical_name": "28. Character Poses \u2014 Basic",
     "claims": [
       {
+        "artistic_theory_vs_empirical": "artistic_theory",
         "claim_id": "clm_28_framing_grammar",
         "claim_text": "Sequential framing terms in 28. Character Poses \u2014 Basic govern visual distance and narrative focus.",
         "confidence": "fact",
@@ -1369,6 +1397,8 @@
         "model_applicability": [
           "muse-image-1.0"
         ],
+        "reviewed_at": null,
+        "reviewed_by": null,
         "source_ids": [
           "src_mccloud_1993",
           "src_eisner_1985"
@@ -1417,7 +1447,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "Scott McCloud"
         ],
@@ -1427,16 +1457,19 @@
         "publication_date": "1993",
         "publisher": "Tundra Publishing / HarperPerennial",
         "source_id": "src_mccloud_1993",
+        "source_location": "Chapters 2-4: Visual Iconography, Blood in the Gutter, and Panel Transitions",
         "supported_claim_ids": [
           "clm_07_framing_scales",
           "clm_11_panel_transitions",
           "clm_19_comic_linework"
         ],
         "title": "Understanding Comics: The Invisible Art",
-        "url_or_doi": "ISBN 0-06-097625-X"
+        "url_or_doi": "ISBN 0-06-097625-X",
+        "what_it_does_not_establish": "Does not establish generative model prompt weights, diffusion noise schedules, or digital inking algorithms.",
+        "what_it_establishes": "Establishes sequential art grammar, transition classifications, framing scale taxonomy, and reader closure theory."
       },
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "Will Eisner"
         ],
@@ -1446,16 +1479,19 @@
         "publication_date": "1985",
         "publisher": "Poorhouse Press",
         "source_id": "src_eisner_1985",
+        "source_location": "Chapters 1, 3, and 5: Framing, Perspective, and Encapsulation",
         "supported_claim_ids": [
           "clm_08_camera_angles",
           "clm_56_narrative_pacing"
         ],
         "title": "Comics and Sequential Art",
-        "url_or_doi": "ISBN 0-9614728-1-2"
+        "url_or_doi": "ISBN 0-9614728-1-2",
+        "what_it_does_not_establish": "Does not establish AI image synthesis behavior, automated rendering pipelines, or software interfaces.",
+        "what_it_establishes": "Establishes visual narrative mechanics, dramatic camera angles, expressive posture, and panel encapsulation."
       }
     ],
     "status": "researched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1497,7 +1533,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1538,7 +1574,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1576,7 +1612,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1611,7 +1647,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1659,7 +1695,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1699,7 +1735,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1737,7 +1773,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1785,7 +1821,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1830,7 +1866,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1869,7 +1905,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1922,7 +1958,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.173743+00:00",
     "version": "1.0.0"
   },
   {
@@ -1956,7 +1992,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -1988,7 +2024,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2024,7 +2060,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2059,7 +2095,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2096,7 +2132,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2132,7 +2168,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2172,7 +2208,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2209,7 +2245,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2249,7 +2285,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2288,7 +2324,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2328,7 +2364,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2370,7 +2406,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2410,7 +2446,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2444,7 +2480,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2477,7 +2513,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2514,7 +2550,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2550,7 +2586,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2588,7 +2624,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2628,7 +2664,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2668,7 +2704,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   },
   {
@@ -2691,6 +2727,7 @@
     "canonical_name": "60. Visual Continuity & Validation",
     "claims": [
       {
+        "artistic_theory_vs_empirical": "empirical_observation",
         "claim_id": "clm_60_anchor_composition",
         "claim_text": "Passing structured reference image to POST /v1/images/edits reduces character facial drift from 100% to 0% across 6 diverse scenes.",
         "confidence": "experimental_result",
@@ -2698,6 +2735,8 @@
         "model_applicability": [
           "muse-image-1.0"
         ],
+        "reviewed_at": null,
+        "reviewed_by": null,
         "source_ids": [
           "src_inkloop_m0_feasibility",
           "src_meta_muse_docs_2026"
@@ -2706,6 +2745,7 @@
         "verification_status": "empirically_verified"
       },
       {
+        "artistic_theory_vs_empirical": "empirical_observation",
         "claim_id": "clm_60_spark_verification",
         "claim_text": "muse-spark-1.3 reliably discriminates matching character candidates from deliberately corrupted candidates using a structured tri-state checklist.",
         "confidence": "experimental_result",
@@ -2713,6 +2753,8 @@
         "model_applicability": [
           "muse-spark-1.3"
         ],
+        "reviewed_at": null,
+        "reviewed_by": null,
         "source_ids": [
           "src_inkloop_m0_feasibility"
         ],
@@ -2728,7 +2770,7 @@
     "has_recipes": true,
     "has_recorded_experiments": true,
     "image_generation_relevance": "Core InkLoop thesis: enforces character identity, style consistency, reference matching, and verifier check.",
-    "is_empirically_validated": true,
+    "is_empirically_validated": false,
     "recipes": [
       {
         "evaluation_method": "muse-spark-1.3 tri-state attribute checklist verifier",
@@ -2783,7 +2825,9 @@
     ],
     "research_gaps": [
       "Multi-character co-presence identity drift rate under reference anchoring",
-      "High-angle / low-angle camera perspective drift with front-view reference image"
+      "High-angle / low-angle camera perspective drift with front-view reference image",
+      "Pose and lighting continuity validation across dynamic panel transitions",
+      "Clothing and prop continuity validation across story timeline state deltas"
     ],
     "rules": [
       {
@@ -2843,7 +2887,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "Meta AI"
         ],
@@ -2853,15 +2897,18 @@
         "publication_date": "2026-04",
         "publisher": "Meta Platforms, Inc.",
         "source_id": "src_meta_muse_docs_2026",
+        "source_location": "Meta AI Developer Documentation: Muse API v1.0 Reference, Image Edits Specification",
         "supported_claim_ids": [
           "clm_60_anchor_composition",
           "clm_19_screentone_style"
         ],
         "title": "Meta AI Muse Image 1.0 & Spark 1.3 Technical Documentation",
-        "url_or_doi": "https://api.meta.ai/v1/docs"
+        "url_or_doi": "https://api.meta.ai/v1/docs",
+        "what_it_does_not_establish": "Does not establish comic storytelling conventions, panel layout mechanics, or multi-panel pacing.",
+        "what_it_establishes": "Establishes API contracts for /v1/images/edits endpoint, reference multipart attachment, and spark-1.3 checklist parameters."
       },
       {
-        "accessed_date": "2026-10-29T01:46:58.639607+00:00",
+        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
         "authors": [
           "InkLoop Engineering Team"
         ],
@@ -2871,16 +2918,19 @@
         "publication_date": "2026-10-29",
         "publisher": "InkLoop Project Repository (runs/m0_visual/)",
         "source_id": "src_inkloop_m0_feasibility",
+        "source_location": "runs/m0_visual/summary.json and benchmark candidate artifacts",
         "supported_claim_ids": [
           "clm_60_anchor_composition",
           "clm_60_spark_verification"
         ],
         "title": "InkLoop M0 Visual Feasibility Experiment: Anchor Composition vs Unanchored Drift",
-        "url_or_doi": "runs/m0_visual/summary.json"
+        "url_or_doi": "runs/m0_visual/summary.json",
+        "what_it_does_not_establish": "Does not establish multi-character co-presence consistency, full 14-element validation of Group 60, or arbitrary character references beyond Nour.",
+        "what_it_establishes": "Establishes that passing nour_reference.png to muse-image-1.0 /v1/images/edits reduces single-character facial drift from 100% to 0% across 6 diverse scenes."
       }
     ],
-    "status": "validated",
-    "updated_at": "2026-10-29T01:46:58.640607+00:00",
+    "status": "experimentally_tested",
+    "updated_at": "2026-10-29T02:00:08.174780+00:00",
     "version": "1.0.0"
   }
 ]

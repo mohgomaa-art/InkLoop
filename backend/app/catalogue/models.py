@@ -15,6 +15,9 @@ from app.catalogue.enums import (
     RuleType,
     OutcomeVerdict,
     ConflictPriority,
+    LicenseType,
+    LicenseTargetType,
+    ReviewDecision,
 )
 
 
@@ -25,6 +28,7 @@ def utc_now_iso() -> str:
 class SourceRecord(BaseModel):
     """
     Bibliographic and technical source provenance for an image-generation claim or rule.
+    Captures exact source location, what it establishes, and what it does not establish.
     """
     source_id: str = Field(..., description="Stable source identifier (e.g. 'src_meta_muse_2026')")
     title: str = Field(..., description="Title of documentation, publication, or experiment log")
@@ -36,6 +40,9 @@ class SourceRecord(BaseModel):
     evidence_class: EvidenceClass = Field(..., description="Rigorous classification of evidence strength")
     supported_claim_ids: List[str] = Field(default_factory=list, description="IDs of claims or rules supported by this source")
     license_or_access: Optional[str] = Field(default=None, description="License terms or access restrictions")
+    source_location: Optional[str] = Field(default=None, description="Exact document section, chapter, page, URL, or experiment artifact path")
+    what_it_establishes: Optional[str] = Field(default=None, description="Explicit statement of what this source proves or documents")
+    what_it_does_not_establish: Optional[str] = Field(default=None, description="Explicit boundaries and limits of what this source does NOT prove")
     notes: Optional[str] = Field(default=None, description="Technical annotations on source validity")
 
     model_config = ConfigDict(extra="forbid")
@@ -52,7 +59,60 @@ class ResearchClaim(BaseModel):
     source_ids: List[str] = Field(default_factory=list, description="IDs of supporting SourceRecords")
     model_applicability: List[str] = Field(default_factory=list, description="Specific models where claim holds (e.g. ['muse-image-1.0'])")
     verification_status: str = Field(default="unverified", description="'unverified', 'hypothesized', 'tested', or 'empirically_verified'")
+    artistic_theory_vs_empirical: str = Field(default="empirical_observation", description="'artistic_theory' or 'empirical_observation'")
+    reviewed_by: Optional[str] = Field(default=None, description="Identifier of reviewer or lead investigator")
+    reviewed_at: Optional[str] = Field(default=None, description="Review timestamp in UTC")
     empirical_notes: Optional[str] = Field(default=None, description="Contextual limits or caveats")
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class LicenseRecord(BaseModel):
+    """
+    Formal governance and rights tracking for assets, fonts, code, models, and reference images (T6.1).
+    Ensures commercial safety, attribution obligations, and prevents silent usage of unknown rights.
+    """
+    license_id: str = Field(..., description="Stable license identifier (e.g. 'lic_font_amiri_ofl')")
+    target_type: LicenseTargetType = Field(..., description="Target category being governed")
+    target_identifier: str = Field(..., description="Name, asset ID, or module path of the governed artifact")
+    license_type: LicenseType = Field(..., description="Standardized license classification")
+    license_name: str = Field(..., description="Full human-readable license title (e.g. 'SIL Open Font License 1.1')")
+    license_url_or_path: Optional[str] = Field(default=None, description="Canonical URL or repository path to full license text")
+    is_commercial_use_permitted: bool = Field(default=False, description="Whether commercial use is affirmatively permitted")
+    attribution_required: bool = Field(default=True, description="Whether copyright/author attribution is legally required")
+    attribution_text: Optional[str] = Field(default=None, description="Exact attribution string to include if required")
+    copyleft_or_sharealike: bool = Field(default=False, description="Whether derivative works must carry same license")
+    restrictions_or_notes: Optional[str] = Field(default=None, description="Specific constraints or usage limits")
+    verified_by: Optional[str] = Field(default=None, description="Sign-off identity or compliance role")
+    verified_at: Optional[str] = Field(default=None, description="Verification timestamp in UTC")
+
+    model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="after")
+    def validate_license_safety(self) -> "LicenseRecord":
+        if self.license_type == LicenseType.UNKNOWN and self.is_commercial_use_permitted:
+            raise ValueError(
+                f"License '{self.license_id}' cannot permit commercial use when license_type is 'UNKNOWN'."
+            )
+        return self
+
+
+class PromotionReviewRecord(BaseModel):
+    """
+    Formal audit record of review and promotion of a research claim, recipe, or taxonomy group (T6.1).
+    Audits reviewer identity, decision, rationale, and evidence validation before status upgrades.
+    """
+    review_id: str = Field(..., description="Unique review identifier (e.g. 'rev_clm_60_anchor')")
+    target_id: str = Field(..., description="ID of claim, recipe, or taxonomy group reviewed")
+    target_type: str = Field(..., description="'claim', 'recipe', or 'group'")
+    reviewer_role: str = Field(..., description="Role of reviewer (e.g. 'Lead Research Agent', 'Project Lead')")
+    reviewer_id: str = Field(..., description="Unique reviewer ID or handle")
+    decision: ReviewDecision = Field(..., description="Review outcome: approved_promotion, rejected, more_evidence_needed")
+    previous_status: str = Field(..., description="Status prior to review")
+    promoted_to_status: Optional[str] = Field(default=None, description="New status if approved")
+    rationale: str = Field(..., description="Detailed technical justification for decision")
+    evidence_verified: List[str] = Field(default_factory=list, description="IDs of sources, experiments, or artifacts checked")
+    reviewed_at: str = Field(default_factory=utc_now_iso)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -170,6 +230,13 @@ class TaxonomyGroupRecord(BaseModel):
                 raise ValueError(
                     f"Group '{self.group_id}' is marked 'VALIDATED' but contains no passing, empirically validated recipes."
                 )
+            # Broad group anti-gaming rule: a single recipe cannot validate an entire broad group
+            if len(self.canonical_elements) > 3 and len(passing_recipes) < 2:
+                raise ValueError(
+                    f"Group '{self.group_id}' has {len(self.canonical_elements)} canonical elements but only "
+                    f"{len(passing_recipes)} passing recipe(s). Broad groups (>3 elements) require comprehensive "
+                    f"element validation (at least 2 passing recipes across diverse elements) to attain full 'VALIDATED' status."
+                )
             # Must have primary source or experiment record
             valid_sources = [
                 s for s in self.sources
@@ -178,6 +245,12 @@ class TaxonomyGroupRecord(BaseModel):
             if not valid_sources:
                 raise ValueError(
                     f"Group '{self.group_id}' is marked 'VALIDATED' but has no primary or experimental source backing."
+                )
+
+        elif self.status == CoverageStatus.EXPERIMENTALLY_TESTED:
+            if not self.has_recorded_experiments:
+                raise ValueError(
+                    f"Group '{self.group_id}' has status 'EXPERIMENTALLY_TESTED' but 'has_recorded_experiments' is False."
                 )
 
         elif self.status == CoverageStatus.UNRESEARCHED:
