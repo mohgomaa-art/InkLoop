@@ -11,7 +11,7 @@
 
 ## Next actions
 
-1. B1 is complete: eight type IDs are centralized and all 50 legacy preset IDs map as appearance variants. Focused tests pass.
-2. Implement B2 word/line limits, font-metric shaping, and visible overflow diagnostics; remove automatic dialogue condensation.
+1. B1 and B2 are complete. The semantic registry retains all 50 preset IDs; B2 applies type limits, measures active fonts after Arabic shaping, flags min-font/line overflow, and preserves exact wording. The focused 39-test set passes.
+2. Implement B3 protected-region records and cache keyed by image SHA-256 plus normalized concept. Keep SAM offline in tests and reserve real calls for final evidence.
 3. Preserve the existing page and DB. Use a copy or dedicated test project for visual reproduction and post-fix UI/export checks.
-4. Update this handoff and the ledger at each milestone; stage only bubble repair files and make one scoped commit per completed B0–B7 milestone.
+4. Update this handoff and the ledger at each milestone; stage only bubble repair paths and make one scoped commit per completed B0–B7 milestone.

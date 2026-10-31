@@ -8,7 +8,7 @@ Workspace: existing dirty files preserved; each commit will stage only this repa
 |---|---|---|---|
 | B0 root cause and baseline | Complete | [`root-cause.md`](root-cause.md); pre-fix screenshot at revision 21; exact revision 6 request/response and failed bubble trace recorded. | Pending |
 | B1 eight-type registry and appearance variants | Complete | [`registry.md`](registry.md); exact type IDs and 50 stable appearance IDs verified by 3 tests. | Pending |
-| B2 word, line, shaping, and overflow limits | Not started |  |  |
+| B2 word, line, shaping, and overflow limits | Complete | [`lettering.md`](lettering.md); 39 focused tests pass; exact planned text is preserved and over-limit errors are structured. | Pending |
 | B3 protected-region records and SAM cache | Not started |  |  |
 | B4 deterministic placement | Not started |  |  |
 | B5 unified body/tail geometry | Not started |  |  |
