@@ -11,7 +11,7 @@
 
 ## Next actions
 
-1. B1 and B2 are complete. The semantic registry retains all 50 preset IDs; B2 applies type limits, measures active fonts after Arabic shaping, flags min-font/line overflow, and preserves exact wording. The focused 39-test set passes.
-2. Implement B3 protected-region records and cache keyed by image SHA-256 plus normalized concept. Keep SAM offline in tests and reserve real calls for final evidence.
+1. B1–B3 are complete. The semantic registry retains all 50 appearance IDs; lettering now enforces type limits with shaped-font metrics; protected regions are cached by image SHA-256 and normalized concept, with explicit unknown/manual/override states. The current focused validation set passes 74 tests and made no live SAM calls.
+2. Implement B4 deterministic multi-bubble placement using known protected regions, reading direction, gutters, and safe margins; reject unknown regions unless manually annotated or explicitly overridden.
 3. Preserve the existing page and DB. Use a copy or dedicated test project for visual reproduction and post-fix UI/export checks.
 4. Update this handoff and the ledger at each milestone; stage only bubble repair paths and make one scoped commit per completed B0–B7 milestone.

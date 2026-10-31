@@ -5,6 +5,7 @@ Handles Muse Spark structured verification outputs and SAM 3.1 token formats.
 import re
 import json
 import base64
+import hashlib
 from typing import Optional, Dict, Any
 from app.schemas import VerificationResult, AttributeVerdict, BoundingBox, SegmentationResult
 
@@ -31,11 +32,15 @@ def parse_sam_response(raw_text: str) -> SegmentationResult:
 
     mask_matches = SAM_MASK_PATTERN.findall(raw_text)
     has_mask = len(mask_matches) > 0
+    mask_sha256 = hashlib.sha256(
+        "\n".join(f"{x}:{y}:{data}" for x, y, data in mask_matches).encode("utf-8")
+    ).hexdigest() if has_mask else None
 
     return SegmentationResult(
         subject_count=len(boxes),
         boxes=boxes,
-        mask_available=has_mask
+        mask_available=has_mask,
+        mask_sha256=mask_sha256,
     )
 
 def parse_verifier_response(raw_text: str) -> VerificationResult:

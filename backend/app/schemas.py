@@ -53,6 +53,7 @@ class SegmentationResult(BaseModel):
     subject_count: int
     boxes: List[BoundingBox]
     mask_available: bool = False
+    mask_sha256: Optional[str] = None
 
 # ---------------------------------------------------------------------------
 # M1 Orchestration & Story Bible Schemas (Task 4)
