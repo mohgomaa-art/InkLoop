@@ -74,8 +74,30 @@ export const SpeechBubbleSvg: React.FC<SpeechBubbleSvgProps> = ({
   onPointerDownTailHandle,
 }) => {
   const m = layer.metadata as Record<string, any>;
-  const shape = (m.bubble_shape as BubbleShape) || 'oval';
-  const tailType = (m.tail_type as TailType) || 'smooth_pointer';
+  const typeId = String(m.type_id || m.semantic_type || '');
+  const hasTailTarget = Boolean(
+    (m.tail_target && (m.tail_target.x !== undefined || m.tail_target.y !== undefined)) ||
+    m.tail_x !== undefined ||
+    m.tail_tip_x !== undefined
+  );
+
+  let defaultShape: BubbleShape = 'oval';
+  let defaultTail: TailType = hasTailTarget ? 'smooth_pointer' : 'none';
+
+  if (typeId === 'narration.box' || typeId === 'caption.timeplace' || m.carrier === 'caption' || m.carrier === 'narration_box') {
+    defaultShape = 'rounded_rectangle';
+    defaultTail = 'none';
+  } else if (typeId === 'sfx.text') {
+    defaultShape = 'none';
+    defaultTail = 'none';
+  } else if (!m.bubble_shape && !hasTailTarget) {
+    // Plain text or caption layers without a tail target render as clean rounded rectangle boxes
+    defaultShape = 'rounded_rectangle';
+    defaultTail = 'none';
+  }
+
+  const shape = (m.bubble_shape as BubbleShape) || defaultShape;
+  const tailType = (m.tail_type as TailType) || defaultTail;
   const accent = (m.accent as BubbleAccent) || (m.accents as BubbleAccent) || 'none';
   const halftoneShadow = Boolean(m.halftone_shadow || m.has_halftone_shadow);
   const isInverted = Boolean(m.inverted_dark_mode) || shape === 'dark_aura_ghost';
@@ -83,8 +105,11 @@ export const SpeechBubbleSvg: React.FC<SpeechBubbleSvgProps> = ({
   const x = Number(m.x || 0);
   const y = Number(m.y || 0);
   const width = Math.max(40, Number(m.width || 240));
-  const height = Math.max(30, Number(m.height || 140));
   const fontSize = Number(m.font_size || 24);
+  const padX = Number(m.padding_x || (shape === 'rounded_rectangle' ? 16 : 24));
+  const padY = Number(m.padding_y || (shape === 'rounded_rectangle' ? 12 : 18));
+  const defaultHeight = Math.max(38, Math.round(fontSize * 1.4 + padY * 2));
+  const height = Math.max(30, Number(m.height || defaultHeight));
   const strokeWidth = Number(m.stroke_width || m.border_width || 2.5);
   const geometryIsCurrent = Number(m.bubble_geometry_version || 0) >= 2;
   const organicSeed = String(m.bubble_id || layer.layer_id);
@@ -103,9 +128,6 @@ export const SpeechBubbleSvg: React.FC<SpeechBubbleSvgProps> = ({
     : /[\u0590-\u08ff\ufb1d-\ufefc]/u.test(textValue) ? 'rtl' : 'ltr';
   const strokeDash = String(m.stroke_dash || (shape === 'whisper_cloud_soft' || tailType === 'whisper_dashed' ? '5 4' : ''));
 
-  const padX = Number(m.padding_x || 24);
-  const padY = Number(m.padding_y || 18);
-
   const cx = x + width / 2;
   const cy = y + height / 2;
   const rx = width / 2;
@@ -114,9 +136,9 @@ export const SpeechBubbleSvg: React.FC<SpeechBubbleSvgProps> = ({
   const organicScale = 0.994 + bubbleNoise(organicSeed, 98) * 0.012;
   const organicPathTransform = `translate(${cx} ${cy}) rotate(${organicTurn.toFixed(2)}) scale(${organicScale.toFixed(4)}) translate(${-cx} ${-cy})`;
 
-  // Tail tip position
-  const tipX = Number(m.tail_target?.x ?? m.tail_tip_x ?? (cx - rx * 0.3));
-  const tipY = Number(m.tail_target?.y ?? m.tail_tip_y ?? (y + height + 50));
+  // Tail tip position (only active when tail is not none)
+  const tipX = Number(m.tail_target?.x ?? m.tail_x ?? m.tail_tip_x ?? cx);
+  const tipY = Number(m.tail_target?.y ?? m.tail_y ?? m.tail_tip_y ?? cy);
 
   // Compute or reuse bubble path
   const bubblePath = useMemo(() => {

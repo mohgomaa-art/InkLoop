@@ -2589,16 +2589,59 @@ class CapabilityRegistry:
             if font.metadata.project_id != document.project_id or font.metadata.asset_type.value != "font_file":
                 raise ToolError("ERR_FONT_ASSET_INVALID", "Font must be a verified font asset registered to this project.")
             font_family = font.metadata.name
-        width = args.get("width", max(1.0, panel.rect.width - 32) if panel else document.layout.canvas_spec.width_px - 64)
-        metadata = {
-            "text": args["text"], "x": args.get("x", panel.rect.x + 16 if panel else 32),
-            "y": args.get("y", panel.rect.y + 32 if panel else 48), "width": width,
-            "font_family": font_family, "font_asset_id": font_asset_id, "font_size": args.get("font_size", 28),
-            "font_weight": args.get("font_weight", "normal"), "color": args.get("color", "#111111"),
-            "align": args.get("align", "left"), "direction": args.get("direction", "auto"),
-            "line_height": args.get("line_height", 1.25),
-        }
+        if panel and "width" not in args:
+            from app.text.lettering_layout import layout_lettering_text
+            layout = layout_lettering_text(
+                text=args["text"],
+                type_id="narration.box",
+                max_width_px=panel.rect.width * 0.55,
+                max_height_px=panel.rect.height * 0.38,
+                font_family=font_family,
+                requested_font_size_px=float(args.get("font_size", 20)),
+            )
+            width = max(80.0, layout.content_width_px + 32.0)
+            height = max(38.0, layout.content_height_px + 24.0)
+        else:
+            width = args.get("width", max(1.0, panel.rect.width - 32) if panel else document.layout.canvas_spec.width_px - 64)
+            height = args.get("height", 60.0)
+
         layer_id = args.get("layer_id") or generate_id(IdPrefix.TEXT)
+        metadata = {
+            "text": args["text"],
+            "x": args.get("x", panel.rect.x + 16 if panel else 32),
+            "y": args.get("y", panel.rect.y + 16 if panel else 48),
+            "width": width,
+            "height": height,
+            "font_family": font_family,
+            "font_asset_id": font_asset_id,
+            "font_size": args.get("font_size", 20),
+            "font_weight": args.get("font_weight", "normal"),
+            "color": args.get("color", "#111111"),
+            "align": args.get("align", "center"),
+            "direction": args.get("direction", "auto"),
+            "line_height": args.get("line_height", 1.25),
+            "bubble_shape": "rounded_rectangle",
+            "tail_type": "none",
+            "type_id": "narration.box",
+            "semantic_type": "narration.box",
+        }
+        from app.canvas.bubble_vector import BubbleVectorBuilder
+        from app.contracts.geometry import Rect
+        vb = BubbleVectorBuilder()
+        bounds = Rect(x=float(metadata["x"]), y=float(metadata["y"]), width=float(width), height=float(height))
+        vec = vb.build_bubble_vector(
+            bounds=bounds,
+            type_id="narration.box",
+            shape="rounded_rectangle",
+            tail_type="none",
+            tail_target=None,
+            bubble_id=layer_id,
+            pad_x=16.0,
+            pad_y=12.0,
+        )
+        metadata["svg_path"] = vec.unified_path
+        metadata["unified_path"] = vec.unified_path
+        metadata["bubble_geometry_version"] = 2
         existing = next((item for item in document.layers if item.layer_id == layer_id), None)
         if existing:
             if existing.kind == LayerKind.TEXT and existing.panel_id == args.get("panel_id") and existing.metadata.get("text") == args["text"]:
@@ -3189,6 +3232,29 @@ class CapabilityRegistry:
         type_spec = BUBBLE_TYPE_BY_ID[type_id]
         is_agent_call = bool(ctx.get("_agent_chat"))
         font_size = float(args.get("font_size", min(24, type_spec.max_font_px)))
+
+        if not type_spec.tail_required:
+            from app.canvas.bubble_service import BubbleService, BubbleServiceError
+            service = BubbleService()
+            expected_revision = args.get("expected_revision", document.revision)
+            try:
+                res = service.add_bubble(
+                    document=document,
+                    panel_id=panel_id,
+                    type_id=type_id,
+                    text=text,
+                    reading_order=int(args.get("reading_order", 1)),
+                    speaker_character_id=None,
+                    bubble_id=args.get("bubble_id") or args.get("layer_id"),
+                    position=args.get("position"),
+                    font_family=str(args.get("font_family", "Comic Neue")),
+                    preferred_font_size=font_size,
+                    reading_direction=getattr(document.layout, "reading_direction", "rtl"),
+                )
+            except BubbleServiceError as exc:
+                raise ToolError(exc.code, exc.message, exc.details) from exc
+            saved = self._save_editor_page(store, document, expected_revision)
+            return {"page_id": saved.page_id, "revision": saved.revision, "layer_id": res.get("layer_id"), **res}
 
         # Expressive style recommendation based on dialogue text and emotional cues
         from app.canvas.bubble_stylist import recommend_bubble_style
