@@ -11,7 +11,7 @@
 
 ## Next actions
 
-1. Implement B1's exactly eight semantic types with the 50 legacy presets retained as appearance variants.
-2. Add focused backend/frontend tests for the shared registry and migration contract before proceeding through B2–B7.
+1. B1 is complete: eight type IDs are centralized and all 50 legacy preset IDs map as appearance variants. Focused tests pass.
+2. Implement B2 word/line limits, font-metric shaping, and visible overflow diagnostics; remove automatic dialogue condensation.
 3. Preserve the existing page and DB. Use a copy or dedicated test project for visual reproduction and post-fix UI/export checks.
 4. Update this handoff and the ledger at each milestone; stage only bubble repair files and make one scoped commit per completed B0–B7 milestone.
