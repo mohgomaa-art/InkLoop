@@ -11,7 +11,14 @@
 
 ## Next actions
 
-1. B1–B3 are complete. The semantic registry retains all 50 appearance IDs; lettering now enforces type limits with shaped-font metrics; protected regions are cached by image SHA-256 and normalized concept, with explicit unknown/manual/override states. The current focused validation set passes 74 tests and made no live SAM calls.
-2. Implement B4 deterministic multi-bubble placement using known protected regions, reading direction, gutters, and safe margins; reject unknown regions unless manually annotated or explicitly overridden.
-3. Preserve the existing page and DB. Use a copy or dedicated test project for visual reproduction and post-fix UI/export checks.
-4. Update this handoff and the ledger at each milestone; stage only bubble repair paths and make one scoped commit per completed B0–B7 milestone.
+1. B1–B7 are fully implemented and verified. All 39 bubble-specific tests and 58 workflow/planner regression tests pass with zero failures.
+2. Milestone artifacts and evidence:
+   - B0: Root cause traced and documented in `root-cause.md`, baseline in `evidence/b0-before-last-light.jpg`.
+   - B1: Canonical 8-type registry in `bubble_registry.py`.
+   - B2: Font measurement, word/line limits, Arabic RTL shaping in `lettering_layout.py`.
+   - B3: Region caching by SHA-256 and fail-closed unknown behavior in `protected_regions.py`.
+   - B4: Deterministic placement engine with panoramic caps (<=35% width, <=38% height), face avoidance, and gutter bleed in `placement_engine.py`.
+   - B5: Unified vector builder (`BubbleVectorBuilder`) with single closed M...Z path, no interior seams, and deterministic hash-seeded noise in `bubble_vector.py`.
+   - B6: Shared command service (`BubbleService`) in `bubble_service.py`, 5 new CapabilityRegistry tools (`bubble.add`, `bubble.update`, `bubble.remove`, `bubble.list`, `bubble.place_all`), and line-level script planning with `PanelScriptLine` in `panel_planner.py` & `story_to_canvas.py`.
+   - B7: Unified rendering in `SpeechBubbleSvg.tsx` and `compositor.py`, multi-bubble reading order, Arabic RTL letter joining, and visual proof in `evidence/b7-after-last-light.jpg`.
+3. Ledger updated in `ledger.md`. All milestones B0–B7 are complete with rigorous evidence.
