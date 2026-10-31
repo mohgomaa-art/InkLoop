@@ -1901,6 +1901,129 @@ class CapabilityRegistry:
             lambda args, ctx: self._canvas_update_speech_bubble_adapter(args, ctx),
         )
 
+        # B6: Canonical Bubble Tools Generated From Bubble Type Registry
+        from app.canvas.bubble_registry import BUBBLE_TYPES
+        type_ids_enum = [t.type_id for t in BUBBLE_TYPES]
+        bubble_add_desc = "Add a typed speech balloon, narration box, or SFX lettering to a panel in Canvas.\n" + "\n".join(
+            f"- '{t.type_id}': {t.description} (max {t.word_limit} words, {'speaker required' if t.tail_required else 'speaker is null'})"
+            for t in BUBBLE_TYPES
+        )
+
+        self.register_tool(
+            ToolDefinition(
+                tool_id="bubble.add",
+                name="Add Bubble",
+                domain="canvas",
+                purpose=bubble_add_desc,
+                side_effect=SideEffectType.CREATES_ASSET,
+                cost_semantics=CostSemantics.FREE,
+                parameters_schema={
+                    "type": "object",
+                    "properties": {
+                        "page_id": {"type": "string", "description": "Target page ID."},
+                        "panel_id": {"type": "string", "description": "Panel ID where the bubble will be placed."},
+                        "type_id": {"type": "string", "enum": type_ids_enum, "description": "Canonical bubble type ID."},
+                        "text": {"type": "string", "description": "Exact text content for the bubble."},
+                        "reading_order": {"type": "integer", "minimum": 1, "default": 1, "description": "Sequence index (1, 2, 3...) within panel."},
+                        "speaker_character_id": {"type": ["string", "null"], "description": "Character ID of speaker. Required for speech/thought; null for narration."},
+                        "expected_revision": {"type": "integer", "minimum": 1},
+                        "bubble_id": {"type": ["string", "null"]},
+                        "position": {"type": "object", "properties": {"x": {"type": "number"}, "y": {"type": "number"}}},
+                        "tail_target": {"type": "object", "properties": {"x": {"type": "number"}, "y": {"type": "number"}}},
+                        "font_family": {"type": "string", "default": "Comic Neue"},
+                        "font_size": {"type": "number"},
+                    },
+                    "required": ["page_id", "panel_id", "type_id", "text"],
+                },
+            ),
+            lambda args, ctx: self._bubble_add_adapter(args, ctx),
+        )
+
+        self.register_tool(
+            ToolDefinition(
+                tool_id="bubble.update",
+                name="Update Bubble",
+                domain="canvas",
+                purpose="Update an existing bubble's text, type, position, or tail target.",
+                side_effect=SideEffectType.CREATES_ASSET,
+                cost_semantics=CostSemantics.FREE,
+                parameters_schema={
+                    "type": "object",
+                    "properties": {
+                        "page_id": {"type": "string"},
+                        "expected_revision": {"type": "integer", "minimum": 1},
+                        "bubble_id": {"type": "string"},
+                        "properties": {"type": "object"},
+                    },
+                    "required": ["page_id", "bubble_id"],
+                },
+            ),
+            lambda args, ctx: self._bubble_update_adapter(args, ctx),
+        )
+
+        self.register_tool(
+            ToolDefinition(
+                tool_id="bubble.remove",
+                name="Remove Bubble",
+                domain="canvas",
+                purpose="Remove a speech or narration bubble from a Canvas page.",
+                side_effect=SideEffectType.CREATES_ASSET,
+                cost_semantics=CostSemantics.FREE,
+                parameters_schema={
+                    "type": "object",
+                    "properties": {
+                        "page_id": {"type": "string"},
+                        "expected_revision": {"type": "integer", "minimum": 1},
+                        "bubble_id": {"type": "string"},
+                    },
+                    "required": ["page_id", "bubble_id"],
+                },
+            ),
+            lambda args, ctx: self._bubble_remove_adapter(args, ctx),
+        )
+
+        self.register_tool(
+            ToolDefinition(
+                tool_id="bubble.list",
+                name="List Bubbles",
+                domain="canvas",
+                purpose="List all bubbles placed on a Canvas page or specific panel.",
+                side_effect=SideEffectType.READ_ONLY,
+                cost_semantics=CostSemantics.FREE,
+                parameters_schema={
+                    "type": "object",
+                    "properties": {
+                        "page_id": {"type": "string"},
+                        "panel_id": {"type": "string"},
+                    },
+                    "required": ["page_id"],
+                },
+            ),
+            lambda args, ctx: self._bubble_list_adapter(args, ctx),
+        )
+
+        self.register_tool(
+            ToolDefinition(
+                tool_id="bubble.place_all",
+                name="Place All Bubbles",
+                domain="canvas",
+                purpose="Re-evaluate placement for all bubbles in a panel using the non-occluding placement engine.",
+                side_effect=SideEffectType.CREATES_ASSET,
+                cost_semantics=CostSemantics.FREE,
+                parameters_schema={
+                    "type": "object",
+                    "properties": {
+                        "page_id": {"type": "string"},
+                        "expected_revision": {"type": "integer", "minimum": 1},
+                        "panel_id": {"type": "string"},
+                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "rtl"},
+                    },
+                    "required": ["page_id", "panel_id"],
+                },
+            ),
+            lambda args, ctx: self._bubble_place_all_adapter(args, ctx),
+        )
+
         self.register_tool(
             ToolDefinition(
                 tool_id="canvas.detect_character_anchor",
@@ -2944,6 +3067,86 @@ class CapabilityRegistry:
             "panel_count": len(new_layout.panel_slots),
         }
 
+    def _bubble_add_adapter(self, args: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+        from app.canvas.bubble_service import BubbleService, BubbleServiceError
+        store, document = self._editor_page(args["page_id"], ctx)
+        service = BubbleService()
+        expected_revision = args.get("expected_revision", document.revision)
+        try:
+            result = service.add_bubble(
+                document=document,
+                panel_id=args["panel_id"],
+                type_id=args["type_id"],
+                text=args["text"],
+                reading_order=int(args.get("reading_order", 1)),
+                speaker_character_id=args.get("speaker_character_id"),
+                bubble_id=args.get("bubble_id"),
+                position=args.get("position"),
+                tail_target=args.get("tail_target"),
+                font_family=args.get("font_family", "Comic Neue"),
+                preferred_font_size=args.get("font_size"),
+            )
+        except BubbleServiceError as exc:
+            raise ToolError(exc.code, exc.message, exc.details) from exc
+
+        saved = self._save_editor_page(store, document, expected_revision)
+        result["page_id"] = saved.page_id
+        result["revision"] = saved.revision
+        return result
+
+    def _bubble_update_adapter(self, args: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+        from app.canvas.bubble_service import BubbleService, BubbleServiceError
+        store, document = self._editor_page(args["page_id"], ctx)
+        service = BubbleService()
+        expected_revision = args.get("expected_revision", document.revision)
+        try:
+            result = service.update_bubble(
+                document=document,
+                bubble_id=args["bubble_id"],
+                properties=args.get("properties", {}),
+            )
+        except BubbleServiceError as exc:
+            raise ToolError(exc.code, exc.message, exc.details) from exc
+
+        saved = self._save_editor_page(store, document, expected_revision)
+        result["page_id"] = saved.page_id
+        result["revision"] = saved.revision
+        return result
+
+    def _bubble_remove_adapter(self, args: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+        from app.canvas.bubble_service import BubbleService
+        store, document = self._editor_page(args["page_id"], ctx)
+        service = BubbleService()
+        expected_revision = args.get("expected_revision", document.revision)
+        removed = service.remove_bubble(document=document, bubble_id=args["bubble_id"])
+        if not removed:
+            raise ToolError("ERR_BUBBLE_NOT_FOUND", f"Bubble '{args['bubble_id']}' does not exist on page '{document.page_id}'.")
+        saved = self._save_editor_page(store, document, expected_revision)
+        return {"page_id": saved.page_id, "revision": saved.revision, "bubble_id": args["bubble_id"], "removed": True}
+
+    def _bubble_list_adapter(self, args: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+        from app.canvas.bubble_service import BubbleService
+        _store, document = self._editor_page(args["page_id"], ctx)
+        service = BubbleService()
+        bubbles = service.list_bubbles(document=document, panel_id=args.get("panel_id"))
+        return {"page_id": document.page_id, "revision": document.revision, "bubbles": bubbles}
+
+    def _bubble_place_all_adapter(self, args: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
+        from app.canvas.bubble_service import BubbleService, BubbleServiceError
+        store, document = self._editor_page(args["page_id"], ctx)
+        service = BubbleService()
+        expected_revision = args.get("expected_revision", document.revision)
+        try:
+            results = service.place_all(
+                document=document,
+                panel_id=args["panel_id"],
+                reading_direction=args.get("reading_direction", "rtl"),
+            )
+        except BubbleServiceError as exc:
+            raise ToolError(exc.code, exc.message, exc.details) from exc
+        saved = self._save_editor_page(store, document, expected_revision)
+        return {"page_id": saved.page_id, "revision": saved.revision, "results": results}
+
     def _canvas_add_speech_bubble_adapter(self, args: Dict[str, Any], ctx: Dict[str, Any]) -> Dict[str, Any]:
         from app.editor.models import EditorLayer, LayerKind
         from app.contracts.identity import generate_id, IdPrefix
@@ -2975,7 +3178,8 @@ class CapabilityRegistry:
                 delivery=args.get("delivery"),
             )
         except LetteringValidationError as exc:
-            raise ToolError(exc.code, exc.message, exc.details) from exc
+            err_code = "ERR_BUBBLE_TEXT_OVERFLOW" if exc.code == "ERR_LETTERING_WORD_LIMIT" and not args.get("type_id") else exc.code
+            raise ToolError(err_code, exc.message, exc.details) from exc
         if args.get("type_id") and preset_type_id and args["type_id"] != preset_type_id:
             raise ToolError(
                 "ERR_BUBBLE_PRESET_TYPE_MISMATCH",
@@ -3045,7 +3249,8 @@ class CapabilityRegistry:
                 line_height_multiplier=float(args.get("line_height", 1.15 if is_agent_call else 1.2)),
             )
         except LetteringValidationError as exc:
-            raise ToolError(exc.code, exc.message, exc.details) from exc
+            err_code = "ERR_BUBBLE_TEXT_OVERFLOW" if exc.code == "ERR_LETTERING_WORD_LIMIT" and not args.get("type_id") else exc.code
+            raise ToolError(err_code, exc.message, exc.details) from exc
         if lettering_layout.overflow and is_agent_call:
             diagnostic = lettering_layout.diagnostics[0]
             raise ToolError(diagnostic["code"], diagnostic["message"], diagnostic["details"])
@@ -4752,7 +4957,7 @@ class CapabilityRegistry:
                 word_limit = BUBBLE_TYPE_BY_ID[type_id].word_limit
                 if word_count > word_limit:
                     raise ToolError(
-                        "ERR_LETTERING_WORD_LIMIT",
+                        "ERR_LETTERING_LINE_TOO_LONG",
                         f"{type_id} in panel {panel_id} allows {word_limit} words; received {word_count}. Edit or split the exact line.",
                         {"panel_id": panel_id, "type_id": type_id, "word_count": word_count, "word_limit": word_limit},
                     )

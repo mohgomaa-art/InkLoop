@@ -217,7 +217,7 @@ def layout_lettering_text(
                 max_lines=spec.max_lines, line_height_px=round(line_height, 2),
                 content_width_px=round(content_width, 2), content_height_px=round(content_height, 2),
                 available_width_px=round(max_width_px, 2), available_height_px=round(max_height_px, 2),
-                word_count=words, line_count=len(lines), measurement_source="Pillow shaped-font metrics",
+                word_count=words, line_count=len(lines), measurement_source="Pillow font metrics",
                 overflow=False, diagnostics=[],
             )
 
@@ -250,6 +250,6 @@ def layout_lettering_text(
         max_lines=spec.max_lines, line_height_px=round(line_height, 2),
         content_width_px=round(content_width, 2), content_height_px=round(content_height, 2),
         available_width_px=round(max_width_px, 2), available_height_px=round(max_height_px, 2),
-        word_count=words, line_count=len(lines), measurement_source="Pillow shaped-font metrics",
+        word_count=words, line_count=len(lines), measurement_source="Pillow font metrics",
         overflow=True, diagnostics=[diagnostic],
     )

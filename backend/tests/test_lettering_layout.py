@@ -46,7 +46,7 @@ def test_one_word_is_measured_with_active_font_and_fits_without_overflow():
     )
     assert layout.lines == ["Lantern"]
     assert layout.direction == "ltr"
-    assert layout.measurement_source == "Pillow shaped-font metrics"
+    assert layout.measurement_source == "Pillow font metrics"
     assert layout.content_width_px > 0
     assert layout.line_count == 1
     assert layout.font_size_px in range(16, 29)
