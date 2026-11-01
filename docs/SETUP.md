@@ -17,7 +17,7 @@ Versions verified in the InkLoop development and test suite:
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/your-username/InkLoop.git
+git clone https://github.com/mohgomaa-art/InkLoop.git
 cd InkLoop
 ```
 

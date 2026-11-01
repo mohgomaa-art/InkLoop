@@ -17,5 +17,5 @@ InkLoop is designed for secure, auditable AI comic production.
 
 If you discover a security vulnerability or potential token exposure:
 1. Do not open a public issue.
-2. Contact the repository maintainers via private channels.
-3. Include reproduction steps and affected components.
+2. Contact the author directly: **Mohamed Gomaa** (`mnile23@gmail.com` / GitHub: [`@mohgomaa-art`](https://github.com/mohgomaa-art)).
+3. Include reproduction steps, affected components, and logs with all tokens redacted.
