@@ -10,15 +10,13 @@
 
 ## 1. Demo
 
-![InkLoop Studio Interface](docs/media/demo-poster.png)
+[![InkLoop Studio Interface](docs/media/demo-poster.png)](docs/media/demo.mp4)
 
 ### Studio Walkthrough Video
 
-https://github.com/mohgomaa-art/InkLoop/raw/main/docs/media/demo.mp4
+[▶ **Watch Full 1080p Walkthrough Video (docs/media/demo.mp4)**](docs/media/demo.mp4)
 
-*Full 1080p studio demonstration walkthrough illustrating script parsing, panel layout planning, character anchor locking, and collision-free speech bubble placement.*
-
-*(Direct file link: [docs/media/demo.mp4](docs/media/demo.mp4) · 1080p 60fps, 11.7 MB).*
+*Full 1080p studio demonstration walkthrough illustrating script parsing, panel layout planning, character anchor locking, and collision-free speech bubble placement (1080p 60fps, 8.5 MB, faststart web-streamable).*
 
 ---
 
