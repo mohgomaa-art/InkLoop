@@ -1,6 +1,6 @@
 """
 InkLoop Image Generation Knowledge Catalogue & Taxonomy Coverage Register.
-Public API exports for Task T6.1.
+Public API exports for Tasks T6.1, T6.2, and T6.3.
 """
 from app.catalogue.enums import (
     CoverageStatus,
@@ -29,6 +29,24 @@ from app.catalogue.governance import (
     PromotionWorkflow,
     create_default_license_registry,
 )
+from app.catalogue.errors import (
+    CatalogueError,
+    RetrievalError,
+    InvalidRetrievalRequestError,
+    NoEligibleKnowledgeError,
+    KnowledgeCompatibilityConflictError,
+)
+from app.catalogue.retrieval_models import (
+    KnowledgeBudget,
+    KnowledgeRetrievalPolicy,
+    KnowledgeRetrievalRequest,
+    CandidateEvaluation,
+    KnowledgeRetrievalResult,
+)
+from app.catalogue.retrieval import (
+    KnowledgeRetriever,
+    get_default_knowledge_retriever,
+)
 
 __all__ = [
     "CoverageStatus",
@@ -52,4 +70,16 @@ __all__ = [
     "LicenseRegistry",
     "PromotionWorkflow",
     "create_default_license_registry",
+    "CatalogueError",
+    "RetrievalError",
+    "InvalidRetrievalRequestError",
+    "NoEligibleKnowledgeError",
+    "KnowledgeCompatibilityConflictError",
+    "KnowledgeBudget",
+    "KnowledgeRetrievalPolicy",
+    "KnowledgeRetrievalRequest",
+    "CandidateEvaluation",
+    "KnowledgeRetrievalResult",
+    "KnowledgeRetriever",
+    "get_default_knowledge_retriever",
 ]

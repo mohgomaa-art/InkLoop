@@ -24,6 +24,7 @@ class IdPrefix(str, Enum):
     QA = "qa"
     FONT = "font"
     TEXT = "txt"
+    LINE = "line"
     BUBBLE = "bbl"
     EFFECT = "fx"
     CANVAS = "canvas"

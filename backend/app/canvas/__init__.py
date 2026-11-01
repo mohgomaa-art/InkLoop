@@ -1,0 +1,96 @@
+"""
+InkLoop Canvas Generation Engine (E2).
+Provides deterministic manga/manhwa page geometry, panel slot calculation,
+spatial validation, and structural SVG/raster previews.
+"""
+from app.canvas.models import (
+    CanvasSpec,
+    PageSpec,
+    PanelSlot,
+    GutterSpec,
+    MarginSpec,
+    BleedSpec,
+    SafeAreaSpec,
+    PageFormat,
+    PageType,
+    ReadingDirection,
+    LayoutTemplateId,
+    CanvasLayoutResult,
+    ValidationDiagnostic,
+)
+from app.canvas.errors import (
+    CanvasError,
+    CanvasGeometryError,
+    InvalidDimensionError,
+    OutOfBoundsLayoutError,
+    UnintendedOverlapError,
+    ImpossibleLayoutError,
+    TemplateNotFoundError,
+    AllocationLimitExceededError,
+)
+from app.canvas.engine import CanvasEngine
+from app.canvas.templates import get_template, list_templates
+from app.canvas.previews.svg import SVGPreviewGenerator, SVGPreviewConfig
+from app.canvas.previews.raster import RasterPreviewGenerator, RasterPreviewConfig
+
+from app.canvas.descriptors import (
+    LayoutRelation,
+    PanelShapeType,
+    FrameStyle,
+    GutterPolicy,
+    PanelBoundaryTreatment,
+    VNGRole,
+    NarrativePlanningTag,
+    PanelNarrativeDescriptor,
+    FramingScale,
+    CameraAngle,
+    SubjectOrientation,
+    PanelFramingDescriptor,
+    PanelTransitionType,
+    MultiAxisPanelDescriptor,
+)
+
+__all__ = [
+    "CanvasEngine",
+    "CanvasSpec",
+    "PageSpec",
+    "PanelSlot",
+    "GutterSpec",
+    "MarginSpec",
+    "BleedSpec",
+    "SafeAreaSpec",
+    "PageFormat",
+    "PageType",
+    "ReadingDirection",
+    "LayoutTemplateId",
+    "CanvasLayoutResult",
+    "ValidationDiagnostic",
+    "CanvasError",
+    "CanvasGeometryError",
+    "InvalidDimensionError",
+    "OutOfBoundsLayoutError",
+    "UnintendedOverlapError",
+    "ImpossibleLayoutError",
+    "TemplateNotFoundError",
+    "AllocationLimitExceededError",
+    "get_template",
+    "list_templates",
+    "SVGPreviewGenerator",
+    "SVGPreviewConfig",
+    "RasterPreviewGenerator",
+    "RasterPreviewConfig",
+    "LayoutRelation",
+    "PanelShapeType",
+    "FrameStyle",
+    "GutterPolicy",
+    "PanelBoundaryTreatment",
+    "VNGRole",
+    "NarrativePlanningTag",
+    "PanelNarrativeDescriptor",
+    "FramingScale",
+    "CameraAngle",
+    "SubjectOrientation",
+    "PanelFramingDescriptor",
+    "PanelTransitionType",
+    "MultiAxisPanelDescriptor",
+]

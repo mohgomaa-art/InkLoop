@@ -58,7 +58,7 @@ class BubbleService:
         font_family: str = "Comic Neue",
         preferred_font_size: Optional[float] = None,
         protected_regions: Optional[Sequence[ProtectedRegion | Rect | Dict[str, Any]]] = None,
-        reading_direction: str = "rtl",
+        reading_direction: str = "ltr",
         selected_character_ids: Optional[Sequence[str]] = None,
     ) -> Dict[str, Any]:
         """Validate, place, and add a single typed bubble to a page document."""
@@ -330,7 +330,7 @@ class BubbleService:
         bubble_id: str,
         properties: Dict[str, Any],
         protected_regions: Optional[Sequence[ProtectedRegion | Rect | Dict[str, Any]]] = None,
-        reading_direction: str = "rtl",
+        reading_direction: str = "ltr",
     ) -> Dict[str, Any]:
         """Update an existing bubble's text, type, position, or tail target."""
         layer = next(
@@ -491,7 +491,7 @@ class BubbleService:
         self,
         document: EditablePageDocument,
         panel_id: str,
-        reading_direction: str = "rtl",
+        reading_direction: str = "ltr",
         protected_regions: Optional[Sequence[ProtectedRegion | Rect | Dict[str, Any]]] = None,
     ) -> List[Dict[str, Any]]:
         """Re-place all bubbles within a panel to optimize spacing and reading order."""
@@ -503,26 +503,90 @@ class BubbleService:
         if not bubble_layers:
             return []
 
+        # Check if legacy document has missing or unassigned reading_orders
+        has_explicit_orders = any(l.metadata.get("reading_order") is not None for l in bubble_layers)
+        if not has_explicit_orders:
+            is_rtl = reading_direction.lower() == "rtl"
+            bubble_layers = sorted(
+                bubble_layers,
+                key=lambda l: (
+                    float(l.metadata.get("y", 0.0)),
+                    -float(l.metadata.get("x", 0.0)) if is_rtl else float(l.metadata.get("x", 0.0)),
+                )
+            )
+            for idx, l in enumerate(bubble_layers):
+                l.metadata["reading_order"] = idx + 1
+
+        # Resolve protected regions and speaker anchors
+        resolved_protected = list(protected_regions or [])
+        detected_anchors: List[Point] = []
+
+        img_layer = next((l for l in document.layers if l.panel_id == panel_id and l.kind == LayerKind.IMAGE), None)
+        if img_layer and img_layer.source_asset_id:
+            try:
+                from app.api.routers.assets import get_registry
+                from app.canvas.character_locator import detect_panel_protected_regions
+                asset_reg = get_registry()
+                resolved = asset_reg.resolve_asset(img_layer.source_asset_id, verify_integrity=False)
+                img_faces, detected_anchors = detect_panel_protected_regions(resolved.absolute_path, slot.rect)
+                resolved_protected.extend(img_faces)
+            except Exception:
+                pass
+
+        for existing in document.layers:
+            if existing.panel_id == panel_id and existing.metadata.get("protected_regions"):
+                resolved_protected.extend(existing.metadata["protected_regions"])
+
+        panel_layer = next((l for l in document.layers if l.panel_id == panel_id and l.kind == LayerKind.PANEL), None)
+        known_anchors = panel_layer.metadata.get("character_anchors", {}) if panel_layer else {}
+
         bubble_reqs = []
-        for l in bubble_layers:
+        for idx, l in enumerate(bubble_layers):
             m = l.metadata
             type_id = m.get("type_id") or m.get("semantic_type") or "speech.normal"
+            spk_id = m.get("speaker_character_id")
+
+            spk_anchor = None
+            prev_target = m.get("tail_target")
+            if spk_id and isinstance(known_anchors, dict) and spk_id in known_anchors:
+                cand = known_anchors[spk_id]
+                if isinstance(cand, dict) and "x" in cand and "y" in cand:
+                    spk_anchor = Point(x=float(cand["x"]), y=float(cand["y"]))
+            elif isinstance(prev_target, dict) and "x" in prev_target and "y" in prev_target:
+                spk_anchor = Point(x=float(prev_target["x"]), y=float(prev_target["y"]))
+            elif spk_id and detected_anchors:
+                unique_speakers = list(dict.fromkeys(bl.metadata.get("speaker_character_id") for bl in bubble_layers if bl.metadata.get("speaker_character_id")))
+                sorted_anchors = sorted(detected_anchors, key=lambda pt: pt.x)
+                if spk_id in unique_speakers and sorted_anchors:
+                    spk_idx = unique_speakers.index(spk_id)
+                    anchor_idx = min(spk_idx, int((spk_idx / max(1, len(unique_speakers) - 1)) * (len(sorted_anchors) - 1)))
+                    spk_anchor = sorted_anchors[anchor_idx]
+
             bubble_reqs.append(BubblePlacementRequest(
                 bubble_id=m["bubble_id"],
                 type_id=type_id,
                 text=m["text"],
-                reading_order=m.get("reading_order", 1),
-                speaker_character_id=m.get("speaker_character_id"),
+                reading_order=int(m.get("reading_order") or (idx + 1)),
+                speaker_character_id=spk_id,
+                speaker_anchor=spk_anchor,
                 font_family=m.get("font_family", "Comic Neue"),
                 preferred_font_size=m.get("font_size"),
             ))
 
         trim = document.layout.trim_box
+        # Protect other panels so gutter bleed stays strictly out of adjacent panels' artwork
+        other_panel_regions = [
+            ProtectedRegion(x=slot_other.rect.x, y=slot_other.rect.y, width=slot_other.rect.width, height=slot_other.rect.height, label="panel")
+            for slot_other in getattr(document.layout, "panel_slots", [])
+            if slot_other.panel_id != panel_id and slot_other.rect is not None
+        ]
+        all_protected = resolved_protected + other_panel_regions
+
         try:
             results = self.placement_engine.place_bubbles(
                 panel_rect=slot.rect,
                 bubbles=bubble_reqs,
-                protected_regions=protected_regions or [],
+                protected_regions=all_protected,
                 reading_direction=reading_direction,
                 page_safe_margin=trim,
                 allow_gutter_bleed=True,

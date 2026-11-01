@@ -184,19 +184,19 @@ def test_coverage_summary_counts_match_real_data(register):
     # Truthful baseline verification:
     # Exactly 0 groups are VALIDATED (Group 60 contains 14 elements; M0 tested solo portrait anchoring).
     # Exactly 1 group (60) is EXPERIMENTALLY_TESTED with documented M0 empirical trials and passing recipe.
-    # Exactly 4 groups (07, 08, 19, 28) are RESEARCHED with documented comic theory/style rules.
-    # Exactly 55 groups are UNRESEARCHED with explicit gaps documented.
+    # Exactly 14 groups (01, 03, 04, 05, 06, 07, 08, 11, 19, 28, 53, 54, 56, 58) are RESEARCHED.
+    # Exactly 45 groups are UNRESEARCHED with explicit gaps documented.
     assert summary.total_groups == 60
     assert summary.validated_count == 0, "No broad group is fully validated without multi-element recipes"
     assert summary.experimentally_tested_count == 1, "Group 60 is experimentally tested from M0 trials"
-    assert summary.researched_count == 4, "Groups 07, 08, 19, and 28 are researched"
-    assert summary.unresearched_count == 55, "55 groups remain unresearched at baseline"
+    assert summary.researched_count == 14, "14 groups are researched with bibliographic/theory backing"
+    assert summary.unresearched_count == 45, "45 groups remain unresearched at baseline"
     assert summary.deprecated_count == 0
 
     assert summary.status_breakdown["validated"] == 0
     assert summary.status_breakdown["experimentally_tested"] == 1
-    assert summary.status_breakdown["researched"] == 4
-    assert summary.status_breakdown["unresearched"] == 55
+    assert summary.status_breakdown["researched"] == 14
+    assert summary.status_breakdown["unresearched"] == 45
 
     # Incompleteness must be visible: all 60 groups have explicit documented gaps
     assert len(summary.gaps_by_group) == 60
@@ -446,15 +446,15 @@ def test_promotion_workflow_claim_and_audit_trail():
 def test_promotion_workflow_group_rejection_and_approval(register):
     """Proves that PromotionWorkflow validates group coverage rules before approving status change."""
     workflow = PromotionWorkflow()
-    g1 = register.get_group(1)  # UNRESEARCHED
+    g_unres = register.get_group(2)  # Group 02: Canvas Types (UNRESEARCHED)
 
     # Attempt to promote UNRESEARCHED to VALIDATED without evidence -> REJECTED
     rec, group_result = workflow.review_group(
-        group=g1,
+        group=g_unres,
         target_status=CoverageStatus.VALIDATED,
         reviewer_id="reviewer_lead",
         reviewer_role="Project Lead",
-        rationale="Want to fast-track comic formats",
+        rationale="Want to fast-track canvas types",
         evidence_verified=[],
     )
     assert rec.decision == ReviewDecision.REJECTED

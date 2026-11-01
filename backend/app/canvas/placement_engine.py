@@ -171,7 +171,6 @@ def _calculate_tail_target(
     # If we have a protected face region for the speaker:
     if speaker_face is not None:
         target_center = speaker_face.center
-        # Calculate intersection with face boundary + clearance gap
         gap = 14.0
         bx = bubble_rect.x + bubble_rect.width / 2.0
         by = bubble_rect.y + bubble_rect.height / 2.0
@@ -181,27 +180,39 @@ def _calculate_tail_target(
         if dist > 1.0:
             ux = dx / dist
             uy = dy / dist
-            # Clamp tip to stop outside the face boundary
-            # Approximate face as an ellipse/box
+            hw_b = bubble_rect.width / 2.0
+            hh_b = bubble_rect.height / 2.0
+            r_bubble = 1.0 / math.sqrt((ux / max(hw_b, 1.0)) ** 2 + (uy / max(hh_b, 1.0)) ** 2)
+
             hw = speaker_face.width / 2.0 + gap
             hh = speaker_face.height / 2.0 + gap
-            t_scale = 1.0 / math.sqrt((ux / max(hw, 1.0)) ** 2 + (uy / max(hh, 1.0)) ** 2)
-            tip_x = target_center.x - ux * t_scale
-            tip_y = target_center.y - uy * t_scale
-            return Point(x=round(tip_x, 1), y=round(tip_y, 1))
+            r_face = 1.0 / math.sqrt((ux / max(hw, 1.0)) ** 2 + (uy / max(hh, 1.0)) ** 2)
+
+            dist_to_face_edge = max(0.0, dist - r_bubble - r_face)
+            max_tail_len = max(28.0, bubble_rect.height * 0.85)
+            actual_tail_len = min(dist_to_face_edge, max_tail_len)
+            tip_dist = r_bubble + actual_tail_len
+            return Point(x=round(bx + ux * tip_dist, 1), y=round(by + uy * tip_dist, 1))
 
     # If we have a raw speaker anchor point:
     if speaker_anchor is not None:
-        gap = 12.0
         bx = bubble_rect.x + bubble_rect.width / 2.0
         by = bubble_rect.y + bubble_rect.height / 2.0
         dx = speaker_anchor.x - bx
         dy = speaker_anchor.y - by
         dist = math.hypot(dx, dy)
-        if dist > gap:
+        if dist > 1.0:
             ux = dx / dist
             uy = dy / dist
-            return Point(x=round(speaker_anchor.x - ux * gap, 1), y=round(speaker_anchor.y - uy * gap, 1))
+            hw_b = bubble_rect.width / 2.0
+            hh_b = bubble_rect.height / 2.0
+            r_bubble = 1.0 / math.sqrt((ux / max(hw_b, 1.0)) ** 2 + (uy / max(hh_b, 1.0)) ** 2)
+
+            dist_from_edge = max(0.0, dist - r_bubble)
+            max_tail_len = max(28.0, bubble_rect.height * 0.85)
+            actual_tail_len = min(max(0.0, dist_from_edge - 14.0), max_tail_len)
+            tip_dist = r_bubble + actual_tail_len
+            return Point(x=round(bx + ux * tip_dist, 1), y=round(by + uy * tip_dist, 1))
         return Point(x=speaker_anchor.x, y=speaker_anchor.y)
 
     return None
@@ -219,7 +230,7 @@ class PlacementEngine:
         panel_rect: Rect,
         bubbles: Sequence[BubblePlacementRequest],
         protected_regions: Sequence[ProtectedRegion | Rect | Dict[str, Any]],
-        reading_direction: str = "rtl",
+        reading_direction: str = "ltr",
         page_safe_margin: Optional[Rect] = None,
         allow_gutter_bleed: bool = True,
     ) -> List[BubblePlacementResult]:
@@ -271,8 +282,8 @@ class PlacementEngine:
             max_bubble_h = max(95.0 if allow_gutter_bleed else 60.0, panel_rect.height * 0.38)
 
         # Search area definition: panel rect expanded into gutter if allowed
-        gutter_reach_x = max(self.gutter_margin, max_bubble_w * 0.75) if allow_gutter_bleed else 0.0
-        gutter_reach_y = max(self.gutter_margin, max_bubble_h * 0.90) if allow_gutter_bleed else 0.0
+        gutter_reach_x = self.gutter_margin if allow_gutter_bleed else 0.0
+        gutter_reach_y = self.gutter_margin if allow_gutter_bleed else 0.0
         search_left = max(page_safe_margin.x, panel_rect.x - gutter_reach_x)
         search_top = max(page_safe_margin.y, panel_rect.y - gutter_reach_y)
         search_right = min(page_safe_margin.x + page_safe_margin.width, panel_rect.x + panel_rect.width + gutter_reach_x)
@@ -505,7 +516,7 @@ class PlacementEngine:
 
         y_positions = [
             panel_rect.y + 10.0,                              # Top inside panel
-            panel_rect.y - bh * 0.4,                          # Gutter top bleed
+            panel_rect.y + 4.0,                               # Flush top inside panel
             panel_rect.y + 30.0,
             panel_rect.y + panel_rect.height - bh - 10.0,     # Bottom inside panel
         ]
@@ -524,12 +535,16 @@ class PlacementEngine:
                     continue
                 seen_positions.add((rx, ry))
 
-                # Hard Check 1: Inside page safe margin
+                # Hard Check 1: Inside page safe margin and search box
                 if rx < page_safe_margin.x or ry < page_safe_margin.y:
                     continue
                 if rx + bw > page_safe_margin.x + page_safe_margin.width:
                     continue
                 if ry + bh > page_safe_margin.y + page_safe_margin.height:
+                    continue
+                if rx < s_left or (rx + bw) > s_right:
+                    continue
+                if ry < s_top or (ry + bh) > s_bottom:
                     continue
 
                 # Hard Check 2: Zero overlap with ANY protected face/head region
@@ -554,10 +569,10 @@ class PlacementEngine:
                 # If there is a previous bubble, current bubble MUST follow reading sequence
                 if prev_bubble is not None:
                     # In both RTL and LTR, later speech cannot be placed significantly higher than earlier speech
-                    if ry < prev_bubble.rect.y - 30.0:
+                    if ry < prev_bubble.rect.y - 12.0:
                         continue
                     # When at roughly same vertical tier, enforce horizontal direction
-                    if abs(ry - prev_bubble.rect.y) < 35.0:
+                    if abs(ry - prev_bubble.rect.y) < 40.0:
                         if is_rtl and rx > prev_bubble.rect.x - 10.0:
                             # In RTL, later bubble must be further LEFT
                             continue
@@ -605,13 +620,16 @@ class PlacementEngine:
         score += max(0.0, y_rel) * 120.0
 
         # 2. Reading direction corner bias:
-        # RTL strongly rewards top-right corner; LTR strongly rewards top-left corner
+        # RTL strongly rewards top-right corner; LTR strongly rewards top-left corner.
+        # When a speaker target anchor is provided, scale down corner bias so speaker
+        # proximity and natural distribution across panel width take precedence.
+        corner_weight = 0.04 if target_pt is not None else 0.18
         if is_rtl:
             dist_from_right = (panel_rect.x + panel_rect.width) - (rx + bw)
-            score += max(0.0, dist_from_right) * 0.18
+            score += max(0.0, dist_from_right) * corner_weight
         else:
             dist_from_left = rx - panel_rect.x
-            score += max(0.0, dist_from_left) * 0.18
+            score += max(0.0, dist_from_left) * corner_weight
 
         # 3. Distance to speaker anchor (if known)
         if target_pt is not None:

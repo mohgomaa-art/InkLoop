@@ -4,6 +4,7 @@ Six-Panel Generation Orchestration, Independent Context & Complete Attempt Loggi
 """
 import json
 import hashlib
+from decimal import Decimal
 from pathlib import Path
 import pytest
 from pydantic import BaseModel
@@ -22,6 +23,8 @@ from app.schemas import (
     ErrorCategory,
     RetryDecision,
     GenerationAttemptRecord,
+    VerificationResult,
+    AttributeVerdict,
 )
 from app.context_builder import build_panel_context_packet, compute_context_fingerprint
 from app.image_adapter import (
@@ -31,11 +34,97 @@ from app.image_adapter import (
     GenerationResponse,
 )
 from app.orchestrator import BatchOrchestrator
+from app.execution import AttemptStatus, BudgetManager, ExecutionManager, RunStatus
 from tests.fixtures.benchmark_fixtures import (
     CANONICAL_M0_STORY_BIBLE,
     CANONICAL_M0_SIX_SCENES,
     create_m0_benchmark_batch_spec,
 )
+
+
+def test_orchestrator_persists_execution_manager_attempt_and_budget(tmp_path):
+    """A simulated generation is recorded in the authoritative run/event ledger."""
+    manager = ExecutionManager(
+        db_path=tmp_path / "execution.db",
+        budget_manager=BudgetManager(global_cap_usd="25.00"),
+    )
+    adapter = SimulatedImageGenerationAdapter(default_success=True, simulated_cost=0.02)
+    orchestrator = BatchOrchestrator(
+        config=InkLoopConfig.load(),
+        adapter=adapter,
+        run_log_dir=tmp_path / "logs",
+        execution_manager=manager,
+    )
+    spec = BatchSpec(
+        batch_id="execution_manager_integration",
+        project_id="inkloop",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        max_retries_per_panel=0,
+        spend_cap_usd=1.0,
+        require_verification=False,
+    )
+
+    summary = orchestrator.orchestrate_batch(spec)
+    trace = manager.get_run_summary(spec.batch_id)
+
+    assert summary.status == BatchStatus.COMPLETED
+    assert trace.status == RunStatus.SUCCEEDED
+    assert trace.total_attempts == 1
+    assert trace.total_estimated_usd == Decimal("0.0200")
+    assert trace.total_reported_usd == 0
+    assert trace.event_count >= 8  # run, operation, reservation, attempt, settlement, completion
+    attempt = manager.db.list_attempts_for_run(spec.batch_id)[0]
+    assert attempt.status == AttemptStatus.SUCCEEDED
+    assert attempt.cost_classification.value == "estimated"
+    assert attempt.verification_verdict == "UNVERIFIED"
+    manager.close()
+
+
+def test_execution_manager_keeps_unreported_provider_cost_unknown(tmp_path):
+    """A budget estimate is not recorded as provider-reported spend."""
+    class UnpricedLiveAdapter:
+        is_simulated = False
+
+        def __init__(self):
+            self.delegate = SimulatedImageGenerationAdapter(default_success=True)
+
+        def generate(self, request):
+            response = self.delegate.generate(request)
+            response.is_simulated = False
+            response.cost_usd = None
+            response.usage = None
+            return response
+
+    manager = ExecutionManager(
+        db_path=tmp_path / "execution.db",
+        budget_manager=BudgetManager(global_cap_usd="25.00"),
+    )
+    spec = BatchSpec(
+        batch_id="execution_manager_unknown_cost",
+        project_id="inkloop",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        max_retries_per_panel=0,
+        spend_cap_usd=1.0,
+        require_verification=False,
+    )
+    orchestrator = BatchOrchestrator(
+        config=InkLoopConfig.load(),
+        adapter=UnpricedLiveAdapter(),
+        run_log_dir=tmp_path / "logs",
+        execution_manager=manager,
+    )
+
+    orchestrator.orchestrate_batch(spec)
+    trace = manager.get_run_summary(spec.batch_id)
+    attempt = manager.db.list_attempts_for_run(spec.batch_id)[0]
+
+    assert trace.total_reported_usd == Decimal("0.0000")
+    assert trace.missing_cost_count == 1
+    assert attempt.cost_amount_usd is None
+    assert attempt.cost_classification.value == "unknown"
+    manager.close()
 
 # ===========================================================================
 # 1. BATCH BEHAVIOR TESTS
@@ -266,7 +355,8 @@ def test_missing_usage_and_cost_distinguished_from_zero(tmp_path):
     assert attempt.cost_usd is None
     assert summary.missing_usage_information is True
     assert summary.missing_cost_information is True
-    assert summary.known_cost_usd is None
+    assert summary.simulated_cost_usd is None
+    assert summary.simulated_usage is None
 
 def test_secrets_and_api_keys_strictly_excluded_from_logs(tmp_path, monkeypatch):
     """Verifies that API keys and Bearer headers are NEVER written to logs or persisted files."""
@@ -489,10 +579,14 @@ def test_full_m0_six_panel_benchmark_orchestration(tmp_path):
         assert p_res.output_content_hash is not None
         assert len(p_res.output_content_hash) == 64
 
-    # 3. Usage & Cost
-    assert summary.known_cost_usd == 0.06
+    # 3. Usage & Cost (Simulated accounting strictly segregated from real provider spend)
+    assert summary.is_simulated is True
+    assert summary.cost_mode == "synthetic_simulated"
+    assert summary.known_cost_usd == 0.0
+    assert summary.simulated_cost_usd == 0.06
+    assert summary.known_usage == {}
+    assert summary.simulated_usage["total_tokens"] == 13400 * 6
     assert summary.missing_cost_information is False
-    assert summary.known_usage["total_tokens"] == 13400 * 6
 
     # 4. Persistence validation
     saved_json_path = run_log_dir / "m0_benchmark_six_panel_acceptance.json"
@@ -529,3 +623,522 @@ def test_interoperability_with_project_story_bible(tmp_path):
     assert summary.bible_version == "1"
     assert summary.story_id == "story_01"
 
+# ===========================================================================
+# 6. INTEGRATION REVIEW & ROBUSTNESS TESTS (TASK 4 DEFENSE)
+# ===========================================================================
+
+def test_verification_gating_unverified_remains_pending(tmp_path):
+    """
+    Verifies that when require_verification=True, successfully generated images
+    without visual verification are NOT marked ACCEPTED; they remain GENERATED_PENDING_VERIFICATION.
+    """
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs", verifier=None)
+
+    spec = BatchSpec(
+        batch_id="test_unverified_gate_001",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=CANONICAL_M0_SIX_SCENES[:2],
+        output_dir=str(tmp_path / "out"),
+        require_verification=True
+    )
+
+    summary = orchestrator.orchestrate_batch(spec)
+
+    assert summary.status == BatchStatus.COMPLETED_WITH_FAILURES
+    assert summary.successful_panels == 0
+    assert summary.unverified_panels == 2
+    for p in summary.panel_results:
+        assert p.status == PanelStatus.GENERATED_PENDING_VERIFICATION
+        assert p.verification_status == "UNVERIFIED"
+
+def test_verifier_passed_accepted(tmp_path):
+    """Verifies that when an attached verifier confirms visual compliance, panel is ACCEPTED."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+
+    def dummy_passing_verifier(ref_asset, img_bytes, char_spec):
+        return VerificationResult(
+            passed=True,
+            verdicts=[AttributeVerdict(attr_id="spiky_hair", verdict="pass", evidence="Matches reference silhouette")]
+        )
+
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs", verifier=dummy_passing_verifier)
+
+    spec = BatchSpec(
+        batch_id="test_verifier_pass_002",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out"),
+        require_verification=True
+    )
+
+    summary = orchestrator.orchestrate_batch(spec)
+    assert summary.status == BatchStatus.COMPLETED
+    assert summary.successful_panels == 1
+    p1 = summary.panel_results[0]
+    assert p1.status == PanelStatus.ACCEPTED
+    assert p1.verification_status == "PASSED"
+    assert p1.verification_result is not None
+    assert p1.verification_result.passed is True
+
+def test_verifier_failed_triggers_retry_and_rejection(tmp_path):
+    """Verifies that visual verifier failure records rejection and triggers bounded retry."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+
+    def dummy_failing_verifier(ref_asset, img_bytes, char_spec):
+        return VerificationResult(
+            passed=False,
+            verdicts=[AttributeVerdict(attr_id="hood", verdict="fail", evidence="Hood is missing from candidate")],
+            rejection_reason="Hood not detected"
+        )
+
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs", verifier=dummy_failing_verifier)
+
+    spec = BatchSpec(
+        batch_id="test_verifier_fail_003",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        max_retries_per_panel=1,
+        output_dir=str(tmp_path / "out"),
+        require_verification=True
+    )
+
+    summary = orchestrator.orchestrate_batch(spec)
+    assert summary.status == BatchStatus.FAILED
+    assert summary.successful_panels == 0
+    p1 = summary.panel_results[0]
+    assert p1.status == PanelStatus.NEEDS_HUMAN
+    assert len(summary.attempt_history) == 2
+    assert summary.attempt_history[0].verification_status == "FAILED"
+    assert summary.attempt_history[1].verification_status == "FAILED"
+
+def test_verifier_unsure_escalates_to_needs_human(tmp_path):
+    """Verifies that an inconclusive ('unsure') verdict halts retries and escalates to NEEDS_HUMAN."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+
+    def dummy_unsure_verifier(ref_asset, img_bytes, char_spec):
+        return VerificationResult(
+            passed=False,
+            verdicts=[AttributeVerdict(attr_id="face", verdict="unsure", evidence="Face partially occluded by shadow")],
+            rejection_reason="Face occluded, cannot reliably verify identity"
+        )
+
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs", verifier=dummy_unsure_verifier)
+
+    spec = BatchSpec(
+        batch_id="test_verifier_unsure_004",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        max_retries_per_panel=3,
+        output_dir=str(tmp_path / "out"),
+        require_verification=True
+    )
+
+    summary = orchestrator.orchestrate_batch(spec)
+    p1 = summary.panel_results[0]
+    assert p1.status == PanelStatus.NEEDS_HUMAN
+    # Must stop immediately on UNSURE without burning remaining 3 retries
+    assert len(summary.attempt_history) == 1
+    assert summary.attempt_history[0].verification_status == "UNSURE"
+
+def test_live_adapter_missing_cost_remains_none(tmp_path):
+    """Verifies that when a live provider omits cost/usage, it stays None and is not converted to 0.0."""
+    from app.image_adapter import ImageGenerationAdapter
+
+    class MockLiveAdapter(ImageGenerationAdapter):
+        is_simulated = False
+        def generate(self, request: GenerationRequest) -> GenerationResponse:
+            return GenerationResponse(
+                success=True,
+                http_status=200,
+                image_bytes=b"\x89PNG\r\n\x1a\n\x00fakeimagebytes",
+                endpoint="https://api.provider.com/v1/images",
+                duration_seconds=0.1,
+                is_simulated=False,
+                usage=None,
+                cost_usd=None,
+                sanitized_metadata={"model": request.model}
+            )
+
+    cfg = InkLoopConfig.load()
+    orchestrator = BatchOrchestrator(config=cfg, adapter=MockLiveAdapter(), run_log_dir=tmp_path / "logs")
+
+    spec = BatchSpec(
+        batch_id="test_live_missing_cost_005",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+
+    summary = orchestrator.orchestrate_batch(spec)
+    assert summary.is_simulated is False
+    assert summary.cost_mode == "real"
+    assert summary.known_cost_usd is None  # Unknown cost must remain None
+    assert summary.missing_cost_information is True
+    assert summary.missing_usage_information is True
+    assert summary.simulated_cost_usd is None
+
+def test_resumed_batch_regenerates_when_dimensions_or_instructions_change(tmp_path):
+    """Verifies that changing dimensions or panel_instructions invalidates context fingerprint."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    out_dir = tmp_path / "out"
+    scene1 = CANONICAL_M0_SIX_SCENES[0]
+    scene2 = CANONICAL_M0_SIX_SCENES[1]
+
+    spec1 = BatchSpec(
+        batch_id="test_invalidation_006",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[scene1, scene2],
+        output_dir=str(out_dir)
+    )
+    summary1 = orchestrator.orchestrate_batch(spec1)
+    assert summary1.successful_panels == 2
+
+    # Modify scene 2 instructions and dimensions
+    scene2_modified = SceneSpec(
+        scene_id=scene2.scene_id,
+        scene_index=scene2.scene_index,
+        title=scene2.title,
+        shot_type=scene2.shot_type,
+        action=scene2.action,
+        character_ids=scene2.character_ids,
+        dimensions=(1024, 1536),
+        panel_instructions="CHANGED: Extreme macro close-up on eye"
+    )
+
+    spec2 = BatchSpec(
+        batch_id="test_invalidation_006",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[scene1, scene2_modified],
+        output_dir=str(out_dir)
+    )
+
+    adapter.request_history.clear()
+    summary2 = orchestrator.resume_batch(spec2)
+
+    # Panel 1 fingerprint matched -> reused (0 new requests for panel 1)
+    # Panel 2 fingerprint changed -> regenerated (1 new request for panel 2)
+    assert len(adapter.request_history) == 1
+    assert adapter.request_history[0].panel_id == "panel_02"
+    assert summary2.successful_panels == 2
+
+def test_resumed_batch_regenerates_when_output_file_missing_from_disk(tmp_path):
+    """Verifies that if output image file was deleted from disk, resumption forces regeneration."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    out_dir = tmp_path / "out"
+    scene1 = CANONICAL_M0_SIX_SCENES[0]
+
+    spec = BatchSpec(
+        batch_id="test_missing_file_007",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[scene1],
+        output_dir=str(out_dir)
+    )
+    summary1 = orchestrator.orchestrate_batch(spec)
+    assert summary1.successful_panels == 1
+    file_path = Path(summary1.panel_results[0].output_asset_path)
+    assert file_path.exists()
+
+    # Delete output file from disk
+    file_path.unlink()
+    assert not file_path.exists()
+
+    adapter.request_history.clear()
+    summary2 = orchestrator.resume_batch(spec)
+
+    # Must regenerate because file was missing
+    assert len(adapter.request_history) == 1
+    assert file_path.exists()
+    assert summary2.successful_panels == 1
+
+def test_resumed_attempt_numbering_avoids_collision(tmp_path):
+    """Verifies that resuming a batch after prior failures increments attempt numbering to prevent ID collisions."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=False)  # Run 1 fails
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    out_dir = tmp_path / "out"
+    scene1 = CANONICAL_M0_SIX_SCENES[0]
+
+    spec = BatchSpec(
+        batch_id="test_attempt_collision_008",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=[scene1],
+        max_retries_per_panel=1,  # 2 attempts total
+        output_dir=str(out_dir)
+    )
+    summary1 = orchestrator.orchestrate_batch(spec)
+    assert summary1.status == BatchStatus.FAILED
+    assert len(summary1.attempt_history) == 2
+    attempt_ids_run1 = [a.attempt_id for a in summary1.attempt_history]
+    assert attempt_ids_run1 == ["test_attempt_collision_008_panel_01_att1", "test_attempt_collision_008_panel_01_att2"]
+
+    # Run 2: adapter succeeds
+    adapter.default_success = True
+    summary2 = orchestrator.resume_batch(spec)
+    assert summary2.status == BatchStatus.COMPLETED
+
+    all_attempt_ids = [a.attempt_id for a in summary2.attempt_history]
+    # No duplicate IDs permitted
+    assert len(all_attempt_ids) == len(set(all_attempt_ids))
+    # Resumed attempt must be numbered att3
+    assert all_attempt_ids == [
+        "test_attempt_collision_008_panel_01_att1",
+        "test_attempt_collision_008_panel_01_att2",
+        "test_attempt_collision_008_panel_01_att3"
+    ]
+
+def test_global_spend_cap_clamps_batch_spec_spend_cap(tmp_path):
+    """Verifies that config.global_spend_cap_usd strictly bounds batch_spec.spend_cap_usd."""
+    # Set global spend cap to $0.015 (only enough for 1 operation at $0.01)
+    cfg = InkLoopConfig.load()
+    cfg.global_spend_cap_usd = 0.015
+
+    adapter = SimulatedImageGenerationAdapter(default_success=True, simulated_cost=0.01)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    spec = BatchSpec(
+        batch_id="test_cap_clamp_009",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=CANONICAL_M0_SIX_SCENES[:3],
+        spend_cap_usd=500.0,  # Unreasonably high requested cap
+        output_dir=str(tmp_path / "out")
+    )
+
+    summary = orchestrator.orchestrate_batch(spec)
+    # Global cap of $0.015 must stop execution before second panel ($0.01 + $0.01 > $0.015)
+    assert summary.status == BatchStatus.COMPLETED_WITH_FAILURES
+    assert summary.successful_panels == 1
+    assert summary.failed_panels == 2
+    # Verify budget exceeded was recorded
+    budget_att = next(a for a in summary.attempt_history if a.error_category == ErrorCategory.BUDGET_EXCEEDED.value)
+    assert "0.01" in budget_att.error_message or "0.02" in budget_att.error_message
+
+def test_incremental_checkpoint_persists_during_run(tmp_path):
+    """Verifies that an intermediate checkpoint JSON is safely persisted to disk after each panel."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    log_dir = tmp_path / "logs"
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=log_dir)
+
+    spec = BatchSpec(
+        batch_id="test_checkpoint_010",
+        story_bible=CANONICAL_M0_STORY_BIBLE,
+        scenes=CANONICAL_M0_SIX_SCENES[:2],
+        output_dir=str(tmp_path / "out")
+    )
+
+    summary = orchestrator.orchestrate_batch(spec)
+    checkpoint_file = log_dir / "test_checkpoint_010.json"
+    assert checkpoint_file.exists()
+    checkpoint_data = json.loads(checkpoint_file.read_text(encoding="utf-8"))
+    assert checkpoint_data["batch_id"] == "test_checkpoint_010"
+    assert len(checkpoint_data["panel_results"]) == 2
+
+def test_fingerprint_invalidated_by_story_facts(tmp_path):
+    """Verifies that mutating story_facts invalidates context fingerprint and prevents stale reuse."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    bible1 = CANONICAL_M0_STORY_BIBLE.model_copy(deep=True)
+    bible1.story_facts = ["Fact 1: City is abandoned"]
+
+    spec1 = BatchSpec(
+        batch_id="test_facts_invalidation",
+        story_bible=bible1,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    summary1 = orchestrator.orchestrate_batch(spec1)
+    fp1 = summary1.panel_results[0].context_fingerprint
+
+    # Mutate story_facts
+    bible2 = CANONICAL_M0_STORY_BIBLE.model_copy(deep=True)
+    bible2.story_facts = ["Fact 1: City is abandoned", "Fact 2: Heavy persistent snowfall"]
+
+    spec2 = BatchSpec(
+        batch_id="test_facts_invalidation",
+        story_bible=bible2,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    adapter.request_history.clear()
+    summary2 = orchestrator.resume_batch(spec2)
+    fp2 = summary2.panel_results[0].context_fingerprint
+
+    assert fp1 != fp2
+    assert len(adapter.request_history) == 1
+
+def test_fingerprint_invalidated_by_canon_hash(tmp_path):
+    """Verifies that changing canon_hash invalidates fingerprint and forces regeneration."""
+    from app.project import create_canonical_nour_bible
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    bible = create_canonical_nour_bible("proj_hash_test")
+    setattr(bible, "canon_hash", "11112222333344445555666677778888")
+
+    spec1 = BatchSpec(
+        batch_id="test_canon_hash_invalidation",
+        story_bible=bible,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    summary1 = orchestrator.orchestrate_batch(spec1)
+    fp1 = summary1.panel_results[0].context_fingerprint
+
+    # Update canon_hash
+    setattr(bible, "canon_hash", "99998888777766665555444433332222")
+    spec2 = BatchSpec(
+        batch_id="test_canon_hash_invalidation",
+        story_bible=bible,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    adapter.request_history.clear()
+    summary2 = orchestrator.resume_batch(spec2)
+    fp2 = summary2.panel_results[0].context_fingerprint
+
+    assert fp1 != fp2
+    assert len(adapter.request_history) == 1
+
+def test_fingerprint_invalidated_by_style_palette(tmp_path):
+    """Verifies that changing style palette invalidates fingerprint."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    bible1 = CANONICAL_M0_STORY_BIBLE.model_copy(deep=True)
+    bible1.style.palette = "monochrome"
+
+    spec1 = BatchSpec(
+        batch_id="test_palette_invalidation",
+        story_bible=bible1,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    summary1 = orchestrator.orchestrate_batch(spec1)
+    fp1 = summary1.panel_results[0].context_fingerprint
+
+    bible2 = CANONICAL_M0_STORY_BIBLE.model_copy(deep=True)
+    bible2.style.palette = "duotone_sepia"
+
+    spec2 = BatchSpec(
+        batch_id="test_palette_invalidation",
+        story_bible=bible2,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    adapter.request_history.clear()
+    summary2 = orchestrator.resume_batch(spec2)
+    fp2 = summary2.panel_results[0].context_fingerprint
+
+    assert fp1 != fp2
+    assert len(adapter.request_history) == 1
+
+def test_fingerprint_invalidated_by_character_restrictions(tmp_path):
+    """Verifies that changing character-level restrictions invalidates context fingerprint."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    bible1 = CANONICAL_M0_STORY_BIBLE.model_copy(deep=True)
+    bible1.characters["nour"].restrictions = []
+
+    spec1 = BatchSpec(
+        batch_id="test_restrictions_invalidation",
+        story_bible=bible1,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    summary1 = orchestrator.orchestrate_batch(spec1)
+    fp1 = summary1.panel_results[0].context_fingerprint
+
+    bible2 = CANONICAL_M0_STORY_BIBLE.model_copy(deep=True)
+    bible2.characters["nour"].restrictions = ["never remove glasses", "no smile"]
+
+    spec2 = BatchSpec(
+        batch_id="test_restrictions_invalidation",
+        story_bible=bible2,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    adapter.request_history.clear()
+    summary2 = orchestrator.resume_batch(spec2)
+    fp2 = summary2.panel_results[0].context_fingerprint
+
+    assert fp1 != fp2
+    assert len(adapter.request_history) == 1
+
+def test_fingerprint_invalidated_by_reference_asset_mime_type(tmp_path):
+    """Verifies that changing reference asset mime_type invalidates fingerprint."""
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs")
+
+    bible1 = CANONICAL_M0_STORY_BIBLE.model_copy(deep=True)
+    bible1.character_assets["nour"].mime_type = "image/png"
+
+    spec1 = BatchSpec(
+        batch_id="test_mime_invalidation",
+        story_bible=bible1,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    summary1 = orchestrator.orchestrate_batch(spec1)
+    fp1 = summary1.panel_results[0].context_fingerprint
+
+    bible2 = CANONICAL_M0_STORY_BIBLE.model_copy(deep=True)
+    bible2.character_assets["nour"].mime_type = "image/webp"
+
+    spec2 = BatchSpec(
+        batch_id="test_mime_invalidation",
+        story_bible=bible2,
+        scenes=[CANONICAL_M0_SIX_SCENES[0]],
+        output_dir=str(tmp_path / "out")
+    )
+    adapter.request_history.clear()
+    summary2 = orchestrator.resume_batch(spec2)
+    fp2 = summary2.panel_results[0].context_fingerprint
+
+    assert fp1 != fp2
+    assert len(adapter.request_history) == 1
+
+def test_unverified_benchmark_accounting_integrity(tmp_path):
+    """
+    Verifies that when no visual verifier runs:
+    - Generated panels are accurately counted (6/6).
+    - Verified panels are 0/6.
+    - Unverified panels are 6/6.
+    - Pipeline acceptance does not claim real visual verification.
+    """
+    cfg = InkLoopConfig.load()
+    adapter = SimulatedImageGenerationAdapter(default_success=True)
+    orchestrator = BatchOrchestrator(config=cfg, adapter=adapter, run_log_dir=tmp_path / "logs", verifier=None)
+
+    spec = create_m0_benchmark_batch_spec(
+        batch_id="test_unverified_accounting",
+        output_dir=str(tmp_path / "out")
+    )
+    summary = orchestrator.orchestrate_batch(spec)
+
+    assert summary.total_panels == 6
+    assert summary.generated_panels == 6
+    assert summary.verified_panels == 0
+    assert summary.unverified_panels == 6
+    assert summary.successful_panels == 6
+    for p in summary.panel_results:
+        assert p.verification_status == "UNVERIFIED"
+        assert p.verification_result is None

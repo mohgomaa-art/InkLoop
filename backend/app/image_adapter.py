@@ -17,11 +17,39 @@ from app.config import InkLoopConfig
 from app.parsers import build_image_edit_payload
 from app.schemas import ErrorCategory
 
+class ReferenceImagePayload(BaseModel):
+    """Structured reference image payload with semantic role, weight, and notes."""
+    asset_id: Optional[str] = None
+    image_bytes: bytes
+    mime_type: str = "image/png"
+    role: str = "style_reference"  # style_reference, character_reference, composition_reference, target_to_edit, pose_reference, background_reference
+    character_id: Optional[str] = None
+    prop_id: Optional[str] = None
+    view_role: Optional[str] = None
+    weight: float = 1.0  # Heuristic prompt weight
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+class ProviderCapabilities(BaseModel):
+    """Declared, verified capabilities of an image generation provider."""
+    text_to_image: bool = True
+    single_image_edit: bool = True
+    multi_image_reference: bool = True
+    max_reference_images: int = 5
+    conversational_refinement: bool = False
+    deterministic_seed: bool = False
+    identity_lock_guarantee: bool = False  # Honest: reference-conditioned best-effort generation, not guaranteed identity lock
+    supported_mime_types: List[str] = Field(default_factory=lambda: ["image/png", "image/jpeg", "image/webp", "image/jpg"])
+    max_image_dimension: int = 2048
+    max_image_bytes: int = 10 * 1024 * 1024
+
 class GenerationRequest(BaseModel):
     """Clean, sanitized request parameters for an image generation attempt."""
     prompt: str
     reference_bytes: Optional[bytes] = None
     reference_mime: str = "image/png"
+    reference_images: List[ReferenceImagePayload] = Field(default_factory=list)
     model: str = "muse-image-1.0"
     panel_id: str = ""
     scene_id: str = ""
@@ -57,6 +85,10 @@ class ImageGenerationAdapter(ABC):
     def generate(self, request: GenerationRequest) -> GenerationResponse:
         """Execute image generation synchronously."""
         pass
+
+    def get_capabilities(self) -> ProviderCapabilities:
+        """Returns declared, verified capabilities of this generation engine."""
+        return ProviderCapabilities()
 
 def sanitize_error_text(text: str, sensitive_strings: Optional[List[str]] = None) -> str:
     """Removes sensitive authorization tokens, keys, or credentials from error strings."""
@@ -106,15 +138,24 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
             "Content-Type": "application/json"
         }
 
-        # Build payload
-        if request.reference_bytes:
+        # Build payload with multi-reference support and legacy fallback
+        images_list = []
+        if request.reference_images:
+            for ref in request.reference_images:
+                b64_str = base64.b64encode(ref.image_bytes).decode("ascii")
+                images_list.append({"image_url": f"data:{ref.mime_type};base64,{b64_str}"})
+        elif request.reference_bytes:
+            b64_str = base64.b64encode(request.reference_bytes).decode("ascii")
+            images_list.append({"image_url": f"data:{request.reference_mime};base64,{b64_str}"})
+
+        if images_list:
             endpoint = f"{self.base_url}/images/edits"
-            payload = build_image_edit_payload(
-                prompt=request.prompt,
-                image_bytes=request.reference_bytes,
-                mime_type=request.reference_mime,
-                model=request.model or self.config.muse_image_model
-            )
+            payload = {
+                "model": request.model or self.config.muse_image_model,
+                "prompt": request.prompt,
+                "images": images_list,
+                "n": request.n
+            }
         else:
             endpoint = f"{self.base_url}/images/generations"
             payload = {
@@ -123,13 +164,25 @@ class MetaImageGenerationAdapter(ImageGenerationAdapter):
                 "n": request.n
             }
 
+        # Meta Muse Image accepts `size` as an aspect-ratio hint (not an exact
+        # output resolution). Keep it in the provider request so page geometry
+        # can guide the generated composition instead of being silently lost.
+        if request.dimensions and len(request.dimensions) == 2:
+            width, height = (int(request.dimensions[0]), int(request.dimensions[1]))
+            if width > 0 and height > 0:
+                payload["size"] = f"{width}x{height}"
+
         sanitized_meta = {
             "model": payload["model"],
             "prompt_length": len(request.prompt),
             "endpoint": endpoint,
-            "has_reference": bool(request.reference_bytes),
+            "has_reference": bool(images_list),
+            "reference_count": len(images_list),
+            "reference_roles": [r.role for r in request.reference_images] if request.reference_images else (["single_ref"] if request.reference_bytes else []),
             "panel_id": request.panel_id,
-            "scene_id": request.scene_id
+            "scene_id": request.scene_id,
+            "requested_dimensions": request.dimensions,
+            "requested_aspect_ratio": request.aspect_ratio,
         }
 
         start_time = time.time()
@@ -254,13 +307,32 @@ class SimulatedImageGenerationAdapter(ImageGenerationAdapter):
 
     def _create_dummy_png(self, label: str) -> bytes:
         """Generates a small valid PNG byte stream with distinct content."""
+        from PIL import ImageDraw
         buf = BytesIO()
-        img = Image.new("RGB", (64, 64), color="gray")
+        img = Image.new("RGB", (256, 256), color=(128, 140, 150))
+        draw = ImageDraw.Draw(img)
+        draw.rectangle([20, 20, 236, 236], fill=(50, 100, 180), outline=(20, 20, 20))
+        draw.ellipse([60, 60, 196, 196], fill=(220, 80, 40))
         img.save(buf, format="PNG")
         return buf.getvalue()
 
+    def get_capabilities(self) -> ProviderCapabilities:
+        return ProviderCapabilities(
+            text_to_image=True,
+            single_image_edit=True,
+            multi_image_reference=True,
+            max_reference_images=5,
+            conversational_refinement=False,
+            deterministic_seed=False,
+            identity_lock_guarantee=False,  # Simulation accurately models real probabilistic conditioning
+        )
+
     def generate(self, request: GenerationRequest) -> GenerationResponse:
         self.request_history.append(request)
+
+        has_refs = bool(request.reference_images or request.reference_bytes)
+        ref_count = len(request.reference_images) if request.reference_images else (1 if request.reference_bytes else 0)
+        ref_roles = [r.role for r in request.reference_images] if request.reference_images else (["single_ref"] if request.reference_bytes else [])
 
         # Check if there is a scripted sequence for this panel
         if request.panel_id in self._scripted_responses and self._scripted_responses[request.panel_id]:
@@ -272,12 +344,18 @@ class SimulatedImageGenerationAdapter(ImageGenerationAdapter):
             return GenerationResponse(
                 success=False,
                 http_status=500,
-                endpoint="POST /v1/images/edits",
+                endpoint="POST /v1/images/edits" if has_refs else "POST /v1/images/generations",
                 error_category=ErrorCategory.SERVER_ERROR,
                 error_message="Simulated internal server error",
                 duration_seconds=self.duration_seconds,
                 is_simulated=True,
-                sanitized_metadata={"panel_id": request.panel_id, "model": request.model}
+                sanitized_metadata={
+                    "panel_id": request.panel_id,
+                    "model": request.model,
+                    "has_reference": has_refs,
+                    "reference_count": ref_count,
+                    "reference_roles": ref_roles
+                }
             )
 
         img_bytes = self._create_dummy_png(request.panel_id)
@@ -286,10 +364,16 @@ class SimulatedImageGenerationAdapter(ImageGenerationAdapter):
             http_status=200,
             image_bytes=img_bytes,
             request_id=f"sim_req_{request.panel_id}_{len(self.request_history)}",
-            endpoint="POST /v1/images/edits" if request.reference_bytes else "POST /v1/images/generations",
+            endpoint="POST /v1/images/edits" if has_refs else "POST /v1/images/generations",
             duration_seconds=self.duration_seconds,
             is_simulated=True,
             usage=self.simulated_usage,
             cost_usd=self.simulated_cost,
-            sanitized_metadata={"panel_id": request.panel_id, "model": request.model}
+            sanitized_metadata={
+                "panel_id": request.panel_id,
+                "model": request.model,
+                "has_reference": has_refs,
+                "reference_count": ref_count,
+                "reference_roles": ref_roles
+            }
         )

@@ -186,7 +186,7 @@
      - A `VALIDATED` group requires at least one empirically passing recipe and primary provider / experimental source backing.
   4. **Truthful 60-Group Baseline Coverage:**
      - All 60 taxonomy groups from `INKLOOP_TASKS.md` Section 7 are represented with stable IDs (`tax_01_comic_formats` ... `tax_60_visual_continuity_validation`) and 840 canonical elements.
-     - Truthful baseline status: 1 VALIDATED (Group 60, backed by M0 visual feasibility experiment ADR-007), 4 RESEARCHED (Groups 07, 08, 19, 28, backed by primary style guidelines and comic theory), and 55 UNRESEARCHED with explicit open research gaps visible.
+     - Current register status: 0 VALIDATED, 14 RESEARCHED (Groups 01, 03-08, 11, 19, 28, 53, 54, 56, 58), 1 EXPERIMENTALLY_TESTED (Group 60, backed by the limited M0 visual feasibility experiment ADR-007), and 45 UNRESEARCHED with explicit open research gaps visible.
   5. **Deterministic Serialization & Provenance Linking:**
      - Serialized to `backend/app/catalogue/data/taxonomy_60_groups.json` sorted by sequential group number.
      - Integrates with shared contracts (`IdPrefix.TAXONOMY`, `ProvenanceRecord.taxonomy_rule_ids`).
@@ -268,3 +268,232 @@
   - 20 catalogue tests passing in `backend/tests/test_image_knowledge_catalogue.py`.
   - Full backend test suite: 225 passing tests with zero regressions.
   - Zero live model API spend incurred.
+
+---
+
+## ADR-014: Four-Session Unification, Canonical Nour Specification, Multi-Layer Authority Separation & End-to-End Visual Verification Integration
+- **Status:** [VERIFIED ARCHITECTURE & RECONCILED IN M1 INTEGRATION]
+- **Context:** Four independent agent sessions and recent concurrent feature branches developed distinct subsystems: Story Bible & Canon (T5.3), Asset Registry (T5.4), Execution Manager & Budgets (T5.5), 60-Group Knowledge Catalogue (T6.1), Visual Evaluation (T6.2), Batch Orchestration & Resumability (T4/M1), Multi-Tier Visual Verification (S7), and FastAPI REST endpoints. This ADR records the authoritative architectural reconciliation, invariant resolution, authority separation, and verification gate semantics unified across all subsystems.
+- **Architectural Invariants & Decisions:**
+  1. **Canonical Nour Specification & Invariant Ground Truth:**
+     - Ground-truth reference anchor verified at `runs/m0_visual/reference/nour_reference.png` (SHA-256: `b2c2c4dc003a9db32a4847a1dab46bda801ce3a9b69ff0c0381c5ab8a203e644`, size 2,513,756 bytes).
+     - Specification reconciliation:
+       - 3 Required Invariants (`required=True`): `hair` (short messy black hair, white streak on left), `glasses` (round glasses), `jacket` (oversized hooded jacket, lightning-bolt patch on chest).
+       - 1 Optional Checklist Attribute (`required=False`): `scar` (`id="scar"`, `text="small scar on right cheek"`).
+     - Unified across `backend/tests/fixtures/benchmark_fixtures.py`, `backend/app/project/bible.py`, `docs/story_bible_example.json`, and `scripts/consistency_test.py`.
+     - In accordance with the Rule of Closed Failure, an optional attribute failure does not reject the candidate, while any required attribute failure strictly rejects candidate acceptance.
+  2. **Multi-Layer Authority Separation & Zero Conflicting Databases:**
+     - **Execution & Budget Authority:** `ExecutionManager` (`backend/app/execution/manager.py`) is the single authority for run, operation, attempt, and event lifecycles, and atomic multi-scope Decimal budget accounting.
+     - **Orchestrator adapter reconciliation:** `BatchOrchestrator` reserves through `start_attempt()` before provider dispatch, stores the manager's generated attempt ID, and settles through `complete_attempt()` using the actual supported signature. Manager errors are no longer silently ignored; absent provider cost remains `UNKNOWN` and null on the attempt record, while simulation costs remain `ESTIMATED`.
+     - **Artifact & Lineage Authority:** `AssetRegistry` (`backend/app/storage/registry.py`) is the single authority for content-addressed artifact deduplication, SHA-256 validation, and parent-child lineage DAGs.
+     - **Narrative & Canon Authority:** `StoryBible` (`backend/app/project/bible.py`) is the single authority for project definitions, immutable canon snapshots, and monotonic append-only state timelines.
+     - **Checkpoint Reporting:** `BatchSummary` (JSON) serves as a serialized checkpoint report that derives from and never contradicts the append-only event ledger.
+  3. **Lossless Canon & Schema Bridging:**
+     - Full round-trip preservation between `backend/app/project/canon.py` and `backend/app/schemas.py`:
+       - `StyleBible`: Preserves `line_art_rules`, `tonal_rules`, `positive_constraints`, `negative_constraints`, `lighting_constraints`, `background_detail_rules`, `color_palette`.
+       - `CharacterDefinition.to_character_spec`: Preserves `name`, `visual_invariants`, `restrictions`, and `clothing_attributes`.
+       - `StoryBible.to_orchestrator_bible`: Bridges `canon_hash` losslessly into orchestrator execution context.
+       - Backward compatibility: `Tolerances` maps legacy `min_face_resolution_px` alias to `min_face_px_for_check`. `StoryBible` provides `create_canon_snapshot()` alias mapping to `get_canon_snapshot()`.
+  4. **Deterministic Generation Fingerprints & Resumability Invariants:**
+     - Fingerprints (`compute_context_fingerprint`) deterministically hash all generation-affecting inputs (Bible version, canon_hash, scene instructions, character invariants, state events, negative constraints, model ID, sampling parameters, aspect ratio, camera, lighting, and reference asset hashes).
+     - Generated output files/hashes are strictly excluded from the generation input fingerprint.
+     - Resume validation: previous outputs are reused if and only if the context fingerprint matches AND the output file exists on disk, has non-zero size, and matches its recorded SHA-256 content hash. Missing, truncated, or tampered output files trigger automatic panel regeneration.
+  5. **Strict Tri-Tier Visual Verification Semantics (L0, L1, L2):**
+     - **L0 Code Checker:** Validates decodability, dimension bounds, aspect ratios, and non-blankness. Adds explicit `asset_profile` parameter: `"panel"` allows clean solid/screentone backgrounds, whereas `"sheet"` enforces bleed margin limits.
+     - **L1 Subject Checker:** Evaluates SAM 3.1 subject count, framing, and face scale thresholds. Live SAM API errors or network failures fail closed (`passed=False, is_simulated=False`) without silent fallback to simulated heuristic passes.
+     - **L2 Multimodal Judge:** Dispatches candidate vs reference comparison to Meta Muse Spark. Enforces Rule of Closed Failure: all required attributes must pass; any failure or malformed output rejects the panel. `UNSURE` escalates to `NEEDS_HUMAN` and halts blind retries.
+     - **Truthful Status Coherence:** `generated_panels` $\ne$ `verified_panels`. Unverified panels are labeled `UNVERIFIED`; visual verification is decoupled from generation completion.
+  6. **Catalogue Governance & License Cleared Baseline:**
+     - 60 groups and 840 canonical elements verified structurally and under anti-gaming rules.
+     - Baseline asset licensing cleared: Nour reference image verified as proprietary original created for InkLoop by Mohamed Gomaa.
+- **Verification Evidence:**
+  - Orchestrator-to-ExecutionManager lifecycle, reservation, simulated estimate classification, and unknown provider cost: `backend/tests/test_m1_orchestration.py` (2 offline integration regressions).
+  - 238 dedicated unit and integration tests passing in `backend/tests/` with zero regressions and zero failures.
+  - Full suite execution time: ~10 seconds.
+  - Zero live paid API spend incurred during automated test runs.
+
+---
+
+## ADR-015: Canvas Generation Engine Architecture, Deterministic Layout Templates, Polygon Geometry, and Spatial Previews
+- **Status:** [VERIFIED ARCHITECTURE & IMPLEMENTED IN E2 / M3]
+- **Context:** As part of Milestone M3 (Specialist Engine E2), InkLoop requires a dedicated backend Canvas Generation Engine to compute deterministic manga/manhwa page layouts, enforce physical print bounds (A4, B5, US Comic) and webtoon scrolls, calculate non-cumulative margins/gutters/bleeds, support polygonal diagonal panel cuts, and produce reproducible structural previews without coupling to image generation or frontend UI.
+- **Architectural Invariants & Decisions:**
+  1. **Canonical Spatial Coordinate System:**
+     - Adheres strictly to `backend/app/contracts/geometry.py`: Origin at Top-Left (0.0, 0.0), +X axis pointing rightward, +Y axis pointing downward.
+     - Discrete raster boundaries adhere to half-open intervals $[x, x + width) \times [y, y + height)$.
+     - Derived coordinates are computed non-cumulatively from canonical usable width/height to eliminate floating-point drift.
+     - Integer-pixel snapping (`snap_to_pixel_grid`) ensures exact grid alignment with bounded quantization error $\le 0.5$ px.
+  2. **Core Domain Contracts (`backend/app/canvas/models.py`):**
+     - `CanvasSpec`: Declares physical dimensions, DPI (default 300.0), color space, background, `MarginSpec`, `GutterSpec`, `BleedSpec`, and `SafeAreaSpec`. Includes standard presets (`create_a4`, `create_b5`, `create_us_comic`, `create_webtoon`).
+     - `PageSpec`: Identifies page number, structural type (`PageType.SINGLE`, `SPREAD_LEFT`, `SPREAD_RIGHT`, `WEBTOON_SCROLL`), and `ReadingDirection` (`RTL` for Manga/Arabic vs `LTR` for Western/Webtoon).
+     - `PanelSlot`: Stores canonical panel identifier, reading order, bounding `Rect`, optional polygon vertices (`List[Point]`), full-bleed flags, intentional overlap declaration, and stacking z-index.
+     - `CanvasLayoutResult`: Single source of truth for both SVG and raster preview representations, containing exact envelopes for `trim_box`, `bleed_box`, `safe_area_box`, and `usable_box`.
+  3. **Deterministic Layout Template Family (`backend/app/canvas/templates/`):**
+     - **Manga Grid (`manga_grid`):** Configurable rows and columns with uniform or custom proportional ratios. Traverses columns right-to-left for RTL manga and left-to-right for LTR.
+     - **Six-Panel Classic (`six_panel_classic`):** 3 rows of 2 panels with dramatic storytelling proportions (establishing row ~30%, action row ~38%, reaction row ~32%).
+     - **Four-Koma (`four_koma`):** 4-panel vertical strip layout adhering to the traditional Ki-Shō-Ten-Ketsu narrative structure with uniform or rhythmic spacing.
+     - **Dynamic Shonen (`dynamic_shonen`):** High-energy action layout with diagonal polygonal slash cuts. Computes exact trapezoidal vertices, validates positive area via shoelace formula, enforces non-self-intersection, and supports deterministic variation via explicit seed.
+     - **Vertical Webtoon (`webtoon_vertical`):** Continuous vertical scroll layout with configurable panel heights, cinematic pacing gaps, and automatic canvas height derivation.
+  4. **Strict Boundary Envelopes & Fail-Closed Spatial Validation:**
+     - `trim_box` ($[0, 0, W, H)$), `bleed_box` ($[-B_l, -B_t, W+B_l+B_r, H+B_t+B_b)$), `safe_area_box` ($[S_l, S_t, W-S_l-S_r, H-S_t-S_b)$), `usable_box` ($[M_l, M_t, W-M_l-M_r, H-M_t-M_b)$).
+     - Containment invariants: Ordinary panels must lie within `trim_box`; full-bleed panels must lie within `bleed_box`. Out-of-bounds panels fail with `OutOfBoundsLayoutError` (`ERR_2003_OUT_OF_BOUNDS`).
+     - Pairwise overlap: Unintended intersections fail with `UnintendedOverlapError` (`ERR_2004_PANEL_UNINTENDED_OVERLAP`).
+     - Insufficient space: Margins or gutters exceeding canvas size fail with `ImpossibleLayoutError` (`ERR_2007_IMPOSSIBLE_FIT`).
+     - Resource limits: Width $\le 20,000$ px, height $\le 100,000$ px, and total pixels $\le 100,000,000$ px prevent allocation exhaustion (`AllocationLimitExceededError`).
+  5. **Structural Preview Representations (`backend/app/canvas/previews/`):**
+     - **SVG Structural Preview (`SVGPreviewGenerator`):** Generates valid, self-contained, byte-stable SVG with stable element IDs, grouped guide layers (bleed, trim, safe area, usable area), reading badges, and reading flow lines. Enforces XML entity escaping and strips script/event injection.
+     - **Raster Structural Preview (`RasterPreviewGenerator`):** Renders clean structural outlines and badges via Pillow matching canonical geometry. Enforces maximum buffer allocation ceilings before memory allocation.
+  6. **Clean Engine & API Boundaries:**
+     - Adapts to shared engine contracts: `CanvasEngine.generate_from_params` losslessly produces `CanvasGenerationOutput`.
+     - Exposes minimal REST endpoints under `/api/v1/canvas/` (`/templates`, `/generate`, `/preview/svg`).
+     - Maintains clean separation: does not place images (E3), text (E4), bubbles (E6), or effects (E7), and touches zero frontend files.
+- **Verification Evidence:**
+  - 23 dedicated unit and integration tests passing in `backend/tests/test_canvas_engine.py`.
+  - Full backend test suite: 262 passing tests with zero regressions and zero failures.
+  - Zero live API spend incurred ($0.00).
+
+---
+
+## ADR-016: Image–Canvas Integration Engine Architecture, Mathematical Fitting, Polygonal Alpha Masking, and Lineage Tracking
+- **Status:** [VERIFIED ARCHITECTURE & IMPLEMENTED IN E3 / M4]
+- **Context:** Following the completion and audit of the Canvas Generation Engine (E2), InkLoop requires the specialist Image–Canvas Integration Engine (E3) to map generated panel artwork into layout panel slots with strict aspect-ratio preservation, anchor-directed cropping, anti-aliased polygonal clipping, full-bleed boundary handling, and complete transformation provenance without modifying canvas geometry or rendering dialogue/bubbles/effects.
+- **Architectural Invariants & Decisions:**
+  1. **Strict Upstream Consumption & Decoupling:**
+     - Consumes `CanvasLayoutResult` and its ordered `PanelSlot` instances produced by E2.
+     - E3 operates strictly on image placement. It does not generate story text (E4), shape fonts (E5), place speech bubbles (E6), apply motion lines (E7), or compose finished books (S8).
+  2. **Mathematical Transform Contract & Aspect-Ratio Preservation:**
+     - Adheres to `calculate_fit_transform()` from `backend/app/contracts/geometry.py`.
+     - `FitMode.COVER`: Scales uniformly to completely fill the target slot ($scale = \max(tw/sw, th/sh)$). Excess native resolution is cropped using normalized anchor points $[0.0, 1.0]$ without aspect-ratio distortion ($scale_x \equiv scale_y$).
+     - `FitMode.CONTAIN`: Scales uniformly so the entire artwork fits inside the target slot ($scale = \min(tw/sw, th/sh)$) with transparent (or optional background color) letterbox padding.
+     - `FitMode.STRETCH`: Non-uniform scaling permitted only under explicit override.
+     - Any unintended aspect-ratio distortion under `CONTAIN` or `COVER` raises `AspectRatioDistortionError`.
+  3. **Anchor & Focal-Point Directed Cropping:**
+     - In `COVER` mode, `compute_source_crop_rect()` calculates the exact native source bounding box using normalized anchor coordinates `Point(x=anchor_x, y=anchor_y)`:
+       - `(0.5, 0.5)`: Centered crop.
+       - `(0.5, 0.0)` / `(0.5, 1.0)`: Top-aligned / bottom-aligned crop.
+       - `(0.0, 0.5)` / `(1.0, 0.5)`: Left-aligned / right-aligned crop.
+  4. **Anti-Aliased Polygonal Alpha Masking:**
+     - For non-rectangular action panels (e.g. dynamic shonen diagonal cuts with `panel.has_polygon == True`), polygon vertices are mapped from PAGE coordinate space to local slot coordinate space: $(p.x - target.x, p.y - target.y)$.
+     - An 8-bit alpha mask (`L` mode) is drawn via Pillow (`ImageDraw.polygon`), preserving anti-aliased edges and compositing with the source image's existing alpha channel (`Image.composite`).
+     - Pixels outside the polygon are masked to 100% transparency ($\alpha = 0$), while pixels inside remain fully visible ($\alpha = 255$).
+  5. **Full-Bleed Envelope Handling:**
+     - When `panel.is_full_bleed == True` and `allow_bleed == True`, the target slot rectangle is expanded to the outer `bleed_box` or declared bleed edges before transform calculation.
+  6. **Lineage Tracking, Determinism & Provenance:**
+     - Produces structured `PlacedPanelLayer` artifacts recording `layer_id`, `panel_id`, `source_content_hash`, `output_content_hash`, native `source_dimensions`, `placed_rect`, `local_rect`, `transform_applied` (`Transform2D`), and clipping flags.
+     - Deterministic PNG encoding guarantees byte-stable outputs for identical inputs.
+     - Adapts losslessly to `ImageCanvasIntegrationOutput` from shared engine contracts.
+  7. **Defensive Allocation & Memory Safeguards:**
+     - Source images exceeding $20,000 \times 20,000$ px or $100,000,000$ total pixels raise `AllocationLimitExceededError`.
+     - Corrupted or unparsable image bytes raise `UnsupportedImageFormatError`.
+- **Verification Evidence:**
+  - 14 dedicated unit and integration tests passing in `backend/tests/test_image_canvas_integration.py`.
+  - 49 geometry and canvas tests passing across `contracts/geometry.py` and `canvas/`.
+  - Full backend test suite: 276 passing tests with zero regressions and zero failures (10.02s execution).
+  - Zero live API spend incurred ($0.00).
+
+### ADR-017: Knowledge Catalogue Deterministic Retrieval & Image-Generation Context Integration (Task T6.3)
+- **Status:** Approved / Implemented
+- **Date:** 2026-10-29
+- **Context:**
+  InkLoop requires connecting its authoritative 60-group / 840-element image knowledge catalogue to the real image-generation context compilation path (E1) without flat prompt concatenation, prompt-stuffing, external vector databases, unapproved LLM dependencies, or live paid API spend. Knowledge records must be selected based on active scene signals, governed by research confidence, filtered for compatibility, bounded by explicit budgets, and traced with immutable provenance.
+- **Decisions:**
+  1. **Typed Retrieval Domain Contracts (`backend/app/catalogue/retrieval_models.py`):**
+     - `KnowledgeRetrievalRequest`: Typed query contract capturing scene framing, shot scale, action, camera angle, lighting, panel instructions, character IDs, canonical reference presence, visual invariants, style linework/tonal rules, palette, and positive/negative constraints.
+     - `KnowledgeBudget`: Enforces strict capacity limits on injected rules (`max_rules=3`), recipes (`max_recipes=1`), claims (`max_claims=2`), and approximate prompt tokens (`max_prompt_tokens_approx=150`).
+     - `KnowledgeRetrievalPolicy`: Controls status threshold (`min_coverage_status=RESEARCHED`), hypothesis inclusion (`allow_hypotheses=False`), provenance requirements (`require_provenance=True`), and empty-selection behavior.
+     - `CandidateEvaluation` & `KnowledgeRetrievalResult`: Transparent audit trail recording scores, signal matches, exclusion reasons, budget consumption, and positive/negative prompt clauses.
+  2. **Deterministic Relevance Scoring & Explainable Tie-Breaking:**
+     - Signals are extracted purely from scene and style context without hidden state.
+     - Scoring weights combine signal match strength (+10 to +25 for canonical element/anchor matches), group research status (`VALIDATED`: +15, `EXPERIMENTALLY_TESTED`: +10, `RESEARCHED`: +5), and rule priority (`HIGH`: +3, `MEDIUM`: +1.5, `LOW`: +0).
+     - Deterministic tie-breaking sorts candidates by `(-relevance_score, -priority_weight, group_number, record_id)`. Identical inputs yield identical selections.
+  3. **Strict Compatibility & Negative Constraint Precedence:**
+     - Rules declaring `conflicting_concepts` are checked against active scene/style tokens; detected clashes are excluded with reason `CONFLICTING_CONCEPT`.
+     - Hard negative constraints and character restrictions take absolute precedence over catalogue rules. Any positive directive contradicting a negative rule is excluded as `CONTRADICTS_NEGATIVE_CONSTRAINT`.
+  4. **E1 Context Builder & Fingerprint Invalidation:**
+     - Hooked directly into `build_panel_context_packet()` in `backend/app/context_builder.py`.
+     - Injected positive clauses form a clean prompt section: `Catalogue guidance: ...`.
+     - Negative clauses merge cleanly into `prohibited_deviations`.
+     - Context fingerprint computation includes `catalogue_version`, `knowledge_selection_hash`, and `selected_knowledge_ids`. Any change to catalogue records or retrieved recipes invalidates downstream panel fingerprints, preventing stale cache reuse during `BatchOrchestrator.resume_batch()`.
+  5. **Provenance & Execution Manager Logging:**
+     - Every selected item is backed by indexed `SourceRecord` instances declaring `what_it_establishes` vs `what_it_does_not_establish`.
+     - `GenerationAttemptRecord.sanitized_request_metadata` records `catalogue_version`, `knowledge_selection_hash`, `selected_knowledge_ids`, and `knowledge_provenance_ids`.
+  6. **Dry-Run & Explain Operation:**
+     - `KnowledgeRetriever.explain()` and REST endpoint `POST /api/v1/catalogue/explain` generate comprehensive Markdown evaluation reports showing candidates, scores, rationale, exclusions, and budget consumption without invoking generative models.
+  7. **Research Maturity & Status Integrity:**
+     - Current register status: 45 groups are `UNRESEARCHED`, 14 are `RESEARCHED`, 1 is `EXPERIMENTALLY_TESTED` (Group 60), and 0 are `VALIDATED`. Structural completeness is never conflated with empirical validation.
+- **Verification Evidence:**
+  - 16 dedicated unit and integration tests passing in `backend/tests/test_catalogue_retrieval.py`.
+  - 20 catalogue and governance tests passing in `backend/tests/test_image_knowledge_catalogue.py`.
+  - Full backend test suite: 295 passing tests with zero regressions and zero failures (10.67s execution).
+  - Zero live API spend incurred ($0.00).
+
+---
+
+## ADR-018: Structured Text Generation Engine & Semantic Continuity Architecture (Workstream E4)
+- **Status:** [VERIFIED ARCHITECTURE & IMPLEMENTATION]
+- **Date:** 2026-10-29
+- **Context:**
+  InkLoop requires a dedicated, typed, and deterministic Text Generation Engine (Engine E4) to create, ingest, structure, and validate all narrative text blocks—dialogue, narration, captions, inner monologue, off-panel speech, interrupted/fading speech, and sound-effect words.
+  The engine must guarantee character voice, narrative timeline continuity, Story Bible / Canon adherence, and exact code-point immutability for user-authored text without conflating semantic text generation with downstream typography shaping (E5) or speech bubble geometry (E6).
+- **Decisions:**
+  1. **Strict Separation of Semantic Text from Visual Layout:**
+     - E4 is restricted to generating semantic text artifacts, delivery traits, reading order, and length guidance.
+     - Glyph shaping, kerning, line-breaking metrics, and font generation are deferred to E5. Bubble bounds, tails, and spatial placement are deferred to E6.
+  2. **Domain Models & Script Block Primitives (`backend/app/text/models.py`):**
+     - `ScriptBlock`: Atomic narrative unit defining `block_id`, `scene_id`, `panel_id`, `block_kind`, `reading_order_index`, `text_content`, `language`, `direction`, `is_exact_user_text`, `provenance`, `speaker`, `delivery`, `caption_kind`, `sfx_category`, and `length_guidance`.
+     - `TextScriptManifest`: Verifiable container bundling accepted blocks, canon hash, bible version, reading order, and diagnostic logs.
+     - `SpeakerRef` & `TextProvenance`: Traceability primitives recording speaker declaration, voice traits, source passage ID, source text hash, and model metadata.
+  3. **Exact User Text Immutability Invariant:**
+     - When `SourceMode.USER_EXACT` is requested, the text engine guarantees byte-for-byte and code-point-by-code-point preservation.
+     - Any modification (translation, paraphrasing, punctuation alteration, diacritic stripping) triggers `DiagnosticCode.EXACT_TEXT_ALTERATION` and rejects the block.
+  4. **Story Bible & Canon State Invariants:**
+     - All character speakers must be declared in the active `StoryBible` or `CanonSnapshot`. Undeclared entities fail closed with `DiagnosticCode.UNDECLARED_SPEAKER` (ERROR severity).
+     - Timeline state is resolved via `resolve_timeline_state()`. If a character is marked `unconscious`, `asleep`, `knocked_out`, or `gagged`, dialogue speech fails closed with `DiagnosticCode.CANON_STATE_CONTRADICTION`. Internal monologue remains permitted.
+     - `CanonSnapshot` immutability is preserved; passing canon objects to E4 cannot mutate state or mappings.
+  5. **Multilingual Script & Directionality Semantics:**
+     - Full native support for Arabic (with tashkeel/diacritics), English, and mixed-script text.
+     - Logical character order is strictly preserved in memory. Text direction is stored as semantic metadata (`TextDirection.RTL` / `LTR`) without visual string inversion.
+  6. **Provider-Neutral Adapter Architecture & Zero Live Spend:**
+     - `SimulatedTextGenerationAdapter`: Fast, deterministic offline generation for unit and integration testing ($0.00 spend).
+     - `MetaTextGenerationAdapter`: Live Meta Model API stub that fails closed when unconfigured without generating hallucinatory mock data.
+  7. **Adaptation to Shared Engine Contracts (`backend/app/contracts/engine.py`):**
+     - Adapts `TextGenerationParams` to `EngineRunResponse[TextGenerationOutput]` featuring `TextScriptManifest`, metrics, and execution metadata.
+  8. **REST Router Integration (`backend/app/api/routers/text.py`):**
+     - Endpoints mounted under `/api/v1/text`: `POST /validate`, `POST /ingest`, `POST /generate`.
+- **Verification Evidence:**
+  - 17 dedicated unit and integration tests passing in `backend/tests/test_text_generation.py`.
+  - Full backend test suite: 312 passing tests with zero regressions and zero failures (11.83s execution).
+  - Zero live API spend incurred ($0.00).
+
+
+## ADR-019: AI Creative Director, Character Maker & Universe Builder Architecture
+
+- **Date:** 2026-10-29
+- **Status:** Accepted & Verified
+- **Context:**
+  InkLoop requires an end-to-end, production-oriented AI Creative Director and Universe Builder capable of transforming natural-language briefs into coherent, editable, versioned creative-production packages. The system must not act as a mere prompt generator or chat form; it must connect directly to InkLoop's Story Bible, Character Copier, Style Copier, down-stream prompt compilers, and cross-document validation engines.
+- **Decisions & Implementation Architecture:**
+  1. **16-Stage Deterministic Pipeline (`backend/app/creative/service.py`):**
+     - Executes sequential stages: `UNDERSTAND_BRIEF`, `EXPAND_CORE_PREMISE`, `GENERATE_STORY_BIBLE`, `DEVELOP_MAIN_CHARACTERS`, `BUILD_ENSEMBLE_RELATIONSHIPS`, `DESIGN_WORLD_AND_LOCATIONS`, `FORMULATE_NARRATIVE_STRUCTURE`, `DEFINE_VISUAL_STYLE`, `MAP_STYLE_TO_CHARACTERS`, `CREATE_CHARACTER_SHEET_PLANS`, `VALIDATE_COHERENCE`, `PRESENT_REVIEW_PACKAGE`, `WAIT_FOR_APPROVAL_WHERE_REQUIRED`, `SAVE_APPROVED_VERSIONS`, `OPTIONALLY_QUEUE_REFERENCE_SHEETS`, `COMPLETE_WITH_RECEIPT`.
+     - Operates in offline mode with deterministic synthesis ($0.00 spend).
+  2. **Fact Classification & Evidence Tracking (`backend/app/creative/schemas.py`):**
+     - Classifies brief statements into `EXPLICIT_USER_FACT`, `AGENT_PROPOSAL`, and `OPEN_QUESTION`.
+     - Preserves user creative ownership without hallucinating unconfirmed canon.
+  3. **Supernatural Rule Constraints & Anti-God-Mode Stakes:**
+     - In `MagicOrTechAbilityRule`, every supernatural or technological ability strictly requires defined `cost_or_strain` and `absolute_limit`. Omission fails closed as a coherence violation.
+  4. **Cross-Document Coherence Validator (`backend/app/creative/validator.py`):**
+     - Deterministically verifies invariant retention, relationship referential integrity, narrative act progression, and flags active `StoryBible` canon conflicts.
+  5. **Human Canon Mutation Approval & Reversibility:**
+     - Prohibits silent mutation of approved Story Bible canon.
+     - Commits proposals only upon explicit human approval, monotonically incrementing `bible_version` and recalculating cryptographic `canon_hash`.
+  6. **Downstream Production Prompt Compilation (`backend/app/creative/prompt_compiler.py`):**
+     - Directly consumes `CreativeContractsPackage` and `CharacterIdentityProfile` to compile prompt tokens with strict instruction precedence (action intent -> mandatory invariants & wardrobe -> visual style -> environment -> negative constraints).
+  7. **Fullstack Integration:**
+     - Backend REST endpoints mounted under `/api/v1/creative`: `POST /develop`, `GET /package/{project_id}`, `POST /validate/{project_id}`, `POST /approve`, `GET /contracts/{project_id}`, `POST /compile-prompt`.
+     - Agent runtime tools registered in `backend/app/agent/registry.py`: `creative.develop_universe`, `creative.get_package`, `creative.validate_coherence`, `creative.approve_canon`.
+     - Frontend UI view in `frontend/src/views/CreativeDirectorView.tsx` with mode switcher, 8 deliverable tabs, interactive prompt compiler sandbox, and human approval banner.
+- **Verification Evidence:**
+  - 7 dedicated unit and integration tests passing in `backend/tests/test_creative_director.py`.
+  - Frontend production build (`npm run build`) passing with zero TypeScript errors.
+  - Acceptance scenario executed and verified across all 12 criteria (`scripts/verify_creative_acceptance.py`).
+  - Zero live API spend incurred ($0.00).

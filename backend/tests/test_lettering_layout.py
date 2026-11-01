@@ -97,3 +97,29 @@ def test_explicit_carrier_and_delivery_map_to_semantic_type_ids():
     assert type_id_for_text(content_kind="narration", carrier="caption") == "narration.box"
     assert type_id_for_text(content_kind="date_or_place", carrier="caption") == "caption.timeplace"
     assert type_id_for_text(carrier="sound_effect") == "sfx.text"
+
+
+def test_configurable_editorial_guidance_and_bubble_fit_validation():
+    """Verify that when enforce_word_limit=False, dialogue exceeding recommended words fits physically with a warning."""
+    # 15 words exceeds standard speech.normal recommended limit (12 words)
+    long_dialogue = "The signal is emanating from beneath the ancient temple floor and spreading outward very quickly."
+    assert count_words(long_dialogue) == 15
+
+    # With enforce_word_limit=True (default), raises LetteringValidationError
+    with pytest.raises(LetteringValidationError) as exc_info:
+        layout_lettering_text(long_dialogue, "speech.normal", max_width_px=400, max_height_px=200)
+    assert exc_info.value.code == "ERR_LETTERING_WORD_LIMIT"
+
+    # With enforce_word_limit=False (bubble-fit mode), succeeds if it physically fits inside bubble dimensions
+    layout = layout_lettering_text(
+        long_dialogue,
+        "speech.normal",
+        max_width_px=400,
+        max_height_px=200,
+        enforce_word_limit=False,
+    )
+    assert not layout.overflow
+    assert layout.word_count == 15
+    assert any(d["code"] == "WARN_EDITORIAL_WORD_COUNT" for d in layout.diagnostics)
+    assert "editorial guidance" in layout.diagnostics[0]["message"]
+

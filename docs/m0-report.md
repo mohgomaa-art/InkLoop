@@ -111,7 +111,7 @@ In strict adherence to the project brief (Section 7 and Section 11):
 ## 5. Required Action to Unblock
 
 The project lead needs to take one single action:
-1. Create a `.env` file in the project root (`C:\Users\mnile\Desktop\InkLoob\.env`) containing:
+1. Create a `.env` file in the project root containing:
    ```bash
    MODEL_API_KEY=your_key_here
    ```

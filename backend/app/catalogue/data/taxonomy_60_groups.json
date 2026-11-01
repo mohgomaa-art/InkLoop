@@ -15,26 +15,249 @@
       "Interactive Comic"
     ],
     "canonical_name": "01. Comic Formats",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_01_yonkoma_structure",
+        "claim_text": "Conventional 4-koma structure follows ki-sh\u014d-ten-ketsu: setup (ki), development (sh\u014d), twist/turn (ten), and conclusion (ketsu) across equal vertical panels.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_stewart_2024",
+          "src_embassy_japan_yonkoma"
+        ],
+        "taxonomy_group_id": "tax_01_comic_formats",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_01_manga_rtl_flow",
+        "claim_text": "Traditional manga sequences from top-right to bottom-left, redirecting eye navigation and panel reading priority.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_natsume_2021"
+        ],
+        "taxonomy_group_id": "tax_01_comic_formats",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_01_webtoon_scroll_timing",
+        "claim_text": "Long-scroll vertical layouts replace page-turns with inter-panel whitespace intervals to govern reading cadence and dramatic reveals.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_cambridge_digital_comics",
+          "src_chen_2023"
+        ],
+        "taxonomy_group_id": "tax_01_comic_formats",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_01_comic_formats",
     "group_number": 1,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
-    "has_primary_sources": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
+    "has_primary_sources": true,
     "has_recipes": false,
     "has_recorded_experiments": false,
     "image_generation_relevance": "Governs overall visual medium conventions, reading direction, and frame density.",
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 01. Comic Formats pending",
-      "Empirical prompt recipes for 01. Comic Formats elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Empirical measurement of optimal webtoon vertical gutter height in pixels under varying screen DPIs",
+      "Model prompt fidelity when generating sequential 4-koma panels in a single raster vs segmented tiles"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "4-koma",
+          "vertical strip",
+          "yonkoma",
+          "equal panels"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "irregular splash page",
+          "horizontal western comic strip"
+        ],
+        "directive_text": "For 4-koma format, compose scene beats in four sequential vertical segments following ki-sh\u014d-ten-ketsu progression.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Unequal panel sizing disrupting 4-koma cadence",
+          "Twist beat missing dramatic shift"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_01_4koma_quad_beats",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_embassy_japan_yonkoma",
+          "src_stewart_2024"
+        ],
+        "taxonomy_group_id": "tax_01_comic_formats"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "webtoon",
+          "vertical scroll",
+          "infinite scroll"
+        ],
+        "confidence": "inference",
+        "conflicting_concepts": [
+          "tight print gutters",
+          "horizontal tiered grid"
+        ],
+        "directive_text": "For vertical-scroll formats, modulate vertical gutters with extended blank space to induce tension before reveals.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Cluttered vertical gutter crowding dramatic reveals"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "medium",
+        "rule_id": "rul_01_webtoon_whitespace_pacing",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_cambridge_digital_comics",
+          "src_chen_2023"
+        ],
+        "taxonomy_group_id": "tax_01_comic_formats"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Ronald Stewart"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Scholarly overview of 4-koma serial narrative conventions.",
+        "publication_date": "2024",
+        "publisher": "The Cambridge Companion to Manga and Anime (Cambridge University Press)",
+        "source_id": "src_stewart_2024",
+        "source_location": "Historical evolution of 4-koma manga and structural conventions",
+        "supported_claim_ids": [
+          "clm_01_yonkoma_structure"
+        ],
+        "title": "Newspaper Comic Strips",
+        "url_or_doi": "https://doi.org/10.1017/9781009118552.003",
+        "what_it_does_not_establish": "Does not establish vertical webtoon infinite-scroll formats.",
+        "what_it_establishes": "Establishes the structural history, evolution, and narrative constraints of Japanese four-panel comic strips (yonkoma)."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Embassy of Japan in the UK"
+        ],
+        "evidence_class": "primary_provider_doc",
+        "license_or_access": null,
+        "notes": "Official Japanese cultural agency specification for Yonkoma manga structure.",
+        "publication_date": "2020",
+        "publisher": "Ministry of Foreign Affairs of Japan",
+        "source_id": "src_embassy_japan_yonkoma",
+        "source_location": "Official competition guidelines on Yonkoma panel proportions and ki-sh\u014d-ten-ketsu progression",
+        "supported_claim_ids": [
+          "clm_01_yonkoma_structure"
+        ],
+        "title": "Yonkoma Manga Guidelines",
+        "url_or_doi": "https://www.uk.emb-japan.go.jp/files/100069624.pdf",
+        "what_it_does_not_establish": "Does not establish Western multi-tier comic book formats.",
+        "what_it_establishes": "Establishes official specifications for 4-panel vertical manga format and classical ki-sh\u014d-ten-ketsu narrative structure."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Cambridge University Press"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Academic monograph analyzing long-scroll digital comic reading dynamics.",
+        "publication_date": "2023",
+        "publisher": "Cambridge University Press",
+        "source_id": "src_cambridge_digital_comics",
+        "source_location": "Chapter on Webtoons and Continuous Long-Scroll Reading Ergonomics",
+        "supported_claim_ids": [
+          "clm_01_webtoon_scroll_timing"
+        ],
+        "title": "Innovations in Digital Comics",
+        "url_or_doi": "https://doi.org/10.1017/9781009366472",
+        "what_it_does_not_establish": "Does not establish physical print margin and bleed tolerances.",
+        "what_it_establishes": "Establishes digital canvas transformations: how vertical scroll distance and inter-panel blank intervals replace page turns."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Ching-Shiuan Chen"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "User study evaluating narrative comprehension across print vs webtoon scrolling.",
+        "publication_date": "2023",
+        "publisher": "Proceedings of the Association for Information Science and Technology",
+        "source_id": "src_chen_2023",
+        "source_location": "Comparative user study of page-turning vs vertical scrolling",
+        "supported_claim_ids": [
+          "clm_01_webtoon_scroll_timing"
+        ],
+        "title": "Flipping Vs. Scrolling in Digital Narratives: Reader Engagement and Reading Patterns in Comic Layouts",
+        "url_or_doi": "https://doi.org/10.1002/pra2.896",
+        "what_it_does_not_establish": "Does not establish raster inking algorithms or text rendering engines.",
+        "what_it_establishes": "Establishes empirical reader engagement differences between paginated page-turning and continuous vertical scrolling."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Natsume Fusanosuke",
+          "Jon Holt (trans.)",
+          "Teppei Fukuda (trans.)"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Classic manga scholarship on the functional semiotics of comic panels.",
+        "publication_date": "2021",
+        "publisher": "Electronic Journal of Contemporary Japanese Studies",
+        "source_id": "src_natsume_2021",
+        "source_location": "Sections on Koma Function, Asshuku (Compression) and Kaiho (Release), and Mi-hiraki (Two-Page Spreads)",
+        "supported_claim_ids": [
+          "clm_01_manga_rtl_flow",
+          "clm_05_shape_container_vs_size",
+          "clm_53_asshuku_kaiho_pacing",
+          "clm_56_panel_density_velocity",
+          "clm_58_mihiraki_binding_fold"
+        ],
+        "title": "The Functions of Panels (koma) in Manga",
+        "url_or_doi": "https://www.japanesestudies.org.uk/ejcjs/vol21/iss2/holt_fukuda.html",
+        "what_it_does_not_establish": "Does not establish software data structures or SVG rasterization specifications.",
+        "what_it_establishes": "Establishes manga panel grammar, compression and release pacing mechanics, two-page spread (mi-hiraki) dynamics, and top-right to bottom-left flow."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -71,7 +294,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -92,11 +315,64 @@
       "Freeform Layout"
     ],
     "canonical_name": "03. Page Structures",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_03_ecs_vs_ics_independence",
+        "claim_text": "External Compositional Structure (page grid/layout) is structurally distinct and independent from Internal Compositional Structure (panel content).",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_cohn_2018"
+        ],
+        "taxonomy_group_id": "tax_03_page_structures",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "empirical_observation",
+        "claim_id": "clm_03_blockage_navigation",
+        "claim_text": "A tall panel beside a stack of smaller panels creates blockage, redirecting the reader's path downward before advancing horizontally.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_cohn_2018",
+          "src_cohn_2014"
+        ],
+        "taxonomy_group_id": "tax_03_page_structures",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_03_diagonal_tension",
+        "claim_text": "Slanted boundaries and oblique cuts induce visual velocity and psychological instability in high-tempo action scenes.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_03_page_structures",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_03_page_structures",
     "group_number": 3,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
     "has_primary_sources": false,
     "has_recipes": false,
     "has_recorded_experiments": false,
@@ -104,14 +380,146 @@
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 03. Page Structures pending",
-      "Empirical prompt recipes for 03. Page Structures elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Reading eye-tracking verification on mixed diagonal-orthogonal hybrid pages",
+      "Automated CSS/SVG gutter alignment precision when rendering non-rectangular blockage panels"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "blockage layout",
+          "staggered tiers",
+          "vertical strip"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "horizontal Z-path reading assumption"
+        ],
+        "directive_text": "For blockage layouts, sequence internal panel action strictly along the vertical column before crossing tiers.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Reader confusion from ambiguous Z-path vs vertical column priority"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_03_blockage_reading_order",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_cohn_2014",
+          "src_cohn_2018"
+        ],
+        "taxonomy_group_id": "tax_03_page_structures"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "diagonal grid",
+          "action scene",
+          "dynamic combat"
+        ],
+        "confidence": "inference",
+        "conflicting_concepts": [
+          "calm dialogue",
+          "rigid nine-panel grid"
+        ],
+        "directive_text": "Use slanted/oblique panel boundaries during high-tempo action sequences to convey velocity and instability.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Awkwardly clipped character anatomy along extreme oblique angles"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "medium",
+        "rule_id": "rul_03_action_diagonal_cuts",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_03_page_structures"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Foundational scientific analysis of comic visual language and page architecture.",
+        "publication_date": "2018",
+        "publisher": "Empirical Comics Research / Routledge",
+        "source_id": "src_cohn_2018",
+        "source_location": "Sections on External Compositional Structure (ECS), Internal Compositional Structure (ICS), Grids, and Boundary Treatments",
+        "supported_claim_ids": [
+          "clm_03_ecs_vs_ics_independence",
+          "clm_03_blockage_navigation",
+          "clm_04_role_geometry_independence",
+          "clm_05_shape_container_vs_size",
+          "clm_06_bleed_vs_splash",
+          "clm_58_trim_vs_bleed_separation"
+        ],
+        "title": "Visual Language Theory and the Scientific Study of Comics",
+        "url_or_doi": "https://visuallanguagelab.com/P/2018.ESiC.NC.pdf",
+        "what_it_does_not_establish": "Does not establish generative diffusion model prompt engineering or automated rendering pipelines.",
+        "what_it_establishes": "Establishes structural independence between page layout (ECS) and internal panel composition (ICS), blockage path navigation, and multi-axis separation."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn",
+          "Ryan Taylor",
+          "Tom Holcomb"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Empirical cognitive science evidence on comic reading order preferences.",
+        "publication_date": "2014",
+        "publisher": "Frontiers in Psychology",
+        "source_id": "src_cohn_2014",
+        "source_location": "Eye-tracking and ERP empirical studies on comic page navigation",
+        "supported_claim_ids": [
+          "clm_03_blockage_navigation"
+        ],
+        "title": "The Architecture of Visual Narrative Comprehension: The Interaction of Narrative Structure and Page Layout",
+        "url_or_doi": "https://doi.org/10.3389/fpsyg.2014.00680",
+        "what_it_does_not_establish": "Does not establish digital comic scrolling physics or automated layout generators.",
+        "what_it_establishes": "Establishes empirical reading path navigation under pure grids vs blockage and staggered tiered layouts."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "CO-MIX Consortium"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Practical European pedagogical manual for sequential comic construction.",
+        "publication_date": "2022",
+        "publisher": "CO-MIX Erasmus+ Strategic Partnership",
+        "source_id": "src_comix_2022",
+        "source_location": "Chapter 3: The Architecture of Comic Pages, Panel Shapes, and Inset Storytelling",
+        "supported_claim_ids": [
+          "clm_03_diagonal_tension",
+          "clm_05_shape_container_vs_size",
+          "clm_05_panoramic_vista",
+          "clm_05_tall_vertical_stature",
+          "clm_06_bleed_vs_splash",
+          "clm_06_figure_breaking_frame",
+          "clm_56_panel_density_velocity"
+        ],
+        "title": "Methodology on Inclusive Youth Work Through Comics",
+        "url_or_doi": "https://www.mc-celje.si/f/docs/CO-MIX/COMIX_Manual_ENG.pdf",
+        "what_it_does_not_establish": "Does not establish quantitative eye-tracking metrics or neural network architectures.",
+        "what_it_establishes": "Establishes practical comic creation principles: irregular polygons, slanted cuts, pacing acceleration via small frames, and inset panels."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -132,11 +540,63 @@
       "Splash Panel"
     ],
     "canonical_name": "04. Panel Types by Narrative Function",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_04_vng_grammar",
+        "claim_text": "Panels fulfill formal Visual Narrative Grammar roles: Establisher (E), Initial (I), Prolongation (L), Peak (P), and Release (R).",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_cohn_2013"
+        ],
+        "taxonomy_group_id": "tax_04_panel_types_function",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_04_role_geometry_independence",
+        "claim_text": "Narrative function is independent of physical panel geometry; any shape or aspect ratio can fulfill an Establisher or Peak role.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_cohn_2018"
+        ],
+        "taxonomy_group_id": "tax_04_panel_types_function",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_04_silent_panel_pause",
+        "claim_text": "Panels devoid of text create a contemplative pause, compressing attention and decelerating subjective narrative time.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_molotiu_2013"
+        ],
+        "taxonomy_group_id": "tax_04_panel_types_function",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_04_panel_types_function",
     "group_number": 4,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
     "has_primary_sources": false,
     "has_recipes": false,
     "has_recorded_experiments": false,
@@ -144,14 +604,174 @@
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 04. Panel Types by Narrative Function pending",
-      "Empirical prompt recipes for 04. Panel Types by Narrative Function elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Model prompt weighting for Prolongation (L) vs Initial (I) phase transitions",
+      "Empirical reader comprehension test on inverted VNG structures (e.g. Peak preceding Establisher)"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "visual narrative grammar",
+          "canonical pacing",
+          "scene progression"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "unstructured random panel sequencing"
+        ],
+        "directive_text": "Sequence scene generation prompts according to Visual Narrative Grammar (E -> I -> L -> P -> R).",
+        "exception_rules": [],
+        "failure_modes": [
+          "Premature climax without prior Establisher/Initial narrative setup"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_04_vng_canonical_progression",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_cohn_2013"
+        ],
+        "taxonomy_group_id": "tax_04_panel_types_function"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "impact panel",
+          "peak beat",
+          "action climax",
+          "high contrast"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "static eye-level medium shot",
+          "low-contrast background blend"
+        ],
+        "directive_text": "For Peak / Impact panels, maximize contrast, dynamic pose, and clear focal anchoring on the decisive action.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Decisive impact obscured by cluttered ambient details"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_04_peak_focal_emphasis",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_cohn_2013",
+          "src_molotiu_2013"
+        ],
+        "taxonomy_group_id": "tax_04_panel_types_function"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "silent panel",
+          "ambient beat",
+          "contemplative pause"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "onomatopoeia",
+          "dialogue balloon",
+          "shout caption"
+        ],
+        "directive_text": "For Silent / Pause beat panels, enforce strict negative prompts excluding text, speech balloons, and sound effects.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Spurious text artifacts breaking contemplative silence"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_04_silent_panel_cleanliness",
+        "rule_type": "negative_constraint",
+        "source_ids": [
+          "src_molotiu_2013"
+        ],
+        "taxonomy_group_id": "tax_04_panel_types_function"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Authoritative paper introducing Visual Narrative Grammar (VNG).",
+        "publication_date": "2013",
+        "publisher": "Cognitive Science",
+        "source_id": "src_cohn_2013",
+        "source_location": "Visual Narrative Grammar (VNG) Formal Model",
+        "supported_claim_ids": [
+          "clm_04_vng_grammar",
+          "clm_53_asshuku_kaiho_pacing"
+        ],
+        "title": "Visual Narrative Structure",
+        "url_or_doi": "https://doi.org/10.1111/cogs.12016",
+        "what_it_does_not_establish": "Does not establish physical printing tolerances or font kerning metrics.",
+        "what_it_establishes": "Establishes formal grammatical constituent structure of visual narrative: Establisher (E), Initial (I), Prolongation (L), Peak (P), and Release (R)."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Foundational scientific analysis of comic visual language and page architecture.",
+        "publication_date": "2018",
+        "publisher": "Empirical Comics Research / Routledge",
+        "source_id": "src_cohn_2018",
+        "source_location": "Sections on External Compositional Structure (ECS), Internal Compositional Structure (ICS), Grids, and Boundary Treatments",
+        "supported_claim_ids": [
+          "clm_03_ecs_vs_ics_independence",
+          "clm_03_blockage_navigation",
+          "clm_04_role_geometry_independence",
+          "clm_05_shape_container_vs_size",
+          "clm_06_bleed_vs_splash",
+          "clm_58_trim_vs_bleed_separation"
+        ],
+        "title": "Visual Language Theory and the Scientific Study of Comics",
+        "url_or_doi": "https://visuallanguagelab.com/P/2018.ESiC.NC.pdf",
+        "what_it_does_not_establish": "Does not establish generative diffusion model prompt engineering or automated rendering pipelines.",
+        "what_it_establishes": "Establishes structural independence between page layout (ECS) and internal panel composition (ICS), blockage path navigation, and multi-axis separation."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Andrei Molotiu"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Comprehensive academic glossary of comics analysis terminology.",
+        "publication_date": "2013",
+        "publisher": "Comics Forum",
+        "source_id": "src_molotiu_2013",
+        "source_location": "Glossary of panel types, transitions, subjective perspectives, and montage",
+        "supported_claim_ids": [
+          "clm_04_vng_grammar",
+          "clm_04_silent_panel_pause",
+          "clm_11_aspect_mood_transitions",
+          "clm_53_flashback_visual_separation",
+          "clm_54_shot_reverse_shot"
+        ],
+        "title": "List of Terms for Comics Studies",
+        "url_or_doi": "https://comicsforum.org/2013/07/26/list-of-terms-for-comics-studies-by-andrei-molotiu/",
+        "what_it_does_not_establish": "Does not establish formal mathematical graph representations of panel layouts.",
+        "what_it_establishes": "Establishes standardized terminology for montage panels, shot-reverse-shot dialogue editing, and narrative points of view in comics."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -173,11 +793,66 @@
       "Fragmented Panel"
     ],
     "canonical_name": "05. Panel Shapes",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_05_shape_container_vs_size",
+        "claim_text": "Panel shape serves as the spatial view container, while panel size modulates narrative pacing via compression and release.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_cohn_2018",
+          "src_natsume_2021",
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_05_panel_shapes",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_05_panoramic_vista",
+        "claim_text": "Panoramic ultra-wide panels emphasize vast spatial context, environmental scale, and horizontal movement.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_05_panel_shapes",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_05_tall_vertical_stature",
+        "claim_text": "Tall vertical rectangles emphasize physical height, falling/rising motion, and character full-figure stature.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_comix_2022",
+          "src_natsume_2021"
+        ],
+        "taxonomy_group_id": "tax_05_panel_shapes",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_05_panel_shapes",
     "group_number": 5,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
     "has_primary_sources": false,
     "has_recipes": false,
     "has_recorded_experiments": false,
@@ -185,14 +860,155 @@
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 05. Panel Shapes pending",
-      "Empirical prompt recipes for 05. Panel Shapes elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Model stability when generating for non-standard polygonal panel aspect ratios (>3:1 or <1:3)",
+      "Subject repositioning during dynamic SVG polygon cropping"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "panoramic",
+          "wide rectangle",
+          "environmental vista",
+          "horizontal expanse"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "tight vertical portrait crop",
+          "extreme close-up"
+        ],
+        "directive_text": "For panoramic panels, anchor broad horizontal horizons along the lower third and expand environmental breadth.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Subject distorted by horizontal stretching",
+          "Compressed vertical field of view"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "medium",
+        "rule_id": "rul_05_panoramic_horizon_rule",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_05_panel_shapes"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "tall rectangle",
+          "vertical panel",
+          "full body shot",
+          "towering scale"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "wide landscape vista",
+          "horizontal panoramic composition"
+        ],
+        "directive_text": "For tall vertical panels, compose subjects along the vertical axis (full-figure standing, upward glance, or descending action).",
+        "exception_rules": [],
+        "failure_modes": [
+          "Empty upper/lower dead space",
+          "Head or feet clipped by vertical framing"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "medium",
+        "rule_id": "rul_05_tall_vertical_composition",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_comix_2022",
+          "src_natsume_2021"
+        ],
+        "taxonomy_group_id": "tax_05_panel_shapes"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "CO-MIX Consortium"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Practical European pedagogical manual for sequential comic construction.",
+        "publication_date": "2022",
+        "publisher": "CO-MIX Erasmus+ Strategic Partnership",
+        "source_id": "src_comix_2022",
+        "source_location": "Chapter 3: The Architecture of Comic Pages, Panel Shapes, and Inset Storytelling",
+        "supported_claim_ids": [
+          "clm_03_diagonal_tension",
+          "clm_05_shape_container_vs_size",
+          "clm_05_panoramic_vista",
+          "clm_05_tall_vertical_stature",
+          "clm_06_bleed_vs_splash",
+          "clm_06_figure_breaking_frame",
+          "clm_56_panel_density_velocity"
+        ],
+        "title": "Methodology on Inclusive Youth Work Through Comics",
+        "url_or_doi": "https://www.mc-celje.si/f/docs/CO-MIX/COMIX_Manual_ENG.pdf",
+        "what_it_does_not_establish": "Does not establish quantitative eye-tracking metrics or neural network architectures.",
+        "what_it_establishes": "Establishes practical comic creation principles: irregular polygons, slanted cuts, pacing acceleration via small frames, and inset panels."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Foundational scientific analysis of comic visual language and page architecture.",
+        "publication_date": "2018",
+        "publisher": "Empirical Comics Research / Routledge",
+        "source_id": "src_cohn_2018",
+        "source_location": "Sections on External Compositional Structure (ECS), Internal Compositional Structure (ICS), Grids, and Boundary Treatments",
+        "supported_claim_ids": [
+          "clm_03_ecs_vs_ics_independence",
+          "clm_03_blockage_navigation",
+          "clm_04_role_geometry_independence",
+          "clm_05_shape_container_vs_size",
+          "clm_06_bleed_vs_splash",
+          "clm_58_trim_vs_bleed_separation"
+        ],
+        "title": "Visual Language Theory and the Scientific Study of Comics",
+        "url_or_doi": "https://visuallanguagelab.com/P/2018.ESiC.NC.pdf",
+        "what_it_does_not_establish": "Does not establish generative diffusion model prompt engineering or automated rendering pipelines.",
+        "what_it_establishes": "Establishes structural independence between page layout (ECS) and internal panel composition (ICS), blockage path navigation, and multi-axis separation."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Natsume Fusanosuke",
+          "Jon Holt (trans.)",
+          "Teppei Fukuda (trans.)"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Classic manga scholarship on the functional semiotics of comic panels.",
+        "publication_date": "2021",
+        "publisher": "Electronic Journal of Contemporary Japanese Studies",
+        "source_id": "src_natsume_2021",
+        "source_location": "Sections on Koma Function, Asshuku (Compression) and Kaiho (Release), and Mi-hiraki (Two-Page Spreads)",
+        "supported_claim_ids": [
+          "clm_01_manga_rtl_flow",
+          "clm_05_shape_container_vs_size",
+          "clm_53_asshuku_kaiho_pacing",
+          "clm_56_panel_density_velocity",
+          "clm_58_mihiraki_binding_fold"
+        ],
+        "title": "The Functions of Panels (koma) in Manga",
+        "url_or_doi": "https://www.japanesestudies.org.uk/ejcjs/vol21/iss2/holt_fukuda.html",
+        "what_it_does_not_establish": "Does not establish software data structures or SVG rasterization specifications.",
+        "what_it_establishes": "Establishes manga panel grammar, compression and release pacing mechanics, two-page spread (mi-hiraki) dynamics, and top-right to bottom-left flow."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -211,11 +1027,65 @@
       "Panel Crossing the Gutter"
     ],
     "canonical_name": "06. Panel Borders & Relationships",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_06_bleed_vs_splash",
+        "claim_text": "Bleed describes artwork extending to or beyond page trim; splash describes page dominance. Smaller panels can also bleed.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_cohn_2018",
+          "src_comics_terminology_2018",
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_06_panel_borders_relationships",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_06_figure_breaking_frame",
+        "claim_text": "Characters or objects extending beyond the panel border increase visual pop, perceived 3D depth, and narrative urgency.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_06_panel_borders_relationships",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_06_inset_hierarchy",
+        "claim_text": "Inset panels require explicit parent containment, z-ordering, and contrast with parent artwork to prevent spatial ambiguity.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_comics_terminology_2018"
+        ],
+        "taxonomy_group_id": "tax_06_panel_borders_relationships",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_06_panel_borders_relationships",
     "group_number": 6,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
     "has_primary_sources": false,
     "has_recipes": false,
     "has_recorded_experiments": false,
@@ -223,14 +1093,145 @@
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 06. Panel Borders & Relationships pending",
-      "Empirical prompt recipes for 06. Panel Borders & Relationships elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Multi-layer alpha compositor support for frame-breaking elements",
+      "Automated z-index resolution for overlapping inset panels"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "figure breaking frame",
+          "dynamic combat",
+          "impact panel",
+          "3d depth pop"
+        ],
+        "confidence": "inference",
+        "conflicting_concepts": [
+          "strict bordered grid",
+          "contained boxed panel"
+        ],
+        "directive_text": "Allow character limbs, weapon tips, or motion streaks to extend beyond panel boundary stroke during dramatic impact beats.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Severed limb artifact when rendered without layer alpha transparency"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_06_figure_breaking_frame",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_06_panel_borders_relationships"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "inset panel",
+          "detail insert",
+          "panel-within-panel"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "identical tonal background",
+          "borderless inset over detailed background"
+        ],
+        "directive_text": "When nesting detail insert panels, ensure high tonal contrast and distinct border stroke between inset frame and underlying parent art.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Inset panel bleeding into parent panel background, confusing reading order"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_06_inset_contrast_rule",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_comics_terminology_2018"
+        ],
+        "taxonomy_group_id": "tax_06_panel_borders_relationships"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Foundational scientific analysis of comic visual language and page architecture.",
+        "publication_date": "2018",
+        "publisher": "Empirical Comics Research / Routledge",
+        "source_id": "src_cohn_2018",
+        "source_location": "Sections on External Compositional Structure (ECS), Internal Compositional Structure (ICS), Grids, and Boundary Treatments",
+        "supported_claim_ids": [
+          "clm_03_ecs_vs_ics_independence",
+          "clm_03_blockage_navigation",
+          "clm_04_role_geometry_independence",
+          "clm_05_shape_container_vs_size",
+          "clm_06_bleed_vs_splash",
+          "clm_58_trim_vs_bleed_separation"
+        ],
+        "title": "Visual Language Theory and the Scientific Study of Comics",
+        "url_or_doi": "https://visuallanguagelab.com/P/2018.ESiC.NC.pdf",
+        "what_it_does_not_establish": "Does not establish generative diffusion model prompt engineering or automated rendering pipelines.",
+        "what_it_establishes": "Establishes structural independence between page layout (ECS) and internal panel composition (ICS), blockage path navigation, and multi-axis separation."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "CO-MIX Consortium"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Practical European pedagogical manual for sequential comic construction.",
+        "publication_date": "2022",
+        "publisher": "CO-MIX Erasmus+ Strategic Partnership",
+        "source_id": "src_comix_2022",
+        "source_location": "Chapter 3: The Architecture of Comic Pages, Panel Shapes, and Inset Storytelling",
+        "supported_claim_ids": [
+          "clm_03_diagonal_tension",
+          "clm_05_shape_container_vs_size",
+          "clm_05_panoramic_vista",
+          "clm_05_tall_vertical_stature",
+          "clm_06_bleed_vs_splash",
+          "clm_06_figure_breaking_frame",
+          "clm_56_panel_density_velocity"
+        ],
+        "title": "Methodology on Inclusive Youth Work Through Comics",
+        "url_or_doi": "https://www.mc-celje.si/f/docs/CO-MIX/COMIX_Manual_ENG.pdf",
+        "what_it_does_not_establish": "Does not establish quantitative eye-tracking metrics or neural network architectures.",
+        "what_it_establishes": "Establishes practical comic creation principles: irregular polygons, slanted cuts, pacing acceleration via small frames, and inset panels."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "HHS English Language Arts"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Standard secondary technical curriculum guide for graphic novel terminology.",
+        "publication_date": "2018",
+        "publisher": "HHS Academic Curriculum",
+        "source_id": "src_comics_terminology_2018",
+        "source_location": "Visual diagrams and definitions for bleed, gutter, splash, and inset panels",
+        "supported_claim_ids": [
+          "clm_06_bleed_vs_splash"
+        ],
+        "title": "Comics Terminology Reference Guide",
+        "url_or_doi": "https://hhsenglish.com/wp-content/uploads/2018/08/graphicnoveltermspdf-copy.pdf",
+        "what_it_does_not_establish": "Does not establish experimental cognitive science hypotheses.",
+        "what_it_establishes": "Establishes pedagogical definitions distinguishing bleed, gutter, splash page, and inset panel frames."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -310,7 +1311,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "Scott McCloud"
         ],
@@ -332,7 +1333,7 @@
         "what_it_establishes": "Establishes sequential art grammar, transition classifications, framing scale taxonomy, and reader closure theory."
       },
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "Will Eisner"
         ],
@@ -345,7 +1346,8 @@
         "source_location": "Chapters 1, 3, and 5: Framing, Perspective, and Encapsulation",
         "supported_claim_ids": [
           "clm_08_camera_angles",
-          "clm_56_narrative_pacing"
+          "clm_56_narrative_pacing",
+          "clm_56_suspense_beat"
         ],
         "title": "Comics and Sequential Art",
         "url_or_doi": "ISBN 0-9614728-1-2",
@@ -354,7 +1356,7 @@
       }
     ],
     "status": "researched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -437,7 +1439,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "Scott McCloud"
         ],
@@ -459,7 +1461,7 @@
         "what_it_establishes": "Establishes sequential art grammar, transition classifications, framing scale taxonomy, and reader closure theory."
       },
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "Will Eisner"
         ],
@@ -472,7 +1474,8 @@
         "source_location": "Chapters 1, 3, and 5: Framing, Perspective, and Encapsulation",
         "supported_claim_ids": [
           "clm_08_camera_angles",
-          "clm_56_narrative_pacing"
+          "clm_56_narrative_pacing",
+          "clm_56_suspense_beat"
         ],
         "title": "Comics and Sequential Art",
         "url_or_doi": "ISBN 0-9614728-1-2",
@@ -481,7 +1484,7 @@
       }
     ],
     "status": "researched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -519,7 +1522,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -565,7 +1568,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -591,11 +1594,47 @@
       "Silent Beat"
     ],
     "canonical_name": "11. Panel Transitions",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_11_aspect_mood_transitions",
+        "claim_text": "Manga prominently uses aspect-to-aspect transitions to establish mood, atmosphere, and subjective place rather than continuous action.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_mccloud_1993",
+          "src_molotiu_2013"
+        ],
+        "taxonomy_group_id": "tax_11_panel_transitions",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_11_moment_to_moment_pacing",
+        "claim_text": "Moment-to-moment transitions decelerate subjective time during high-tension anticipation or emotional realization.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_mccloud_1993"
+        ],
+        "taxonomy_group_id": "tax_11_panel_transitions",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_11_panel_transitions",
     "group_number": 11,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
     "has_primary_sources": false,
     "has_recipes": false,
     "has_recorded_experiments": false,
@@ -603,14 +1642,148 @@
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 11. Panel Transitions pending",
-      "Empirical prompt recipes for 11. Panel Transitions elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Vector continuity validation across multi-panel prompt generation without shared seed",
+      "Aspect-to-aspect semantic coherence benchmarking"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "aspect-to-aspect",
+          "atmospheric pacing",
+          "environmental detail",
+          "manga transition"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "rapid action-to-action combat",
+          "talking head dialogue"
+        ],
+        "directive_text": "In atmospheric or contemplative manga scenes, employ aspect-to-aspect cuts across environment, lighting, and ambient objects.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Disjointed random objects lacking atmospheric coherence with scene emotional tone"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "medium",
+        "rule_id": "rul_11_aspect_mood_transitions",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_mccloud_1993",
+          "src_molotiu_2013"
+        ],
+        "taxonomy_group_id": "tax_11_panel_transitions"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "action-to-action",
+          "vector continuity",
+          "screen direction",
+          "dynamic combat"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "disorienting 180-degree camera flip",
+          "disconnected scene-to-scene jump"
+        ],
+        "directive_text": "For action sequences, maintain clear screen direction and vector continuity between consecutive action-to-action panels.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Inverted movement trajectory disorienting reader across consecutive action panels"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_11_action_to_action_continuity",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_mccloud_1993",
+          "src_cohn_2018"
+        ],
+        "taxonomy_group_id": "tax_11_panel_transitions"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Scott McCloud"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Foundational sequential art theory for framing, closures, and visual iconography.",
+        "publication_date": "1993",
+        "publisher": "Tundra Publishing / HarperPerennial",
+        "source_id": "src_mccloud_1993",
+        "source_location": "Chapters 2-4: Visual Iconography, Blood in the Gutter, and Panel Transitions",
+        "supported_claim_ids": [
+          "clm_07_framing_scales",
+          "clm_11_panel_transitions",
+          "clm_19_comic_linework"
+        ],
+        "title": "Understanding Comics: The Invisible Art",
+        "url_or_doi": "ISBN 0-06-097625-X",
+        "what_it_does_not_establish": "Does not establish generative model prompt weights, diffusion noise schedules, or digital inking algorithms.",
+        "what_it_establishes": "Establishes sequential art grammar, transition classifications, framing scale taxonomy, and reader closure theory."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Foundational scientific analysis of comic visual language and page architecture.",
+        "publication_date": "2018",
+        "publisher": "Empirical Comics Research / Routledge",
+        "source_id": "src_cohn_2018",
+        "source_location": "Sections on External Compositional Structure (ECS), Internal Compositional Structure (ICS), Grids, and Boundary Treatments",
+        "supported_claim_ids": [
+          "clm_03_ecs_vs_ics_independence",
+          "clm_03_blockage_navigation",
+          "clm_04_role_geometry_independence",
+          "clm_05_shape_container_vs_size",
+          "clm_06_bleed_vs_splash",
+          "clm_58_trim_vs_bleed_separation"
+        ],
+        "title": "Visual Language Theory and the Scientific Study of Comics",
+        "url_or_doi": "https://visuallanguagelab.com/P/2018.ESiC.NC.pdf",
+        "what_it_does_not_establish": "Does not establish generative diffusion model prompt engineering or automated rendering pipelines.",
+        "what_it_establishes": "Establishes structural independence between page layout (ECS) and internal panel composition (ICS), blockage path navigation, and multi-axis separation."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Andrei Molotiu"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Comprehensive academic glossary of comics analysis terminology.",
+        "publication_date": "2013",
+        "publisher": "Comics Forum",
+        "source_id": "src_molotiu_2013",
+        "source_location": "Glossary of panel types, transitions, subjective perspectives, and montage",
+        "supported_claim_ids": [
+          "clm_04_vng_grammar",
+          "clm_04_silent_panel_pause",
+          "clm_11_aspect_mood_transitions",
+          "clm_53_flashback_visual_separation",
+          "clm_54_shot_reverse_shot"
+        ],
+        "title": "List of Terms for Comics Studies",
+        "url_or_doi": "https://comicsforum.org/2013/07/26/list-of-terms-for-comics-studies-by-andrei-molotiu/",
+        "what_it_does_not_establish": "Does not establish formal mathematical graph representations of panel layouts.",
+        "what_it_establishes": "Establishes standardized terminology for montage panels, shot-reverse-shot dialogue editing, and narrative points of view in comics."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -657,7 +1830,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -698,7 +1871,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -742,7 +1915,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -778,7 +1951,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -819,7 +1992,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -866,7 +2039,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -903,7 +2076,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -993,7 +2166,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "Meta AI"
         ],
@@ -1014,7 +2187,7 @@
         "what_it_establishes": "Establishes API contracts for /v1/images/edits endpoint, reference multipart attachment, and spark-1.3 checklist parameters."
       },
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "Scott McCloud"
         ],
@@ -1037,7 +2210,7 @@
       }
     ],
     "status": "researched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1076,7 +2249,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1114,7 +2287,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1156,7 +2329,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1204,7 +2377,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1237,7 +2410,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1284,7 +2457,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1324,7 +2497,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1363,7 +2536,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1447,7 +2620,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "Scott McCloud"
         ],
@@ -1469,7 +2642,7 @@
         "what_it_establishes": "Establishes sequential art grammar, transition classifications, framing scale taxonomy, and reader closure theory."
       },
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "Will Eisner"
         ],
@@ -1482,7 +2655,8 @@
         "source_location": "Chapters 1, 3, and 5: Framing, Perspective, and Encapsulation",
         "supported_claim_ids": [
           "clm_08_camera_angles",
-          "clm_56_narrative_pacing"
+          "clm_56_narrative_pacing",
+          "clm_56_suspense_beat"
         ],
         "title": "Comics and Sequential Art",
         "url_or_doi": "ISBN 0-9614728-1-2",
@@ -1491,7 +2665,7 @@
       }
     ],
     "status": "researched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1533,7 +2707,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1574,7 +2748,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1612,7 +2786,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1647,7 +2821,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1695,7 +2869,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1735,7 +2909,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1773,7 +2947,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1821,7 +2995,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1866,7 +3040,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1905,7 +3079,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1958,7 +3132,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.173743+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -1992,7 +3166,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -2024,7 +3198,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -2060,7 +3234,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -2095,7 +3269,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -2132,7 +3306,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -2168,7 +3342,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.237308+00:00",
     "version": "1.0.0"
   },
   {
@@ -2208,7 +3382,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2245,7 +3419,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2285,7 +3459,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2324,7 +3498,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2364,7 +3538,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2406,7 +3580,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2446,7 +3620,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2461,11 +3635,47 @@
       "Simultaneous Events"
     ],
     "canonical_name": "53. Narrative Time & Chronology",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_53_asshuku_kaiho_pacing",
+        "claim_text": "Manga modulates subjective time through panel size and density: compression (asshuku) accelerates pace, while large panels release tension (kaih\u014d).",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_natsume_2021",
+          "src_cohn_2013"
+        ],
+        "taxonomy_group_id": "tax_53_narrative_time_chronology",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_53_flashback_visual_separation",
+        "claim_text": "Flashbacks and memories require distinctive frame treatments (darkened gutters, dashed borders, desaturated tones) to demarcate non-linear time.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_molotiu_2013"
+        ],
+        "taxonomy_group_id": "tax_53_narrative_time_chronology",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_53_narrative_time_chronology",
     "group_number": 53,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
     "has_primary_sources": false,
     "has_recipes": false,
     "has_recorded_experiments": false,
@@ -2473,14 +3683,147 @@
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 53. Narrative Time & Chronology pending",
-      "Empirical prompt recipes for 53. Narrative Time & Chronology elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Empirical measurement of perceived elapsed time per panel area",
+      "Model prompt consistency when rendering flashback soft edges"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "asshuku",
+          "kaiho",
+          "compression and release",
+          "manga temporal rhythm"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "monotonous uniform grid",
+          "unvarying panel sizing"
+        ],
+        "directive_text": "Structure chapter sequences by alternating between tight multi-panel compression (asshuku) and large-panel release (kaih\u014d).",
+        "exception_rules": [],
+        "failure_modes": [
+          "Monotonous reading rhythm caused by unvarying panel dimensions across dramatic beats"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_53_compression_release_pacing",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_natsume_2021"
+        ],
+        "taxonomy_group_id": "tax_53_narrative_time_chronology"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "flashback",
+          "memory",
+          "past timeline",
+          "desaturated tone",
+          "vignette"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "high-saturation present timeline",
+          "sharp modern screentone"
+        ],
+        "directive_text": "For memory/flashback sequences, inject soft vignette borders and desaturated monochrome styling directives.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Reader confusing past memory with present real-time sequence"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_53_flashback_styling",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_molotiu_2013"
+        ],
+        "taxonomy_group_id": "tax_53_narrative_time_chronology"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Natsume Fusanosuke",
+          "Jon Holt (trans.)",
+          "Teppei Fukuda (trans.)"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Classic manga scholarship on the functional semiotics of comic panels.",
+        "publication_date": "2021",
+        "publisher": "Electronic Journal of Contemporary Japanese Studies",
+        "source_id": "src_natsume_2021",
+        "source_location": "Sections on Koma Function, Asshuku (Compression) and Kaiho (Release), and Mi-hiraki (Two-Page Spreads)",
+        "supported_claim_ids": [
+          "clm_01_manga_rtl_flow",
+          "clm_05_shape_container_vs_size",
+          "clm_53_asshuku_kaiho_pacing",
+          "clm_56_panel_density_velocity",
+          "clm_58_mihiraki_binding_fold"
+        ],
+        "title": "The Functions of Panels (koma) in Manga",
+        "url_or_doi": "https://www.japanesestudies.org.uk/ejcjs/vol21/iss2/holt_fukuda.html",
+        "what_it_does_not_establish": "Does not establish software data structures or SVG rasterization specifications.",
+        "what_it_establishes": "Establishes manga panel grammar, compression and release pacing mechanics, two-page spread (mi-hiraki) dynamics, and top-right to bottom-left flow."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Authoritative paper introducing Visual Narrative Grammar (VNG).",
+        "publication_date": "2013",
+        "publisher": "Cognitive Science",
+        "source_id": "src_cohn_2013",
+        "source_location": "Visual Narrative Grammar (VNG) Formal Model",
+        "supported_claim_ids": [
+          "clm_04_vng_grammar",
+          "clm_53_asshuku_kaiho_pacing"
+        ],
+        "title": "Visual Narrative Structure",
+        "url_or_doi": "https://doi.org/10.1111/cogs.12016",
+        "what_it_does_not_establish": "Does not establish physical printing tolerances or font kerning metrics.",
+        "what_it_establishes": "Establishes formal grammatical constituent structure of visual narrative: Establisher (E), Initial (I), Prolongation (L), Peak (P), and Release (R)."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Andrei Molotiu"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Comprehensive academic glossary of comics analysis terminology.",
+        "publication_date": "2013",
+        "publisher": "Comics Forum",
+        "source_id": "src_molotiu_2013",
+        "source_location": "Glossary of panel types, transitions, subjective perspectives, and montage",
+        "supported_claim_ids": [
+          "clm_04_vng_grammar",
+          "clm_04_silent_panel_pause",
+          "clm_11_aspect_mood_transitions",
+          "clm_53_flashback_visual_separation",
+          "clm_54_shot_reverse_shot"
+        ],
+        "title": "List of Terms for Comics Studies",
+        "url_or_doi": "https://comicsforum.org/2013/07/26/list-of-terms-for-comics-studies-by-andrei-molotiu/",
+        "what_it_does_not_establish": "Does not establish formal mathematical graph representations of panel layouts.",
+        "what_it_establishes": "Establishes standardized terminology for montage panels, shot-reverse-shot dialogue editing, and narrative points of view in comics."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2494,11 +3837,46 @@
       "Unreliable Narrator"
     ],
     "canonical_name": "54. Narrative Point of View",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_54_pov_immersion",
+        "claim_text": "POV framing approximates character direct perception, creating psychological immersion and heightened reader empathy.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_cohn_2012"
+        ],
+        "taxonomy_group_id": "tax_54_narrative_point_of_view",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_54_shot_reverse_shot",
+        "claim_text": "Conversational comic dialogue alternates speaker viewpoints without crossing the 180-degree axis to preserve spatial orientation.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_molotiu_2013"
+        ],
+        "taxonomy_group_id": "tax_54_narrative_point_of_view",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_54_narrative_point_of_view",
     "group_number": 54,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
     "has_primary_sources": false,
     "has_recipes": false,
     "has_recorded_experiments": false,
@@ -2506,14 +3884,118 @@
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 54. Narrative Point of View pending",
-      "Empirical prompt recipes for 54. Narrative Point of View elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Model tendency to render observer head in POV prompts without explicit negative exclusion",
+      "Consistency of gaze vector alignment in shot-reverse-shot pairs"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "first-person pov",
+          "subjective view",
+          "foreground hand cue",
+          "immersive camera"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "third-person wide shot showing observer face"
+        ],
+        "directive_text": "For POV panels, exclude observing character's face; include partial foreground visual cues (hand, weapon, shoulder edge).",
+        "exception_rules": [],
+        "failure_modes": [
+          "Model rendering the observing character in third-person despite POV directive"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_54_pov_framing_cues",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_cohn_2012"
+        ],
+        "taxonomy_group_id": "tax_54_narrative_point_of_view"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "shot-reverse-shot",
+          "over-the-shoulder",
+          "180-degree rule",
+          "conversational dialogue"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "crossing the 180-degree axis",
+          "inconsistent character facing direction"
+        ],
+        "directive_text": "In conversational dialogue, maintain consistent screen orientation when alternating over-the-shoulder reverse shots.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Characters appearing to look in the same direction rather than at each other"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_54_dialogue_reverse_shot",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_molotiu_2013"
+        ],
+        "taxonomy_group_id": "tax_54_narrative_point_of_view"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Empirical corpus study of manga vs American comic framing conventions.",
+        "publication_date": "2012",
+        "publisher": "Visual Cognition",
+        "source_id": "src_cohn_2012",
+        "source_location": "Corpus study of attentional framing across Japanese and Western comic panels",
+        "supported_claim_ids": [
+          "clm_54_pov_immersion"
+        ],
+        "title": "Framing Attention in Japanese and American Comics: Cross-Cultural Differences in Attentional Structure",
+        "url_or_doi": "https://doi.org/10.1080/13506285.2012.701831",
+        "what_it_does_not_establish": "Does not establish individual artist drawing styles or uniform genre constraints.",
+        "what_it_establishes": "Establishes cross-cultural shot scale frequencies and attentional framing differences (subject vs scene vs POV framing)."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Andrei Molotiu"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Comprehensive academic glossary of comics analysis terminology.",
+        "publication_date": "2013",
+        "publisher": "Comics Forum",
+        "source_id": "src_molotiu_2013",
+        "source_location": "Glossary of panel types, transitions, subjective perspectives, and montage",
+        "supported_claim_ids": [
+          "clm_04_vng_grammar",
+          "clm_04_silent_panel_pause",
+          "clm_11_aspect_mood_transitions",
+          "clm_53_flashback_visual_separation",
+          "clm_54_shot_reverse_shot"
+        ],
+        "title": "List of Terms for Comics Studies",
+        "url_or_doi": "https://comicsforum.org/2013/07/26/list-of-terms-for-comics-studies-by-andrei-molotiu/",
+        "what_it_does_not_establish": "Does not establish formal mathematical graph representations of panel layouts.",
+        "what_it_establishes": "Establishes standardized terminology for montage panels, shot-reverse-shot dialogue editing, and narrative points of view in comics."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2550,7 +4032,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2567,11 +4049,47 @@
       "Montage"
     ],
     "canonical_name": "56. Narrative Pacing",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_56_panel_density_velocity",
+        "claim_text": "Panel count per page inversely correlates with reading time: higher panel density accelerates perceived action velocity.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_natsume_2021",
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_56_narrative_pacing",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_56_suspense_beat",
+        "claim_text": "A small, silent beat panel immediately preceding a Peak panel amplifies reader suspense and dramatic payoff.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_eisner_1985"
+        ],
+        "taxonomy_group_id": "tax_56_narrative_pacing",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_56_narrative_pacing",
     "group_number": 56,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
     "has_primary_sources": false,
     "has_recipes": false,
     "has_recorded_experiments": false,
@@ -2579,14 +4097,150 @@
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 56. Narrative Pacing pending",
-      "Empirical prompt recipes for 56. Narrative Pacing elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Reading speed variance across high-density digital screens vs physical print",
+      "Maximum panel density threshold before micro-panel comprehension deteriorates"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "silent beat",
+          "suspense pause",
+          "pre-climax beat",
+          "anticipation"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "simultaneous loud impact",
+          "unbroken dense action dialogue"
+        ],
+        "directive_text": "Place a small, silent beat panel immediately before an impact or reveal panel to build suspense.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Premature climax without suspense pause degrading dramatic impact"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_56_suspense_silent_beat",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_eisner_1985"
+        ],
+        "taxonomy_group_id": "tax_56_narrative_pacing"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "high panel density",
+          "fast pacing",
+          "rapid combat cuts",
+          "tight cropping"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "single panoramic splash during fast exchanges",
+          "sluggish wide framing"
+        ],
+        "directive_text": "Increase panel density with smaller, tightly cropped frames during high-intensity combat or rapid sequences.",
+        "exception_rules": [],
+        "failure_modes": [
+          "High panel density resulting in cramped, unreadable micro-illustrations"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "medium",
+        "rule_id": "rul_56_action_panel_density",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_natsume_2021",
+          "src_comix_2022"
+        ],
+        "taxonomy_group_id": "tax_56_narrative_pacing"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Natsume Fusanosuke",
+          "Jon Holt (trans.)",
+          "Teppei Fukuda (trans.)"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Classic manga scholarship on the functional semiotics of comic panels.",
+        "publication_date": "2021",
+        "publisher": "Electronic Journal of Contemporary Japanese Studies",
+        "source_id": "src_natsume_2021",
+        "source_location": "Sections on Koma Function, Asshuku (Compression) and Kaiho (Release), and Mi-hiraki (Two-Page Spreads)",
+        "supported_claim_ids": [
+          "clm_01_manga_rtl_flow",
+          "clm_05_shape_container_vs_size",
+          "clm_53_asshuku_kaiho_pacing",
+          "clm_56_panel_density_velocity",
+          "clm_58_mihiraki_binding_fold"
+        ],
+        "title": "The Functions of Panels (koma) in Manga",
+        "url_or_doi": "https://www.japanesestudies.org.uk/ejcjs/vol21/iss2/holt_fukuda.html",
+        "what_it_does_not_establish": "Does not establish software data structures or SVG rasterization specifications.",
+        "what_it_establishes": "Establishes manga panel grammar, compression and release pacing mechanics, two-page spread (mi-hiraki) dynamics, and top-right to bottom-left flow."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Will Eisner"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Pioneering analysis of visual grammar, camera perspectives, and panel encapsulation.",
+        "publication_date": "1985",
+        "publisher": "Poorhouse Press",
+        "source_id": "src_eisner_1985",
+        "source_location": "Chapters 1, 3, and 5: Framing, Perspective, and Encapsulation",
+        "supported_claim_ids": [
+          "clm_08_camera_angles",
+          "clm_56_narrative_pacing",
+          "clm_56_suspense_beat"
+        ],
+        "title": "Comics and Sequential Art",
+        "url_or_doi": "ISBN 0-9614728-1-2",
+        "what_it_does_not_establish": "Does not establish AI image synthesis behavior, automated rendering pipelines, or software interfaces.",
+        "what_it_establishes": "Establishes visual narrative mechanics, dramatic camera angles, expressive posture, and panel encapsulation."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "CO-MIX Consortium"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Practical European pedagogical manual for sequential comic construction.",
+        "publication_date": "2022",
+        "publisher": "CO-MIX Erasmus+ Strategic Partnership",
+        "source_id": "src_comix_2022",
+        "source_location": "Chapter 3: The Architecture of Comic Pages, Panel Shapes, and Inset Storytelling",
+        "supported_claim_ids": [
+          "clm_03_diagonal_tension",
+          "clm_05_shape_container_vs_size",
+          "clm_05_panoramic_vista",
+          "clm_05_tall_vertical_stature",
+          "clm_06_bleed_vs_splash",
+          "clm_06_figure_breaking_frame",
+          "clm_56_panel_density_velocity"
+        ],
+        "title": "Methodology on Inclusive Youth Work Through Comics",
+        "url_or_doi": "https://www.mc-celje.si/f/docs/CO-MIX/COMIX_Manual_ENG.pdf",
+        "what_it_does_not_establish": "Does not establish quantitative eye-tracking metrics or neural network architectures.",
+        "what_it_establishes": "Establishes practical comic creation principles: irregular polygons, slanted cuts, pacing acceleration via small frames, and inset panels."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2624,7 +4278,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2645,11 +4299,46 @@
       "Tail Position"
     ],
     "canonical_name": "58. Page Geometry & Layout Rules",
-    "claims": [],
+    "claims": [
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_58_mihiraki_binding_fold",
+        "claim_text": "Double-page spreads (mi-hiraki) must account for physical binding gutter so critical art and faces are not swallowed by the fold.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_natsume_2021"
+        ],
+        "taxonomy_group_id": "tax_58_page_geometry_layout_rules",
+        "verification_status": "hypothesized"
+      },
+      {
+        "artistic_theory_vs_empirical": "artistic_theory",
+        "claim_id": "clm_58_trim_vs_bleed_separation",
+        "claim_text": "Production bleed (physical 3mm canvas expansion) must be decoupled from artistic panel bleed.",
+        "confidence": "fact",
+        "empirical_notes": null,
+        "model_applicability": [
+          "muse-image-1.0"
+        ],
+        "reviewed_at": null,
+        "reviewed_by": null,
+        "source_ids": [
+          "src_cohn_2018"
+        ],
+        "taxonomy_group_id": "tax_58_page_geometry_layout_rules",
+        "verification_status": "hypothesized"
+      }
+    ],
     "group_id": "tax_58_page_geometry_layout_rules",
     "group_number": 58,
-    "has_failure_modes": false,
-    "has_generation_rules": false,
+    "has_failure_modes": true,
+    "has_generation_rules": true,
     "has_primary_sources": false,
     "has_recipes": false,
     "has_recorded_experiments": false,
@@ -2657,14 +4346,149 @@
     "is_empirically_validated": false,
     "recipes": [],
     "research_gaps": [
-      "Primary provider documentation mapping for 58. Page Geometry & Layout Rules pending",
-      "Empirical prompt recipes for 58. Page Geometry & Layout Rules elements pending",
-      "Compatibility constraints and failure mode cataloguing pending"
+      "Canvas pixel conversion accuracy across 300 DPI vs 600 DPI print standards",
+      "Binding pinch variance for perfect bound vs saddle-stitch comic physical bindings"
     ],
-    "rules": [],
-    "sources": [],
-    "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "rules": [
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "double-page spread",
+          "mi-hiraki",
+          "binding fold safety",
+          "two-page layout"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "centering vital facial features exactly across center spine"
+        ],
+        "directive_text": "In double-page spreads (mi-hiraki), keep character faces, focal points, and dialogue outside the central 40px binding fold.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Character face bisected or distorted by book binding gutter"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_58_mihiraki_binding_safety",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_natsume_2021"
+        ],
+        "taxonomy_group_id": "tax_58_page_geometry_layout_rules"
+      },
+      {
+        "applies_to_models": [
+          "muse-image-1.0"
+        ],
+        "compatible_concepts": [
+          "bleed extension",
+          "3mm print margin",
+          "safe zone boundary"
+        ],
+        "confidence": "fact",
+        "conflicting_concepts": [
+          "placing dialogue or focal art right against the raw canvas edge"
+        ],
+        "directive_text": "Ensure artwork flagged for bleed extends 3mm/36px beyond the trim line while keeping vital text inside the safe zone.",
+        "exception_rules": [],
+        "failure_modes": [
+          "Essential art or text sliced off by physical trimming blades"
+        ],
+        "interacting_variables": [],
+        "is_empirically_tested": false,
+        "priority": "high",
+        "rule_id": "rul_58_trim_bleed_separation",
+        "rule_type": "positive_guidance",
+        "source_ids": [
+          "src_cohn_2018"
+        ],
+        "taxonomy_group_id": "tax_58_page_geometry_layout_rules"
+      }
+    ],
+    "sources": [
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Neil Cohn"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Foundational scientific analysis of comic visual language and page architecture.",
+        "publication_date": "2018",
+        "publisher": "Empirical Comics Research / Routledge",
+        "source_id": "src_cohn_2018",
+        "source_location": "Sections on External Compositional Structure (ECS), Internal Compositional Structure (ICS), Grids, and Boundary Treatments",
+        "supported_claim_ids": [
+          "clm_03_ecs_vs_ics_independence",
+          "clm_03_blockage_navigation",
+          "clm_04_role_geometry_independence",
+          "clm_05_shape_container_vs_size",
+          "clm_06_bleed_vs_splash",
+          "clm_58_trim_vs_bleed_separation"
+        ],
+        "title": "Visual Language Theory and the Scientific Study of Comics",
+        "url_or_doi": "https://visuallanguagelab.com/P/2018.ESiC.NC.pdf",
+        "what_it_does_not_establish": "Does not establish generative diffusion model prompt engineering or automated rendering pipelines.",
+        "what_it_establishes": "Establishes structural independence between page layout (ECS) and internal panel composition (ICS), blockage path navigation, and multi-axis separation."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "Natsume Fusanosuke",
+          "Jon Holt (trans.)",
+          "Teppei Fukuda (trans.)"
+        ],
+        "evidence_class": "peer_reviewed_research",
+        "license_or_access": null,
+        "notes": "Classic manga scholarship on the functional semiotics of comic panels.",
+        "publication_date": "2021",
+        "publisher": "Electronic Journal of Contemporary Japanese Studies",
+        "source_id": "src_natsume_2021",
+        "source_location": "Sections on Koma Function, Asshuku (Compression) and Kaiho (Release), and Mi-hiraki (Two-Page Spreads)",
+        "supported_claim_ids": [
+          "clm_01_manga_rtl_flow",
+          "clm_05_shape_container_vs_size",
+          "clm_53_asshuku_kaiho_pacing",
+          "clm_56_panel_density_velocity",
+          "clm_58_mihiraki_binding_fold"
+        ],
+        "title": "The Functions of Panels (koma) in Manga",
+        "url_or_doi": "https://www.japanesestudies.org.uk/ejcjs/vol21/iss2/holt_fukuda.html",
+        "what_it_does_not_establish": "Does not establish software data structures or SVG rasterization specifications.",
+        "what_it_establishes": "Establishes manga panel grammar, compression and release pacing mechanics, two-page spread (mi-hiraki) dynamics, and top-right to bottom-left flow."
+      },
+      {
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
+        "authors": [
+          "CO-MIX Consortium"
+        ],
+        "evidence_class": "secondary_technical",
+        "license_or_access": null,
+        "notes": "Practical European pedagogical manual for sequential comic construction.",
+        "publication_date": "2022",
+        "publisher": "CO-MIX Erasmus+ Strategic Partnership",
+        "source_id": "src_comix_2022",
+        "source_location": "Chapter 3: The Architecture of Comic Pages, Panel Shapes, and Inset Storytelling",
+        "supported_claim_ids": [
+          "clm_03_diagonal_tension",
+          "clm_05_shape_container_vs_size",
+          "clm_05_panoramic_vista",
+          "clm_05_tall_vertical_stature",
+          "clm_06_bleed_vs_splash",
+          "clm_06_figure_breaking_frame",
+          "clm_56_panel_density_velocity"
+        ],
+        "title": "Methodology on Inclusive Youth Work Through Comics",
+        "url_or_doi": "https://www.mc-celje.si/f/docs/CO-MIX/COMIX_Manual_ENG.pdf",
+        "what_it_does_not_establish": "Does not establish quantitative eye-tracking metrics or neural network architectures.",
+        "what_it_establishes": "Establishes practical comic creation principles: irregular polygons, slanted cuts, pacing acceleration via small frames, and inset panels."
+      }
+    ],
+    "status": "researched",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2704,7 +4528,7 @@
     "rules": [],
     "sources": [],
     "status": "unresearched",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   },
   {
@@ -2820,7 +4644,10 @@
         "retries_needed": 0,
         "target_model": "muse-image-1.0",
         "taxonomy_group_id": "tax_60_visual_continuity_validation",
-        "use_case": "Standard character appearance across story panels."
+        "use_case": "Standard character appearance across story panels.",
+        "applies_to_character_ids": [
+          "nour"
+        ]
       }
     ],
     "research_gaps": [
@@ -2887,7 +4714,7 @@
     ],
     "sources": [
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "Meta AI"
         ],
@@ -2908,7 +4735,7 @@
         "what_it_establishes": "Establishes API contracts for /v1/images/edits endpoint, reference multipart attachment, and spark-1.3 checklist parameters."
       },
       {
-        "accessed_date": "2026-10-29T02:00:08.173743+00:00",
+        "accessed_date": "2026-10-29T05:23:28.237308+00:00",
         "authors": [
           "InkLoop Engineering Team"
         ],
@@ -2930,7 +4757,7 @@
       }
     ],
     "status": "experimentally_tested",
-    "updated_at": "2026-10-29T02:00:08.174780+00:00",
+    "updated_at": "2026-10-29T05:23:28.238309+00:00",
     "version": "1.0.0"
   }
 ]

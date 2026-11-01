@@ -71,11 +71,17 @@ class CharacterDefinition(BaseModel):
     """
     character_id: str = Field(..., description="Stable character ID in lowercase (e.g. 'nour')")
     name: str = Field(..., description="Canonical character display name")
+    entity_kind: str = Field(default="unspecified being", description="Open vocabulary for any creator-defined kind of being")
+    morphology: str = Field(default="", description="Declared form/body plan; absent human features must not be inferred")
+    surface_description: str = Field(default="", description="Declared material, color, texture, and pattern")
+    physical_height_cm: Optional[float] = Field(default=None, description="Canonical physical height in centimeters (e.g. 25.0, 175.0)")
+    proportion_constraints: Optional[Dict[str, Any]] = Field(default=None, description="Structured proportion guidelines (e.g. {'head_ratio': 0.60, 'body_ratio': 0.40})")
     description: str = Field(default="", description="Narrative role, personality, and background")
     canon_version: int = Field(default=1, description="Version of the character canon")
     attributes: List[AttributeCheck] = Field(..., description="Machine-readable checklist attributes for verifier")
-    tolerances: Tolerances = Field(default_factory=Tolerances, description="Verification tolerances (e.g. min face px)")
+    tolerances: Tolerances = Field(default_factory=lambda: Tolerances(face_check_applicable=False), description="Verification tolerances; face-specific checks are opt-in for profiles with declared face landmarks")
     clothing_attributes: List[str] = Field(default_factory=list, description="Canonical clothing traits")
+    clothing_traits: List[str] = Field(default_factory=list, description="Alias for clothing_attributes")
     outfits: Dict[str, Any] = Field(default_factory=dict, description="Declared outfits for this character")
     visual_invariants: List[str] = Field(default_factory=list, description="Invariants that must never change")
     restrictions: List[str] = Field(default_factory=list, description="Character-specific negative constraints")
@@ -100,11 +106,20 @@ class CharacterDefinition(BaseModel):
         return None
 
     def to_character_spec(self) -> CharacterSpec:
-        """Converts to existing CharacterSpec schema for direct compatibility with M0 verifiers."""
+        """Converts to existing CharacterSpec schema for direct compatibility with M0 verifiers and orchestrator."""
         return CharacterSpec(
             id=self.character_id,
+            name=self.name,
+            entity_kind=self.entity_kind,
+            morphology=self.morphology,
+            surface_description=self.surface_description,
+            physical_height_cm=self.physical_height_cm,
+            proportion_constraints=self.proportion_constraints,
             attributes=self.attributes,
-            tolerances=self.tolerances
+            tolerances=self.tolerances,
+            visual_invariants=list(self.visual_invariants),
+            restrictions=list(self.restrictions),
+            clothing_attributes=list(self.clothing_attributes),
         )
 
 class LocationDefinition(BaseModel):
@@ -131,6 +146,28 @@ class LocationDefinition(BaseModel):
             raise ValueError("location_id cannot be empty")
         return v_clean
 
+class PropIdentityFeature(BaseModel):
+    """Evidence-linked object trait, kept separate from scene-specific state."""
+    feature_id: str
+    label: str
+    description: str
+    stability: Literal["stable", "state", "unknown"] = "stable"
+    provenance: Literal["user_authored", "model_observation", "model_inference", "unknown"] = "unknown"
+    evidence_asset_ids: List[str] = Field(default_factory=list)
+
+
+class PropAnalysisRecord(BaseModel):
+    """Honest analysis provenance for an object reference set."""
+    analysis_status: Literal["unknown", "completed", "partial", "not_run"] = "not_run"
+    analysis_source: str = "unknown"
+    model_id: Optional[str] = None
+    observed_summary: str = ""
+    inferred_purpose: str = ""
+    unknown_or_occluded: List[str] = Field(default_factory=list)
+    creator_authored_facts: List[str] = Field(default_factory=list)
+    analyzed_at: Optional[str] = None
+
+
 class PropDefinition(BaseModel):
     """Canonical prop specification for recurring narrative objects."""
     prop_id: str = Field(..., description="Stable prop identifier (e.g. 'brass_key')")
@@ -139,6 +176,20 @@ class PropDefinition(BaseModel):
     description: str = Field(..., description="Physical and visual description of the prop")
     required_attributes: List[str] = Field(default_factory=list, description="Mandatory visual attributes")
     reference_assets: List[AssetRef] = Field(default_factory=list, description="Approved visual references")
+    form_and_proportions: str = Field(default="", description="Observed object silhouette, construction, and relative proportions")
+    materials: List[str] = Field(default_factory=list, description="Observed or creator-authored surface materials")
+    palette: List[str] = Field(default_factory=list, description="Observed or creator-authored colors")
+    components: List[str] = Field(default_factory=list, description="Distinct parts and how they connect")
+    distinctive_marks: List[str] = Field(default_factory=list, description="Engravings, patterns, attachments, or identifying marks")
+    stable_invariants: List[str] = Field(default_factory=list, description="Object identity traits preserved across scenes")
+    allowed_states: List[str] = Field(default_factory=list, description="Allowed state changes that do not change object identity")
+    uncertain_traits: List[str] = Field(default_factory=list, description="Traits not established by available references")
+    identity_features: List[PropIdentityFeature] = Field(default_factory=list, description="Evidence-backed object observations and inferences")
+    trait_provenance: Dict[str, Literal["user_authored", "model_observation", "model_inference", "unknown"]] = Field(default_factory=dict, description="Source for each editable identity trait field")
+    analysis: PropAnalysisRecord = Field(default_factory=PropAnalysisRecord)
+    creator_notes: str = Field(default="", description="Creator-authored details kept separate from image analysis")
+    draft_origin: Literal["creator", "object_studio", "agent_story_plan", "unknown"] = "unknown"
+    draft_job_id: Optional[str] = Field(default=None, description="Owning resumable story-production job for agent-created drafts")
     associated_character_ids: List[str] = Field(default_factory=list, description="Characters who own or use this prop")
     permitted_variations: List[str] = Field(default_factory=list, description="Explicitly permitted variations")
     relationships: List[str] = Field(default_factory=list, description="Relationships to other declared entities")
@@ -171,6 +222,8 @@ class CanonMutationProposal(BaseModel):
     created_at: str = Field(..., description="ISO 8601 creation timestamp")
     approved_at: Optional[str] = Field(default=None, description="ISO 8601 approval timestamp")
     approved_by: Optional[str] = Field(default=None, description="User or role authorizing the mutation")
+    rejection_reason: Optional[str] = Field(default=None, description="Reason for rejection if status is rejected")
+    rejection_reason: Optional[str] = Field(default=None, description="Reason if proposal was rejected")
 
 class ReadOnlyDict(dict):
     """

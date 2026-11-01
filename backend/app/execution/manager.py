@@ -216,6 +216,36 @@ class ExecutionManager:
             )
             return run
 
+    def mark_run_needs_review(self, run_id: str, reason: str) -> RunRecord:
+        """Keep a resumable creative run open when a provider/tool needs attention."""
+        with self._lock:
+            run = self._get_run_or_raise(run_id)
+            if run.status not in (RunStatus.RUNNING, RunStatus.INTERRUPTED, RunStatus.NEEDS_REVIEW):
+                raise InvalidStateTransitionError("run", run.status.value, RunStatus.NEEDS_REVIEW.value, run_id)
+            self.db.update_run_status(run_id, RunStatus.NEEDS_REVIEW)
+            run.status = RunStatus.NEEDS_REVIEW
+            self._log_event(
+                run_id=run_id,
+                event_type=ExecutionEventType.RUN_NEEDS_REVIEW,
+                data={"reason": reason[:500]},
+            )
+            return run
+
+    def resume_needs_review_run(self, run_id: str) -> RunRecord:
+        """Resume a reviewable run after its persisted workflow checkpoint is inspected."""
+        with self._lock:
+            run = self._get_run_or_raise(run_id)
+            if run.status not in (RunStatus.NEEDS_REVIEW, RunStatus.INTERRUPTED):
+                raise InvalidStateTransitionError("run", run.status.value, RunStatus.RUNNING.value, run_id)
+            self.db.update_run_status(run_id, RunStatus.RUNNING)
+            run.status = RunStatus.RUNNING
+            self._log_event(
+                run_id=run_id,
+                event_type=ExecutionEventType.RECOVERY_RECONCILED,
+                data={"resumed_from": "needs_review"},
+            )
+            return run
+
     def cancel_run(self, run_id: str, reason: str = "user_cancelled") -> RunRecord:
         """Cancels an active or created run, releasing all unused reservations."""
         with self._lock:
@@ -529,7 +559,9 @@ class ExecutionManager:
                 else:
                     auto_retryable = True
 
-            final_cost = to_decimal(actual_cost_usd) if actual_cost_usd is not None else attempt.cost_amount_usd
+            # A budget reservation is an estimate, not evidence of provider spend.
+            # Keep the attempt's actual cost unknown when the provider supplied no cost.
+            final_cost = to_decimal(actual_cost_usd) if actual_cost_usd is not None else None
             attempt.status = status
             attempt.completed_at = completed_at
             attempt.duration_seconds = duration
@@ -769,7 +801,9 @@ class ExecutionManager:
             missing_cost = 0
 
             for att in attempts:
-                if att.cost_amount_usd is not None:
+                if att.cost_classification == CostClassification.UNKNOWN or att.cost_amount_usd is None:
+                    missing_cost += 1
+                elif att.cost_amount_usd is not None:
                     if att.cost_classification == CostClassification.ESTIMATED:
                         total_estimated += att.cost_amount_usd
                     elif att.cost_classification == CostClassification.RESERVED:
@@ -778,8 +812,6 @@ class ExecutionManager:
                         total_reported += att.cost_amount_usd
                     elif att.cost_classification == CostClassification.BILLING_CONFIRMED:
                         total_confirmed += att.cost_amount_usd
-                else:
-                    missing_cost += 1
 
             duration = None
             if run.started_at and run.completed_at:

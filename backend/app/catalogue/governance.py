@@ -120,7 +120,7 @@ class LicenseRegistry:
                 target_identifier="nour_reference.png",
                 license_type=LicenseType.PROPRIETARY_ORIGINAL,
                 license_name="InkLoop Proprietary Canonical Character Asset",
-                license_url_or_path="runs/m0_visual/nour_reference.png",
+                license_url_or_path="runs/m0_visual/reference/nour_reference.png",
                 is_commercial_use_permitted=True,
                 attribution_required=False,
                 attribution_text=None,

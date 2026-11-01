@@ -4,6 +4,8 @@ Manages transactional storage of asset metadata, content hashes, and lineage gra
 """
 import json
 import sqlite3
+import threading
+from functools import wraps
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Union
 
@@ -16,12 +18,29 @@ from app.storage.errors import (
 from app.storage.models import AssetMetadata, AssetFilter
 
 
+def _serialized_connection(method):
+    """Serialize operations on the shared SQLite connection.
+
+    ``check_same_thread=False`` permits FastAPI worker threads to use the
+    connection, but it does not make concurrent cursor use safe. Keep a whole
+    read/convert or write transaction atomic with respect to other callers.
+    The lock is reentrant because methods such as ``insert_asset`` call
+    ``get_asset`` and row conversion performs a second query.
+    """
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        with self._lock:
+            return method(self, *args, **kwargs)
+    return wrapped
+
+
 class RegistryDB:
     """
     Transactional SQLite persistence layer for asset metadata and lineage relationships.
     """
 
     def __init__(self, db_path: Union[str, Path] = ":memory:"):
+        self._lock = threading.RLock()
         self.db_path = str(db_path)
         if self.db_path != ":memory:":
             Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
@@ -30,6 +49,7 @@ class RegistryDB:
         self._conn.row_factory = sqlite3.Row
         self._init_db()
 
+    @_serialized_connection
     def _init_db(self) -> None:
         """Initializes tables, indexes, and pragmas."""
         with self._conn:
@@ -87,6 +107,7 @@ class RegistryDB:
             self._conn.execute("CREATE INDEX IF NOT EXISTS idx_lineage_parent ON asset_lineage (parent_id);")
             self._conn.execute("CREATE INDEX IF NOT EXISTS idx_lineage_child ON asset_lineage (child_id);")
 
+    @_serialized_connection
     def insert_asset(self, metadata: AssetMetadata) -> None:
         """
         Inserts an asset and records its parent lineage links.
@@ -145,11 +166,16 @@ class RegistryDB:
             ))
 
             for parent_id in metadata.parent_asset_ids:
-                self._conn.execute(
-                    "INSERT OR IGNORE INTO asset_lineage (parent_id, child_id) VALUES (?, ?)",
-                    (parent_id, metadata.asset_id)
-                )
+                parent_exists = self._conn.execute(
+                    "SELECT 1 FROM assets WHERE asset_id = ?", (parent_id,)
+                ).fetchone()
+                if parent_exists:
+                    self._conn.execute(
+                        "INSERT OR IGNORE INTO asset_lineage (parent_id, child_id) VALUES (?, ?)",
+                        (parent_id, metadata.asset_id)
+                    )
 
+    @_serialized_connection
     def _row_to_metadata(self, row: sqlite3.Row) -> AssetMetadata:
         """Converts an SQLite row back into a typed AssetMetadata model."""
         asset_id = row["asset_id"]
@@ -196,6 +222,7 @@ class RegistryDB:
             extra_metadata=extra_meta
         )
 
+    @_serialized_connection
     def get_asset(self, asset_id: str) -> Optional[AssetMetadata]:
         """Retrieves asset metadata by stable identifier."""
         cur = self._conn.execute("SELECT * FROM assets WHERE asset_id = ?", (asset_id,))
@@ -204,6 +231,7 @@ class RegistryDB:
             return None
         return self._row_to_metadata(row)
 
+    @_serialized_connection
     def get_by_hash(self, content_sha256: str) -> List[AssetMetadata]:
         """Retrieves all assets matching a content SHA-256 hash."""
         cur = self._conn.execute(
@@ -212,6 +240,7 @@ class RegistryDB:
         )
         return [self._row_to_metadata(r) for r in cur.fetchall()]
 
+    @_serialized_connection
     def list_assets(self, filter: Optional[AssetFilter] = None) -> List[AssetMetadata]:
         """Queries registered assets based on flexible filter criteria."""
         query = "SELECT * FROM assets WHERE 1=1"
@@ -252,6 +281,7 @@ class RegistryDB:
         cur = self._conn.execute(query, params)
         return [self._row_to_metadata(r) for r in cur.fetchall()]
 
+    @_serialized_connection
     def get_children(self, parent_id: str) -> List[AssetMetadata]:
         """Retrieves all downstream child assets derived from this parent."""
         cur = self._conn.execute("""
@@ -262,6 +292,7 @@ class RegistryDB:
         """, (parent_id,))
         return [self._row_to_metadata(r) for r in cur.fetchall()]
 
+    @_serialized_connection
     def get_parents(self, child_id: str) -> List[AssetMetadata]:
         """Retrieves all predecessor parent assets for this child."""
         cur = self._conn.execute("""
@@ -272,6 +303,7 @@ class RegistryDB:
         """, (child_id,))
         return [self._row_to_metadata(r) for r in cur.fetchall()]
 
+    @_serialized_connection
     def check_cycle(self, proposed_child_id: str, proposed_parent_ids: List[str]) -> bool:
         """
         Detects if adding proposed parents would introduce a cycle in the lineage DAG.
@@ -293,6 +325,7 @@ class RegistryDB:
 
         return False
 
+    @_serialized_connection
     def close(self) -> None:
         """Closes the underlying SQLite database connection."""
         self._conn.close()

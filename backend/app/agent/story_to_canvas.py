@@ -2,10 +2,13 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import re
 import unicodedata
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
+
+logger = logging.getLogger(__name__)
 
 from app.agent.production import (
     PageProduction,
@@ -515,22 +518,39 @@ class StoryToCanvasWorkflow:
             return job, self._summary(job, summary)
         self._clear_resolved_selected_cast_failures(job)
         missing_assets = [panel for panel in job.panels.values() if not panel.asset_id]
-        missing_text = [
-            plan["panel_id"] for plan in job.plan["plans"]
-            if (plan.get("text") or {}).get("carrier", "none") not in ("none", "")
-            and str((plan.get("text") or {}).get("text_content") or "").strip()
-            and not self._text_layer_tool_available((plan.get("text") or {}).get("carrier"))
-        ]
+        missing_text = []
         required_tools = {"canvas.place_panel_artwork", "canvas.verify_page", "canvas.inspect_page_spacing"}
         if missing_assets and not self.offline_mode:
             required_tools.add("generation.generate_image")
         for plan in job.plan["plans"]:
-            carrier = (plan.get("text") or {}).get("carrier", "none")
-            content = str((plan.get("text") or {}).get("text_content") or "").strip()
-            if content and carrier in ("speech_bubble", "thought_bubble"):
-                required_tools.add("canvas.add_speech_bubble")
-            elif content and carrier not in ("none", ""):
-                required_tools.add("editor.add_text_layer")
+            lines = plan.get("script_lines") or []
+            if not lines and plan.get("text"):
+                t = plan["text"]
+                if str(t.get("text_content") or "").strip():
+                    lines = [t]
+            for line in lines:
+                content = str(line.get("text") or line.get("text_content") or "").strip()
+                if not content:
+                    continue
+                c = line.get("carrier", "speech_bubble")
+                if hasattr(c, "value"):
+                    c = c.value
+                k = line.get("kind") or line.get("content_kind")
+                if hasattr(k, "value"):
+                    k = k.value
+                tid = line.get("type_id")
+                if c in ("caption", "narration_box", "narration") or k in ("narration", "date_or_place") or tid in ("narration.box", "caption.timeplace"):
+                    required_tools.add("editor.add_text_layer")
+                    if not self._text_layer_tool_available("caption"):
+                        missing_text.append(plan["panel_id"])
+                elif c in ("speech_bubble", "thought_bubble") or k in ("spoken_dialogue", "emotional_speech", "internal_thought"):
+                    required_tools.add("canvas.add_speech_bubble")
+                    if not self._text_layer_tool_available(c):
+                        missing_text.append(plan["panel_id"])
+                elif c not in ("none", ""):
+                    required_tools.add("editor.add_text_layer")
+                    if not self._text_layer_tool_available(c):
+                        missing_text.append(plan["panel_id"])
         available_ids = self._available_tool_ids()
         if not ({"canvas.create_page_from_template", "canvas.create_custom_page"} & available_ids):
             job.status = "needs_attention"
@@ -1739,8 +1759,8 @@ class StoryToCanvasWorkflow:
                 page_arguments = {
                     "project_id": self.project_id,
                     "page_id": page.page_id,
-                    "reading_direction": job.plan.get("reading_direction", "rtl"),
-                    "panel_geometry": _scratch_geometry_from_plans(page_local_plans, job.plan.get("reading_direction", "rtl")),
+                    "reading_direction": job.plan.get("reading_direction", "ltr"),
+                    "panel_geometry": _scratch_geometry_from_plans(page_local_plans, job.plan.get("reading_direction", "ltr")),
                     "panel_plans": page_local_plans,
                 }
             else:
@@ -1760,7 +1780,7 @@ class StoryToCanvasWorkflow:
                     "page_id": page.page_id,
                     "layout_template": template,
                     "template_parameters": params,
-                    "reading_direction": job.plan.get("reading_direction", "rtl"),
+                    "reading_direction": job.plan.get("reading_direction", "ltr"),
                     "panel_plans": page_local_plans,
                 }
             call = ToolCall(
@@ -2188,13 +2208,21 @@ class StoryToCanvasWorkflow:
             from app.editor.models import LayerKind
             placed_for_this_panel = []
 
+            # If multiple lines are present, ensure reading orders are strictly distinct and sequential
+            explicit_orders = [line_item.get("reading_order") for line_item in lines_to_place]
+            has_duplicates = len(set(explicit_orders)) < len(explicit_orders) or any(o is None for o in explicit_orders)
+
             for line_idx, line_item in enumerate(lines_to_place, start=1):
                 content = str(line_item.get("text") or "").strip()
                 if not content:
                     continue
                 speaker_id = line_item.get("speaker_character_id") or line_item.get("speaker_id")
-                carrier = line_item.get("carrier", "speech_bubble")
-                order_idx = int(line_item.get("reading_order", line_idx))
+                raw_carrier = line_item.get("carrier")
+                carrier_val = getattr(raw_carrier, "value", raw_carrier) or "speech_bubble"
+                raw_kind = line_item.get("kind") or line_item.get("content_kind")
+                kind_val = getattr(raw_kind, "value", raw_kind)
+                type_id_val = line_item.get("type_id")
+                order_idx = line_idx if has_duplicates else int(line_item.get("reading_order", line_idx))
 
                 existing = next((
                     layer for layer in doc.layers
@@ -2207,7 +2235,64 @@ class StoryToCanvasWorkflow:
                     continue
 
                 slot = doc.layout.get_panel(panel_id)
-                if carrier in ("speech_bubble", "thought_bubble") or line_item.get("type_id"):
+
+                # Semantic classification:
+                # 1. Narrator text / scene descriptions / captions
+                is_caption = (
+                    carrier_val in ("caption", "narration_box", "narration", "caption_box")
+                    or kind_val in ("narration", "date_or_place")
+                    or type_id_val in ("narration.box", "caption.timeplace")
+                )
+                # 2. Character internal monologue (thoughts)
+                is_thought = not is_caption and (
+                    carrier_val in ("thought_bubble", "thought")
+                    or kind_val == "internal_thought"
+                    or type_id_val == "thought.cloud"
+                )
+                # 3. Spoken character dialogue
+                is_speech = not is_caption and not is_thought and (
+                    carrier_val in ("speech_bubble", "speech")
+                    or kind_val in ("spoken_dialogue", "emotional_speech")
+                    or type_id_val in ("speech.normal", "speech.shout", "speech.whisper", "speech.offpanel")
+                    or bool(speaker_id)
+                )
+
+                if is_caption:
+                    # Dedicated narration/caption placement tool: editor.add_text_layer
+                    call_id = f"{job.job_id}_text_{panel_id}" if len(lines_to_place) == 1 else f"{job.job_id}_text_{panel_id}_{order_idx}"
+                    layer_id = _hash_id("caption", job.job_id, panel_id, f"{order_idx}_{content}")
+                    resolved_type = type_id_val if type_id_val in ("narration.box", "caption.timeplace") else "narration.box"
+                    args = {
+                        "page_id": page.page_id,
+                        "expected_revision": doc.revision,
+                        "panel_id": panel_id,
+                        "text": content,
+                        "layer_id": layer_id,
+                        "type_id": resolved_type,
+                        "reading_order": order_idx,
+                        "font_family": "Comic Neue",
+                        "font_size": 18,
+                        "font_weight": "bold",
+                        "align": "center",
+                        "direction": "auto",
+                    }
+                    tool_id = "editor.add_text_layer"
+                elif is_speech or is_thought:
+                    effective_carrier = "thought_bubble" if is_thought else "speech_bubble"
+                    if is_speech:
+                        if not speaker_id:
+                            panel.status = "needs_attention"
+                            panel.error = "Spoken words need a named speaker from this panel's selected characters."
+                            job.errors.append(f"Panel {panel_id} lettering was not placed: {panel.error}")
+                            self._checkpoint(job, f"panel_{panel_id}_text_rejected")
+                            continue
+                        if speaker_id not in panel.character_ids and speaker_id not in panel_local_speakers:
+                            panel.status = "needs_attention"
+                            panel.error = f"Speaker '{speaker_id}' is not in this panel's selected or story-local cast; no speech balloon was created."
+                            job.errors.append(f"Panel {panel_id} lettering was not placed: {panel.error}")
+                            self._checkpoint(job, f"panel_{panel_id}_text_rejected")
+                            continue
+
                     anchor = self._saved_character_anchor(doc, panel_id, speaker_id) if speaker_id else None
                     from app.canvas.bubble_stylist import recommend_bubble_style
                     emotional_intent = (
@@ -2220,27 +2305,31 @@ class StoryToCanvasWorkflow:
                     rec = recommend_bubble_style(
                         emotional_intent=emotional_intent or content,
                         narrative_function=narrative_function,
-                        carrier=carrier,
+                        carrier=effective_carrier,
                         delivery=line_item.get("delivery") or plan.get("delivery"),
                         action_context=plan.get("story_event") or plan.get("visual_focus"),
                         story_event=plan.get("story_event"),
                         dialogue_text=content,
                     )
                     call_id = f"{job.job_id}_text_{panel_id}" if len(lines_to_place) == 1 else f"{job.job_id}_text_{panel_id}_{order_idx}"
+                    resolved_type = (
+                        type_id_val if type_id_val in ("speech.normal", "speech.shout", "speech.whisper", "thought.cloud", "speech.offpanel")
+                        else ("thought.cloud" if is_thought else "speech.normal")
+                    )
                     args = {
                         "page_id": page.page_id,
                         "expected_revision": doc.revision,
                         "panel_id": panel_id,
                         "text": content,
                         "layer_id": _hash_id("bubble", job.job_id, panel_id, f"{order_idx}_{content}"),
-                        "type_id": line_item.get("type_id"),
+                        "type_id": resolved_type,
                         "reading_order": order_idx,
                         "speaker_character_id": speaker_id,
                         "speaker": line_item.get("speaker_name") if speaker_id in panel_local_speakers else None,
                         "emotional_intent": emotional_intent or content,
                         "narrative_function": narrative_function,
                         "delivery": line_item.get("delivery") or plan.get("delivery"),
-                        "carrier": carrier,
+                        "carrier": effective_carrier,
                         "action_context": plan.get("story_event") or plan.get("visual_focus"),
                         "story_event": plan.get("story_event"),
                         "dialogue_text": content,
@@ -2270,8 +2359,8 @@ class StoryToCanvasWorkflow:
                         "layer_id": _hash_id("text", job.job_id, panel_id, f"{order_idx}_{content}"),
                         "font_family": "Comic Neue",
                         "font_size": 18,
-                        "font_weight": "normal",
-                        "align": "left",
+                        "font_weight": "bold",
+                        "align": "center",
                         "direction": "auto",
                     }
                     tool_id = "editor.add_text_layer"
@@ -2301,26 +2390,36 @@ class StoryToCanvasWorkflow:
             if len(placed_for_this_panel) > 1 and doc:
                 from app.canvas.bubble_service import BubbleService
                 try:
+                    dir_val = (
+                        getattr(job, "reading_direction", None)
+                        or (job.plan.get("reading_direction") if isinstance(getattr(job, "plan", None), dict) else None)
+                        or "ltr"
+                    )
                     BubbleService().place_all(
                         document=doc,
                         panel_id=panel_id,
-                        reading_direction=getattr(job, "reading_direction", "rtl"),
+                        reading_direction=dir_val,
                     )
-                    store = self._page_store()
+                    store = self._page_store(page.page_id)
                     store.save(doc.page_id, doc.revision, doc)
                     doc = self._page_document(page.page_id)
                     page.revision = doc.revision
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.warning(
+                        "Automatic multi-bubble placement failed for panel %s on page %s: %s",
+                        panel_id, page.page_id, exc, exc_info=True
+                    )
+                    job.errors.append(f"Panel {panel_id} lettering warning: {str(exc)}")
 
     @staticmethod
     def _resolve_agent_text_carrier(text_plan, selected_character_ids, story_local_speakers=None):
         """Enforce the text meaning/carrier contract before any Canvas mutation."""
-        raw_kind = text_plan.get("content_kind")
+        raw_kind = text_plan.get("content_kind") or text_plan.get("kind")
         content_kind = getattr(raw_kind, "value", raw_kind)
         requested_carrier = str(text_plan.get("carrier", "none") or "none")
+        type_id = text_plan.get("type_id")
         carrier = requested_carrier
-        speaker_id = text_plan.get("speaker_id")
+        speaker_id = text_plan.get("speaker_id") or text_plan.get("speaker_character_id")
         selected = set(selected_character_ids or [])
         local_speakers = story_local_speakers or {}
         correction = None
@@ -2333,14 +2432,23 @@ class StoryToCanvasWorkflow:
             carrier = "caption"
         elif content_kind == "none":
             carrier = "none"
+        elif type_id in ("narration.box", "caption.timeplace"):
+            carrier = "caption"
+        elif type_id in ("speech.normal", "speech.shout", "speech.whisper", "speech.offpanel"):
+            carrier = "speech_bubble"
+        elif type_id == "thought.cloud":
+            carrier = "thought_bubble"
         elif content_kind is None and requested_carrier == "speech_bubble":
             # Legacy saved plans did not always include content_kind. Preserve
             # them only when they carry an explicit, selected speaker ID.
             content_kind = "spoken_dialogue"
 
+        if carrier in ("caption", "narration_box", "narration"):
+            speaker_id = None
+
         if carrier != requested_carrier:
             correction = (
-                f"routed {content_kind or 'untyped text'} to {carrier} instead of {requested_carrier}; "
+                f"routed {content_kind or type_id or 'untyped text'} to {carrier} instead of {requested_carrier}; "
                 "text meaning determines its Canvas carrier."
             )
 
@@ -2401,10 +2509,30 @@ class StoryToCanvasWorkflow:
             ]
             expected_texts = []
             for panel_id in page.panel_ids:
-                text_plan = plan_by_id[panel_id].get("text") or {}
-                content = str(text_plan.get("text_content") or "").strip()
-                if content:
-                    expected_texts.append({"panel_id": panel_id, "text": content, "speaker_character_id": text_plan.get("speaker_id")})
+                panel_plan = plan_by_id.get(panel_id) or {}
+                raw_script_lines = panel_plan.get("script_lines")
+                if raw_script_lines and isinstance(raw_script_lines, list):
+                    for line in raw_script_lines:
+                        txt = str(line.get("text") or "").strip()
+                        if txt:
+                            spk = line.get("speaker_character_id") or line.get("speaker_id")
+                            c_val = getattr(line.get("carrier"), "value", line.get("carrier"))
+                            k_val = getattr(line.get("kind") or line.get("content_kind"), "value", line.get("kind") or line.get("content_kind"))
+                            t_val = line.get("type_id")
+                            if c_val in ("caption", "narration_box", "narration") or k_val in ("narration", "date_or_place") or t_val in ("narration.box", "caption.timeplace"):
+                                spk = None
+                            expected_texts.append({"panel_id": panel_id, "text": txt, "speaker_character_id": spk})
+                else:
+                    text_plan = panel_plan.get("text") or {}
+                    content = str(text_plan.get("text_content") or "").strip()
+                    if content:
+                        c_val = getattr(text_plan.get("carrier"), "value", text_plan.get("carrier"))
+                        k_val = getattr(text_plan.get("kind") or text_plan.get("content_kind"), "value", text_plan.get("kind") or text_plan.get("content_kind"))
+                        t_val = text_plan.get("type_id")
+                        spk = text_plan.get("speaker_id") or text_plan.get("speaker_character_id")
+                        if c_val in ("caption", "narration_box", "narration") or k_val in ("narration", "date_or_place") or t_val in ("narration.box", "caption.timeplace"):
+                            spk = None
+                        expected_texts.append({"panel_id": panel_id, "text": content, "speaker_character_id": spk})
             call = ToolCall(
                 call_id=f"{job.job_id}_verify_page_{page.page_number}",
                 tool_id="canvas.verify_page",
@@ -2479,6 +2607,10 @@ class StoryToCanvasWorkflow:
                 job.export_file_path = exp_res.output.get("file_path")
             else:
                 job.errors.append(f"Export delivery note: {exp_res.error}")
+
+    def _page_store(self, page_id: str):
+        store, _ = self.registry._editor_page(page_id, {"project_id": self.project_id})
+        return store
 
     def _page_document(self, page_id: str):
         try:

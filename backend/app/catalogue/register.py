@@ -132,6 +132,7 @@ class TaxonomyRegister:
             validated_count=status_counts[CoverageStatus.VALIDATED.value],
             deprecated_count=status_counts[CoverageStatus.DEPRECATED.value],
             total_canonical_elements=total_elements,
+            total_elements=total_elements,
             total_sources=total_sources,
             total_claims=total_claims,
             total_rules=total_rules,

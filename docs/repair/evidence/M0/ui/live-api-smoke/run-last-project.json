@@ -1,0 +1,197 @@
+{
+  "selected_project": "last_oneee_b36304f4",
+  "mutations_blocked": [],
+  "responses": [
+    {
+      "status": 200,
+      "path": "/agent/capabilities"
+    },
+    {
+      "status": 200,
+      "path": "/execution/budgets"
+    },
+    {
+      "status": 200,
+      "path": "/evaluation/readiness"
+    },
+    {
+      "status": 200,
+      "path": "/agent/status"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/bible"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/creative/styles"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/creative/style-templates"
+    },
+    {
+      "status": 200,
+      "path": "/creative/package/last_oneee_b36304f4"
+    },
+    {
+      "status": 200,
+      "path": "/assets"
+    },
+    {
+      "status": 200,
+      "path": "/agent/approvals"
+    },
+    {
+      "status": 200,
+      "path": "/canvas/bubble-presets"
+    },
+    {
+      "status": 200,
+      "path": "/canvas/panel-layout-presets"
+    },
+    {
+      "status": 200,
+      "path": "/agent/sessions"
+    },
+    {
+      "status": 200,
+      "path": "/editor/pages"
+    },
+    {
+      "status": 200,
+      "path": "/agent/sessions"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/creative/styles"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/bible"
+    },
+    {
+      "status": 200,
+      "path": "/editor/pages/deleted"
+    },
+    {
+      "status": 200,
+      "path": "/agent/status"
+    },
+    {
+      "status": 200,
+      "path": "/health"
+    },
+    {
+      "status": 200,
+      "path": "/agent/status"
+    },
+    {
+      "status": 200,
+      "path": "/agent/capabilities"
+    },
+    {
+      "status": 200,
+      "path": "/assets"
+    },
+    {
+      "status": 200,
+      "path": "/execution/budgets"
+    },
+    {
+      "status": 200,
+      "path": "/evaluation/readiness"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/bible"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/creative/styles"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/creative/style-templates"
+    },
+    {
+      "status": 200,
+      "path": "/creative/package/last_oneee_b36304f4"
+    },
+    {
+      "status": 200,
+      "path": "/agent/approvals"
+    },
+    {
+      "status": 200,
+      "path": "/canvas/panel-layout-presets"
+    },
+    {
+      "status": 200,
+      "path": "/canvas/bubble-presets"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/bible"
+    },
+    {
+      "status": 200,
+      "path": "/projects/last_oneee_b36304f4/creative/styles"
+    },
+    {
+      "status": 200,
+      "path": "/agent/sessions"
+    },
+    {
+      "status": 200,
+      "path": "/editor/pages"
+    },
+    {
+      "status": 200,
+      "path": "/editor/pages/deleted"
+    },
+    {
+      "status": 200,
+      "path": "/health"
+    },
+    {
+      "status": 200,
+      "path": "/agent/status"
+    },
+    {
+      "status": 200,
+      "path": "/assets"
+    },
+    {
+      "status": 200,
+      "path": "/agent/sessions"
+    },
+    {
+      "status": 200,
+      "path": "/agent/sessions/session_last_oneee_b36304f4_1793422296925_zrtxxn"
+    },
+    {
+      "status": 200,
+      "path": "/assets"
+    },
+    {
+      "status": 200,
+      "path": "/assets/art_page_01_panel_01_289aa7ce/file"
+    },
+    {
+      "status": 200,
+      "path": "/assets/art_page_01_panel_02_81ad2dc6/file"
+    },
+    {
+      "status": 200,
+      "path": "/assets/art_page_01_panel_04_1cf99381/file"
+    },
+    {
+      "status": 200,
+      "path": "/assets/art_page_01_panel_03_650a4275/file"
+    }
+  ],
+  "page_errors": [],
+  "screenshot": "C:\\Users\\mnile\\Desktop\\InkLoob\\docs\\repair\\evidence\\M0\\ui\\live-api-smoke\\agent-last-oneee.png",
+  "trace": "C:\\Users\\mnile\\Desktop\\InkLoob\\docs\\repair\\evidence\\M0\\ui\\live-api-smoke\\trace-last-project.zip"
+}

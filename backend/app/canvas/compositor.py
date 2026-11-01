@@ -274,103 +274,187 @@ class FinalCompositor:
                     else:
                         tail_pts = [(tx + tw / 2 - 8, ty + th - 2), (tip_x, tip_y), (tx + tw / 2 + 8, ty + th - 2)]
 
-                # Fills first
-                if tail_pts and not chain_circles:
-                    draw.polygon(tail_pts, fill="#FFFFFF", outline=None)
-                for circle in chain_circles:
-                    if len(circle) >= 3:
-                        ccx, ccy, cr = circle[0], circle[1], circle[2]
-                        draw.ellipse([ccx - cr, ccy - cr, ccx + cr, ccy + cr], fill="#FFFFFF", outline="#111111", width=2)
+                # Vector SVG Rasterization with PyMuPDF for true WYSIWYG parity with the Canvas Editor
+                unified_path = meta.get("unified_path")
+                svg_path = meta.get("svg_path")
+                tail_path = meta.get("tail_path")
+                fill_color = meta.get("bg_color", "#FFFFFF")
+                stroke_color = meta.get("border_color", "#111111")
+                stroke_w = float(meta.get("border_width", 2.5))
+                stroke_dash = meta.get("stroke_dash", "")
+                dash_attr = f' stroke-dasharray="{stroke_dash}"' if stroke_dash else ""
 
-                if "oval" in bubble_shape_str:
-                    draw.ellipse([tx, ty, tx + tw, ty + th], fill="#FFFFFF", outline="#111111", width=3)
-                elif "shout" in bubble_shape_str or "burst" in bubble_shape_str or "impact" in bubble_shape_str:
-                    num_pts = 20
-                    pts = []
-                    for i in range(num_pts):
-                        ang = (2.0 * math.pi * i) / num_pts
-                        sc = 1.12 if (i % 2 == 1) else 0.88
-                        pts.append((tx + tw / 2 + (tw / 2) * math.cos(ang) * sc, ty + th / 2 + (th / 2) * math.sin(ang) * sc))
-                    draw.polygon(pts, fill="#FFFFFF", outline="#111111", width=3)
-                else:
-                    draw.rounded_rectangle([tx, ty, tx + tw, ty + th], radius=16, fill="#FFFFFF", outline="#111111", width=3)
+                rendered_vector = False
+                if unified_path and str(unified_path).startswith("M"):
+                    try:
+                        import pymupdf
+                        svg_markup = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">
+                            <path d="{unified_path}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="{stroke_w}"{dash_attr}/>
+                        </svg>'''
+                        doc_svg = pymupdf.open(stream=svg_markup.encode("utf-8"), filetype="svg")
+                        pix = doc_svg[0].get_pixmap(alpha=True)
+                        svg_img = Image.frombytes("RGBA", [pix.width, pix.height], pix.samples)
+                        base.alpha_composite(svg_img)
+                        draw = ImageDraw.Draw(base)
+                        rendered_vector = True
+                    except Exception:
+                        rendered_vector = False
+                elif svg_path and str(svg_path).startswith("M"):
+                    try:
+                        import pymupdf
+                        tail_markup = f'<path d="{tail_path}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="{stroke_w}"/>' if tail_path else ""
+                        svg_markup = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">
+                            {tail_markup}
+                            <path d="{svg_path}" fill="{fill_color}" stroke="{stroke_color}" stroke-width="{stroke_w}"{dash_attr}/>
+                        </svg>'''
+                        doc_svg = pymupdf.open(stream=svg_markup.encode("utf-8"), filetype="svg")
+                        pix = doc_svg[0].get_pixmap(alpha=True)
+                        svg_img = Image.frombytes("RGBA", [pix.width, pix.height], pix.samples)
+                        base.alpha_composite(svg_img)
+                        draw = ImageDraw.Draw(base)
+                        rendered_vector = True
+                    except Exception:
+                        rendered_vector = False
 
-                # Then stroke the tail outer sides so tail merges with body
-                if tail_pts and not chain_circles:
-                    draw.line([tail_pts[0], tail_pts[1]], fill="#111111", width=3)
-                    draw.line([tail_pts[1], tail_pts[2]], fill="#111111", width=3)
+                if not rendered_vector:
+                    # Fallback to procedural Pillow rendering for primitive/un-vectorized text layers
+                    if tail_pts and not chain_circles:
+                        draw.polygon(tail_pts, fill=fill_color, outline=None)
+                    for circle in chain_circles:
+                        if len(circle) >= 3:
+                            ccx, ccy, cr = circle[0], circle[1], circle[2]
+                            draw.ellipse([ccx - cr, ccy - cr, ccx + cr, ccy + cr], fill=fill_color, outline=stroke_color, width=int(stroke_w))
 
-                # 3. Comic Typography Auto-Fitting & Diamond Line Wrapping
+                    if "oval" in bubble_shape_str:
+                        draw.ellipse([tx, ty, tx + tw, ty + th], fill=fill_color, outline=stroke_color, width=int(stroke_w))
+                    elif "shout" in bubble_shape_str or "burst" in bubble_shape_str or "impact" in bubble_shape_str:
+                        num_pts = 20
+                        pts = []
+                        for i in range(num_pts):
+                            ang = (2.0 * math.pi * i) / num_pts
+                            sc = 1.12 if (i % 2 == 1) else 0.88
+                            pts.append((tx + tw / 2 + (tw / 2) * math.cos(ang) * sc, ty + th / 2 + (th / 2) * math.sin(ang) * sc))
+                        draw.polygon(pts, fill=fill_color, outline=stroke_color, width=int(stroke_w))
+                    else:
+                        draw.rounded_rectangle([tx, ty, tx + tw, ty + th], radius=16, fill=fill_color, outline=stroke_color, width=int(stroke_w))
+
+                    # Then stroke the tail outer sides so tail merges with body
+                    if tail_pts and not chain_circles:
+                        draw.line([tail_pts[0], tail_pts[1]], fill=stroke_color, width=int(stroke_w))
+                        draw.line([tail_pts[1], tail_pts[2]], fill=stroke_color, width=int(stroke_w))
+
+                # 3. Comic Typography Auto-Fitting & Line Wrapping
                 is_arabic = any('\u0600' <= c <= '\u06FF' for c in raw_text)
                 shaped = shape_arabic(raw_text) if is_arabic else raw_text
                 font_name = "NotoSansArabic" if is_arabic else "ComicNeue"
 
-                usable_w = tw * 0.76 if "oval" in bubble_shape_str else max(40.0, tw - 24.0)
-                usable_h = th * 0.72 if "oval" in bubble_shape_str else max(30.0, th - 20.0)
+                pad_x = float(meta.get("padding_x", 16.0 if bubble_shape_str in ("rounded_rectangle", "rectangle") else 24.0))
+                pad_y = float(meta.get("padding_y", 12.0 if bubble_shape_str in ("rounded_rectangle", "rectangle") else 18.0))
+                usable_w = tw * 0.76 if "oval" in bubble_shape_str else max(20.0, tw - pad_x * 2.0)
+                usable_h = th * 0.72 if "oval" in bubble_shape_str else max(20.0, th - pad_y * 2.0)
 
-                words = shaped.split()
-                if not words:
-                    lines = [shaped]
-                elif shaped.count("\n") > 0:
-                    lines = shaped.splitlines()
-                elif len(words) <= 2:
-                    lines = [" ".join(words)]
-                else:
-                    total_chars = len(shaped)
-                    k_target = max(2, min(5, round(math.sqrt(0.36 * total_chars))))
-                    best_lines = None
-                    best_score = float("inf")
-                    for k in range(max(1, k_target - 1), min(len(words) + 1, k_target + 2)):
-                        avg_chars = total_chars / k
-                        cand_lines = []
-                        cur = []
-                        cur_len = 0
+                # Use pre-calculated lines if provided in metadata (e.g. from layout_lettering_text)
+                meta_lines = meta.get("lines")
+                if meta_lines and isinstance(meta_lines, list):
+                    lines = [shape_arabic(l) if is_arabic else str(l) for l in meta_lines if str(l).strip()]
+                elif bubble_shape_str in ("rounded_rectangle", "rectangle") or meta.get("carrier") == "caption" or meta.get("type_id") in ("narration.box", "caption.timeplace"):
+                    # Greedy horizontal line wrap for rectangular captions/banners
+                    words = shaped.split()
+                    if not words:
+                        lines = [shaped]
+                    elif shaped.count("\n") > 0:
+                        lines = shaped.splitlines()
+                    else:
+                        base_font_for_wrap, _ = typo_engine.resolve_font(font_name, float(meta.get("font_size", 18)) / 1.333)
+                        lines = []
+                        cur_line = []
                         for w in words:
-                            w_len = len(w)
-                            if not cur:
-                                cur.append(w)
-                                cur_len = w_len
-                            elif (cur_len + 1 + w_len) <= avg_chars * 1.25 and len(cand_lines) < k - 1:
-                                cur.append(w)
-                                cur_len += 1 + w_len
-                            elif len(cand_lines) == k - 1:
-                                cur.append(w)
-                                cur_len += 1 + w_len
+                            cand = " ".join([*cur_line, w])
+                            w_box = draw.textbbox((0, 0), cand, font=base_font_for_wrap)
+                            if cur_line and (w_box[2] - w_box[0]) > usable_w:
+                                lines.append(" ".join(cur_line))
+                                cur_line = [w]
                             else:
+                                cur_line.append(w)
+                        if cur_line:
+                            lines.append(" ".join(cur_line))
+                else:
+                    words = shaped.split()
+                    if not words:
+                        lines = [shaped]
+                    elif shaped.count("\n") > 0:
+                        lines = shaped.splitlines()
+                    elif len(words) <= 2:
+                        lines = [" ".join(words)]
+                    else:
+                        total_chars = len(shaped)
+                        k_target = max(2, min(5, round(math.sqrt(0.36 * total_chars))))
+                        best_lines = None
+                        best_score = float("inf")
+                        for k in range(max(1, k_target - 1), min(len(words) + 1, k_target + 2)):
+                            avg_chars = total_chars / k
+                            cand_lines = []
+                            cur = []
+                            cur_len = 0
+                            for w in words:
+                                w_len = len(w)
+                                if not cur:
+                                    cur.append(w)
+                                    cur_len = w_len
+                                elif (cur_len + 1 + w_len) <= avg_chars * 1.25 and len(cand_lines) < k - 1:
+                                    cur.append(w)
+                                    cur_len += 1 + w_len
+                                elif len(cand_lines) == k - 1:
+                                    cur.append(w)
+                                    cur_len += 1 + w_len
+                                else:
+                                    cand_lines.append(" ".join(cur))
+                                    cur = [w]
+                                    cur_len = w_len
+                            if cur:
                                 cand_lines.append(" ".join(cur))
-                                cur = [w]
-                                cur_len = w_len
-                        if cur:
-                            cand_lines.append(" ".join(cur))
-                        lengths = [len(l) for l in cand_lines]
-                        score = max(lengths) - min(lengths)
-                        if score < best_score:
-                            best_score = score
-                            best_lines = cand_lines
-                    lines = best_lines or [shaped]
+                            lengths = [len(l) for l in cand_lines]
+                            score = max(lengths) - min(lengths)
+                            if score < best_score:
+                                best_score = score
+                                best_lines = cand_lines
+                        lines = best_lines or [shaped]
 
                 base_font_size = float(meta.get("font_size", 20))
                 opt_font_size = base_font_size
-                for test_size in range(max(15, int(base_font_size - 4)), 33):
-                    test_font, _ = typo_engine.resolve_font(font_name, test_size)
-                    test_lh = int(test_size * 1.28)
+                # Search downwards from base_font_size down to 10px so text fits inside bubble area
+                found_fit = False
+                for test_size in range(int(base_font_size), 9, -1):
+                    test_font, _ = typo_engine.resolve_font(font_name, test_size / 1.333)
+                    test_lh = int(test_size * 1.25)
                     test_tot_h = len(lines) * test_lh
                     test_max_w = max((draw.textbbox((0, 0), l, font=test_font)[2] - draw.textbbox((0, 0), l, font=test_font)[0]) for l in lines)
                     if test_tot_h <= usable_h and test_max_w <= usable_w:
                         opt_font_size = float(test_size)
-                    else:
+                        found_fit = True
                         break
+                if not found_fit:
+                    opt_font_size = 10.0
 
-                font, _ = typo_engine.resolve_font(font_name, opt_font_size)
-                line_h = int(opt_font_size * 1.28)
+                font, _ = typo_engine.resolve_font(font_name, opt_font_size / 1.333)
+                line_h = int(opt_font_size * 1.25)
                 text_block_h = len(lines) * line_h
-                start_y = ty + (th - text_block_h) / 2.0
+                # Clamped vertical centering: never start above ty + pad_y
+                start_y = max(ty + pad_y, ty + (th - text_block_h) / 2.0)
+
+                align = str(meta.get("align", "center")).lower()
+                text_fill = str(meta.get("color", "#111111"))
 
                 for line in lines:
                     bb = draw.textbbox((0, 0), line, font=font)
                     lw = bb[2] - bb[0]
-                    line_x = tx + (tw - lw) / 2.0
-                    draw.text((line_x, start_y), line, font=font, fill="#111111")
+                    if align == "left":
+                        line_x = tx + pad_x
+                    elif align == "right":
+                        line_x = tx + tw - pad_x - lw
+                    else:
+                        line_x = tx + (tw - lw) / 2.0
+                    draw.text((line_x, start_y), line, font=font, fill=text_fill)
                     start_y += line_h
 
                 valid_layer_count += 1

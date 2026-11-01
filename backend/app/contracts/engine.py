@@ -138,7 +138,9 @@ class CanvasGenerationParams(BaseModel):
     gutters_px: Dict[str, float] = Field(default_factory=lambda: {"horizontal": 40.0, "vertical": 40.0})
     bleed_px: float = Field(default=35.0)
     layout_template: str = Field(default="4_panel_grid")
-    reading_direction: str = Field(default="rtl", description="'rtl' (manga) or 'ltr' (western)")
+    panel_preset_id: Optional[str] = Field(default=None, description="Stable searchable panel-layout recipe ID")
+    template_parameters: Dict[str, Any] = Field(default_factory=dict, description="Validated parameters for the selected deterministic layout template")
+    reading_direction: str = Field(default="ltr", description="'ltr' (western) or 'rtl' (manga)")
 
 class CanvasGenerationOutput(BaseModel):
     canvas_spec_artifact_id: str

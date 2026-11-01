@@ -144,12 +144,15 @@ def layout_lettering_text(
     line_height_multiplier: float = 1.15,
     font_path: Optional[str | Path] = None,
     typography_engine: Optional[TypographyEngine] = None,
+    enforce_word_limit: bool = True,
+    word_limit_override: Optional[int] = None,
 ) -> LetteringLayout:
     """Measure, wrap, and fit exact text within the registered type contract.
 
-    A word-limit violation is an error with fields callers can return directly.
-    If even the minimum registered font cannot fit, the original words remain
-    intact and the result carries an explicit overflow diagnostic.
+    When enforce_word_limit=True, a word-limit violation raises a validation error.
+    When enforce_word_limit=False (bubble-fit mode), word count limits serve as
+    editorial guidance (yielding a warning diagnostic) while physical geometric
+    fit inside available_width and available_height is verified.
     """
     spec = BUBBLE_TYPE_BY_ID.get(type_id)
     if spec is None:
@@ -163,13 +166,25 @@ def layout_lettering_text(
             "ERR_LETTERING_TEXT_REQUIRED", "Lettering text must contain at least one visible character.",
             {"type_id": type_id},
         )
+    effective_limit = word_limit_override or spec.word_limit
     words = count_words(text)
-    if words > spec.word_limit:
-        raise LetteringValidationError(
-            "ERR_LETTERING_WORD_LIMIT",
-            f"{spec.label} allows at most {spec.word_limit} words; received {words}. Edit or split the line.",
-            {"type_id": type_id, "word_count": words, "word_limit": spec.word_limit},
-        )
+    editorial_diagnostics: List[Dict[str, Any]] = []
+    if words > effective_limit:
+        if enforce_word_limit:
+            raise LetteringValidationError(
+                "ERR_LETTERING_WORD_LIMIT",
+                f"{spec.label} allows at most {effective_limit} words; received {words}. Edit or split the line.",
+                {"type_id": type_id, "word_count": words, "word_limit": effective_limit},
+            )
+        else:
+            editorial_diagnostics.append({
+                "code": "WARN_EDITORIAL_WORD_COUNT",
+                "message": (
+                    f"Text contains {words} words, exceeding the recommended {effective_limit}-word editorial guidance. "
+                    "Validating actual geometric fit within bubble area."
+                ),
+                "details": {"type_id": type_id, "word_count": words, "recommended_limit": effective_limit},
+            })
     if max_width_px <= 0 or max_height_px <= 0:
         raise LetteringValidationError(
             "ERR_LETTERING_AREA_INVALID", "Lettering needs a positive available width and height.",
@@ -218,7 +233,7 @@ def layout_lettering_text(
                 content_width_px=round(content_width, 2), content_height_px=round(content_height, 2),
                 available_width_px=round(max_width_px, 2), available_height_px=round(max_height_px, 2),
                 word_count=words, line_count=len(lines), measurement_source="Pillow font metrics",
-                overflow=False, diagnostics=[],
+                overflow=False, diagnostics=list(editorial_diagnostics),
             )
 
     font_px, _font, actual_family, lines, content_width, content_height, line_height = candidates[-1]
@@ -246,10 +261,10 @@ def layout_lettering_text(
         type_id=type_id, text=text, lines=lines, direction=direction,
         font_family=font_family, measured_font_family=actual_family,
         font_size_px=font_px, min_font_size_px=spec.min_font_px,
-        max_font_size_px=spec.max_font_px, word_limit=spec.word_limit,
+        max_font_size_px=spec.max_font_px, word_limit=effective_limit,
         max_lines=spec.max_lines, line_height_px=round(line_height, 2),
         content_width_px=round(content_width, 2), content_height_px=round(content_height, 2),
         available_width_px=round(max_width_px, 2), available_height_px=round(max_height_px, 2),
         word_count=words, line_count=len(lines), measurement_source="Pillow font metrics",
-        overflow=True, diagnostics=[diagnostic],
+        overflow=True, diagnostics=[*editorial_diagnostics, diagnostic],
     )

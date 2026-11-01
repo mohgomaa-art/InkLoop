@@ -17,6 +17,7 @@ from app.schemas import (
     SceneSpec,
     PanelResult,
     PanelStatus,
+    PanelContextPacket,
     GenerationAttemptRecord,
     ErrorCategory,
     RetryDecision,
@@ -30,6 +31,7 @@ from app.image_adapter import (
     GenerationRequest,
     GenerationResponse,
 )
+from app.execution import AttemptStatus, CostClassification, ExecutionErrorCategory
 
 class BatchOrchestrator:
     """
@@ -49,12 +51,17 @@ class BatchOrchestrator:
         adapter: ImageGenerationAdapter,
         run_log_dir: Optional[Path] = None,
         verifier: Optional[Callable[[Optional[ReferenceAsset], bytes, Any], VerificationResult]] = None,
+        execution_manager: Optional[Any] = None,
+        asset_registry: Optional[Any] = None,
     ):
         self.config = config
         self.adapter = adapter
         self.run_log_dir = run_log_dir or (PROJECT_ROOT / "runs" / "batches")
         self.run_log_dir.mkdir(parents=True, exist_ok=True)
         self.verifier = verifier
+        self.execution_manager = execution_manager
+        self.asset_registry = asset_registry
+        self._execution_attempt_ids: Dict[str, str] = {}
 
     def _resolve_reference_bytes(self, asset: ReferenceAsset) -> Optional[bytes]:
         """Resolves raw bytes for a canonical reference asset if accessible on disk."""
@@ -72,6 +79,16 @@ class BatchOrchestrator:
         """Computes SHA-256 hash from raw output bytes."""
         return hashlib.sha256(data).hexdigest()
 
+    def _build_attempt_metadata(self, packet: PanelContextPacket, resp: Optional[GenerationResponse] = None) -> Dict[str, Any]:
+        """Combines adapter response metadata with deterministic knowledge catalogue provenance."""
+        meta = dict(resp.sanitized_metadata) if (resp and resp.sanitized_metadata) else {}
+        if packet.knowledge_selection_hash:
+            meta["catalogue_version"] = packet.catalogue_version
+            meta["knowledge_selection_hash"] = packet.knowledge_selection_hash
+            meta["selected_knowledge_ids"] = packet.selected_knowledge_ids
+            meta["knowledge_provenance_ids"] = packet.knowledge_provenance_ids
+        return meta
+
     def _is_retryable_error(self, category: Optional[ErrorCategory]) -> bool:
         """
         Determines if an error category qualifies for bounded retry.
@@ -85,6 +102,53 @@ class BatchOrchestrator:
         ):
             return True
         return False
+
+    def _record_execution_manager_attempt(
+        self,
+        batch_id: str,
+        panel_id: str,
+        attempt_id: str,
+        resp: Optional[GenerationResponse],
+        v_status: str,
+        v_result: Optional[VerificationResult],
+        output_path_str: Optional[str],
+        output_content_hash: Optional[str] = None,
+        retryable: bool = False,
+        error_category: Optional[ExecutionErrorCategory] = None,
+        error_message: Optional[str] = None,
+        eligible_for_acceptance: bool = False,
+    ) -> None:
+        """Records attempt outcome into append-only ExecutionManager if configured."""
+        if self.execution_manager is None:
+            return
+        execution_attempt_id = self._execution_attempt_ids.pop(attempt_id, None)
+        if execution_attempt_id is None:
+            raise RuntimeError(f"Execution Manager attempt was not started for '{attempt_id}'.")
+        try:
+            is_simulated = bool(resp and resp.is_simulated)
+            if resp is not None and resp.cost_usd is not None:
+                cost_classification = CostClassification.ESTIMATED if is_simulated else CostClassification.PROVIDER_REPORTED
+            else:
+                cost_classification = CostClassification.UNKNOWN
+            self.execution_manager.complete_attempt(
+                attempt_id=execution_attempt_id,
+                status=AttemptStatus.SUCCEEDED if eligible_for_acceptance else AttemptStatus.FAILED,
+                actual_cost_usd=resp.cost_usd if resp is not None else None,
+                cost_classification=cost_classification,
+                output_asset_ids=[f"asset_{panel_id}"] if output_path_str else [],
+                output_asset_hashes={f"asset_{panel_id}": output_content_hash} if output_path_str and output_content_hash else {},
+                usage=resp.usage if resp and resp.usage else None,
+                error_category=error_category if not eligible_for_acceptance else None,
+                error_message=error_message if not eligible_for_acceptance else None,
+                is_retryable=retryable if not eligible_for_acceptance else False,
+                verification_verdict=v_status,
+                eligible_for_acceptance=eligible_for_acceptance,
+                details={"verification_status": v_status,
+                         "verification_rejection_reason": v_result.rejection_reason if v_result else None},
+            )
+        except Exception:
+            self._execution_attempt_ids[attempt_id] = execution_attempt_id
+            raise
 
     def orchestrate_batch(
         self,
@@ -132,6 +196,29 @@ class BatchOrchestrator:
         estimated_cost_per_op = 0.01
         attempt_offsets = prior_attempt_offsets or {}
 
+        # Execution Manager integration: register run and operations if manager provided
+        if self.execution_manager is not None:
+            self.execution_manager.create_run(
+                project_id=batch_spec.project_id,
+                canon_version=bible_version_str,
+                canon_hash=getattr(batch_spec.story_bible, "canon_hash", None),
+                engine_id="orchestrator",
+                engine_version="1.0.0",
+                budget_limit_usd=effective_spend_cap,
+                dry_run=is_simulated,
+                run_id=batch_id,
+            )
+            self.execution_manager.start_run(batch_id)
+            for sc in sorted_scenes:
+                p_id = f"panel_{sc.scene_index + 1:02d}"
+                self.execution_manager.register_operation(
+                    run_id=batch_id,
+                    operation_id=f"{batch_id}_{p_id}",
+                    engine_id="image_generation",
+                    operation_type="generate_panel",
+                    max_retries=max_retries,
+                )
+
         for scene in sorted_scenes:
             panel_id = f"panel_{scene.scene_index + 1:02d}"
             prior_offset = attempt_offsets.get(panel_id, 0)
@@ -158,6 +245,7 @@ class BatchOrchestrator:
             accepted_output_path: Optional[str] = None
             accepted_output_hash: Optional[str] = None
             accepted_verif_result: Optional[VerificationResult] = None
+            accepted_verif_status: str = "UNVERIFIED"
 
             # 4. Bounded retry loop for this panel
             for attempt_idx in range(1, max_attempts + 1):
@@ -200,6 +288,23 @@ class BatchOrchestrator:
                     all_attempts.append(attempt_rec)
                     break
 
+                # Execution Manager attempt dispatch check
+                if self.execution_manager is not None:
+                    op_id = f"{batch_id}_{panel_id}"
+                    manager_attempt, _ = self.execution_manager.start_attempt(
+                        run_id=batch_id,
+                        operation_id=op_id,
+                        engine_id="image_generation",
+                        engine_version="1.0.0",
+                        model=batch_spec.model,
+                        provider="meta",
+                        estimated_cost_usd=estimated_cost_per_op,
+                        cost_classification=CostClassification.ESTIMATED,
+                        input_asset_ids=[r.asset_id for r in packet.reference_assets],
+                        input_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
+                    )
+                    self._execution_attempt_ids[attempt_id] = manager_attempt.attempt_id
+
                 # Dispatch generation request
                 gen_req = GenerationRequest(
                     prompt=packet.generation_prompt,
@@ -223,7 +328,7 @@ class BatchOrchestrator:
                     missing_cost = True
                     cumulative_cost += estimated_cost_per_op
 
-                if resp.usage:
+                if resp.usage is not None:
                     for k, v in resp.usage.items():
                         if isinstance(v, (int, float)):
                             accumulated_usage[k] = accumulated_usage.get(k, 0) + v
@@ -239,6 +344,24 @@ class BatchOrchestrator:
                         out_file = output_dir_path / f"{panel_id}.png"
                         out_file.write_bytes(resp.image_bytes)
                         output_path_str = str(out_file)
+
+                        # Asset Registry integration: register output panel with lineage DAG
+                        if self.asset_registry is not None:
+                            try:
+                                parent_ids = [r.asset_id for r in packet.reference_assets if r.asset_id]
+                                self.asset_registry.register_file(
+                                    file_path=out_file,
+                                    asset_id=f"asset_{panel_id}",
+                                    project_id=batch_spec.project_id,
+                                    artifact_type="panel_image",
+                                    mime_type="image/png",
+                                    parent_asset_ids=parent_ids,
+                                    source_run_id=batch_id,
+                                    source_operation_id=f"{batch_id}_{panel_id}",
+                                    source_attempt_id=attempt_id,
+                                )
+                            except Exception:
+                                pass
 
                     # Visual verification gate
                     v_result: Optional[VerificationResult] = None
@@ -296,7 +419,7 @@ class BatchOrchestrator:
                             reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
                             model=batch_spec.model,
                             endpoint=resp.endpoint,
-                            sanitized_request_metadata=resp.sanitized_metadata,
+                            sanitized_request_metadata=self._build_attempt_metadata(packet, resp),
                             http_status=resp.http_status,
                             error_category=None,
                             error_message=None,
@@ -312,6 +435,19 @@ class BatchOrchestrator:
                             final_panel_status=current_panel_status.value,
                         )
                         all_attempts.append(attempt_rec)
+                        self._record_execution_manager_attempt(
+                            batch_id=batch_id,
+                            panel_id=panel_id,
+                            attempt_id=attempt_id,
+                            resp=resp,
+                            v_status=v_status,
+                            v_result=v_result,
+                            output_path_str=output_path_str,
+                            output_content_hash=output_hash,
+                            eligible_for_acceptance=True,
+                        )
+                        accepted_verif_status = v_status
+                        accepted_verif_result = v_result
 
                         panel_accepted = True
                         panel_status = current_panel_status
@@ -319,6 +455,7 @@ class BatchOrchestrator:
                         accepted_output_path = output_path_str
                         accepted_output_hash = output_hash
                         accepted_verif_result = v_result
+                        accepted_verif_status = v_status
                         break  # Accepted: terminate retry loop
 
                     elif batch_spec.require_verification and self.verifier is None:
@@ -340,7 +477,7 @@ class BatchOrchestrator:
                             reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
                             model=batch_spec.model,
                             endpoint=resp.endpoint,
-                            sanitized_request_metadata=resp.sanitized_metadata,
+                            sanitized_request_metadata=self._build_attempt_metadata(packet, resp),
                             http_status=resp.http_status,
                             error_category=None,
                             error_message=None,
@@ -356,12 +493,26 @@ class BatchOrchestrator:
                             final_panel_status=PanelStatus.GENERATED_PENDING_VERIFICATION.value,
                         )
                         all_attempts.append(attempt_rec)
+                        self._record_execution_manager_attempt(
+                            batch_id=batch_id,
+                            panel_id=panel_id,
+                            attempt_id=attempt_id,
+                            resp=resp,
+                            v_status=v_status,
+                            v_result=None,
+                            output_path_str=output_path_str,
+                            output_content_hash=output_hash,
+                            eligible_for_acceptance=True,
+                        )
+                        accepted_verif_status = v_status
+                        accepted_verif_result = v_result
 
                         panel_accepted = False
                         panel_status = PanelStatus.GENERATED_PENDING_VERIFICATION
                         accepted_attempt_id = attempt_id
                         accepted_output_path = output_path_str
                         accepted_output_hash = output_hash
+                        accepted_verif_status = v_status
                         break
 
                     else:
@@ -392,7 +543,7 @@ class BatchOrchestrator:
                             reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
                             model=batch_spec.model,
                             endpoint=resp.endpoint,
-                            sanitized_request_metadata=resp.sanitized_metadata,
+                            sanitized_request_metadata=self._build_attempt_metadata(packet, resp),
                             http_status=resp.http_status,
                             error_category=ErrorCategory.UNKNOWN.value,
                             error_message=f"Verification rejection: {v_result.rejection_reason if v_result else 'Failed'}",
@@ -408,6 +559,21 @@ class BatchOrchestrator:
                             final_panel_status=fin_status,
                         )
                         all_attempts.append(attempt_rec)
+                        self._record_execution_manager_attempt(
+                            batch_id=batch_id,
+                            panel_id=panel_id,
+                            attempt_id=attempt_id,
+                            resp=resp,
+                            v_status=v_status,
+                            v_result=v_result,
+                            output_path_str=output_path_str,
+                            output_content_hash=output_hash,
+                            retryable=(v_status == "FAILED" and attempt_idx < max_attempts),
+                            error_category=ExecutionErrorCategory.UNKNOWN,
+                            error_message=f"Verification rejection: {v_result.rejection_reason if v_result else 'Failed'}",
+                        )
+                        accepted_verif_status = v_status
+                        accepted_verif_result = v_result
 
                         if attempt_idx >= max_attempts or v_status == "UNSURE":
                             panel_status = PanelStatus.NEEDS_HUMAN
@@ -446,7 +612,7 @@ class BatchOrchestrator:
                     reference_asset_hashes={r.asset_id: r.content_hash for r in packet.reference_assets},
                     model=batch_spec.model,
                     endpoint=resp.endpoint,
-                    sanitized_request_metadata=resp.sanitized_metadata,
+                    sanitized_request_metadata=self._build_attempt_metadata(packet, resp),
                     http_status=resp.http_status,
                     error_category=resp.error_category.value if resp.error_category else ErrorCategory.UNKNOWN.value,
                     error_message=resp.error_message,
@@ -460,6 +626,22 @@ class BatchOrchestrator:
                     final_panel_status=final_panel_status,
                 )
                 all_attempts.append(attempt_rec)
+                self._record_execution_manager_attempt(
+                    batch_id=batch_id,
+                    panel_id=panel_id,
+                    attempt_id=attempt_id,
+                    resp=resp,
+                    v_status="FAILED",
+                    v_result=None,
+                    output_path_str=None,
+                    retryable=is_retryable and attempt_idx < max_attempts,
+                    error_category=(
+                        ExecutionErrorCategory(resp.error_category.value)
+                        if resp.error_category and resp.error_category.value in {item.value for item in ExecutionErrorCategory}
+                        else ExecutionErrorCategory.UNKNOWN
+                    ),
+                    error_message=resp.error_message,
+                )
 
                 if not is_retryable:
                     break  # Do not retry permanent errors
@@ -467,14 +649,14 @@ class BatchOrchestrator:
             # Final status for this panel
             if panel_accepted:
                 p_status = panel_status
-            elif panel_status == PanelStatus.GENERATED_PENDING_VERIFICATION:
-                p_status = PanelStatus.GENERATED_PENDING_VERIFICATION
+            elif panel_status in (PanelStatus.GENERATED_PENDING_VERIFICATION, PanelStatus.NEEDS_HUMAN, PanelStatus.REJECTED_BY_VERIFIER):
+                p_status = panel_status
             elif budget_exhausted:
                 p_status = PanelStatus.FAILED
             elif panel_attempts_count >= max_attempts:
-                p_status = panel_status if panel_status != PanelStatus.PENDING else PanelStatus.NEEDS_HUMAN
+                p_status = PanelStatus.NEEDS_HUMAN
             else:
-                p_status = PanelStatus.FAILED
+                p_status = panel_status if panel_status != PanelStatus.PENDING else PanelStatus.FAILED
 
             panel_result = PanelResult(
                 panel_id=panel_id,
@@ -486,6 +668,7 @@ class BatchOrchestrator:
                 output_asset_path=accepted_output_path,
                 output_content_hash=accepted_output_hash,
                 context_fingerprint=packet.context_fingerprint,
+                verification_status=accepted_verif_status,
                 verification_result=accepted_verif_result,
             )
             panel_results.append(panel_result)
@@ -518,14 +701,16 @@ class BatchOrchestrator:
 
         # 5. Calculate batch completion metrics
         total_panels = len(sorted_scenes)
+        generated_panels = sum(1 for p in panel_results if p.output_asset_path is not None)
+        verified_panels = sum(1 for p in panel_results if p.verification_status == "PASSED")
         successful_panels = sum(1 for p in panel_results if p.status == PanelStatus.ACCEPTED)
-        unverified_panels = sum(1 for p in panel_results if p.status == PanelStatus.GENERATED_PENDING_VERIFICATION)
+        unverified_panels = sum(1 for p in panel_results if (p.output_asset_path is not None and p.verification_status != "PASSED") or p.status == PanelStatus.GENERATED_PENDING_VERIFICATION)
         failed_panels = sum(1 for p in panel_results if p.status in (PanelStatus.FAILED, PanelStatus.REJECTED_BY_VERIFIER))
         unresolved_panels = sum(1 for p in panel_results if p.status in (PanelStatus.PENDING, PanelStatus.NEEDS_HUMAN, PanelStatus.GENERATED_PENDING_VERIFICATION))
 
         if successful_panels == total_panels:
             batch_status = BatchStatus.COMPLETED
-        elif successful_panels > 0:
+        elif successful_panels > 0 or unverified_panels > 0:
             batch_status = BatchStatus.COMPLETED_WITH_FAILURES
         else:
             batch_status = BatchStatus.FAILED
@@ -536,29 +721,32 @@ class BatchOrchestrator:
 
         # Segregate simulated from live provider accounting
         if is_simulated:
-            known_cost_report = round(cumulative_cost, 4) if not missing_cost else None
-            simulated_cost_report = round(cumulative_cost, 4) if not missing_cost else None
-            known_usage_report = accumulated_usage
-            simulated_usage_report = accumulated_usage
             cost_mode_str = "synthetic_simulated"
+            known_cost_report = 0.0 if not missing_cost else None  # Zero real provider dollars spent in simulation
+            known_usage_report = {} if not missing_usage else {}  # Zero real provider tokens consumed in simulation
+            simulated_cost_report = round(cumulative_cost, 4) if not missing_cost else None
+            simulated_usage_report = accumulated_usage if not missing_usage else None
             missing_cost_flag = missing_cost
             missing_usage_flag = missing_usage
         else:
-            known_cost_report = round(cumulative_cost, 4) if not missing_cost else None
-            simulated_cost_report = None
-            known_usage_report = accumulated_usage
-            simulated_usage_report = None
             cost_mode_str = "real"
+            known_cost_report = round(cumulative_cost, 4) if not missing_cost else None
+            known_usage_report = accumulated_usage if not missing_usage else {}
+            simulated_cost_report = None
+            simulated_usage_report = None
             missing_cost_flag = missing_cost
             missing_usage_flag = missing_usage
 
         summary = BatchSummary(
             batch_id=batch_id,
             status=batch_status,
+            project_id=batch_spec.project_id,
             story_id=batch_spec.story_id,
             bible_version=bible_version_str,
             total_panels=total_panels,
             successful_panels=successful_panels,
+            generated_panels=generated_panels,
+            verified_panels=verified_panels,
             failed_panels=failed_panels,
             unresolved_panels=unresolved_panels,
             unverified_panels=unverified_panels,
@@ -577,10 +765,24 @@ class BatchOrchestrator:
             missing_usage_information=missing_usage_flag,
             panel_results=panel_results,
             attempt_history=all_attempts,
+            source_scenes=batch_spec.scenes,
+            model=batch_spec.model,
+            max_retries_per_panel=batch_spec.max_retries_per_panel,
+            spend_cap_usd=batch_spec.spend_cap_usd,
+            require_verification=batch_spec.require_verification,
+            request_fingerprint=batch_spec.request_fingerprint,
         )
 
         # 6. Structured Persistence
         self._persist_batch_summary(summary)
+
+        # Execution Manager run lifecycle completion
+        if self.execution_manager is not None:
+            if budget_exhausted:
+                self.execution_manager.cancel_run(batch_id, reason="orchestrator_budget_exceeded")
+            else:
+                self.execution_manager.complete_run(batch_id)
+
         return summary
 
     def _persist_checkpoint(
@@ -598,6 +800,7 @@ class BatchOrchestrator:
         temp_summary = BatchSummary(
             batch_id=batch_id,
             status=BatchStatus.RUNNING,
+            project_id=batch_spec.project_id,
             story_id=batch_spec.story_id,
             bible_version=bible_version_str,
             total_panels=len(sorted_scenes),
@@ -614,6 +817,12 @@ class BatchOrchestrator:
             cost_mode="synthetic_simulated" if is_simulated else "real",
             panel_results=panel_results,
             attempt_history=all_attempts,
+            source_scenes=batch_spec.scenes,
+            model=batch_spec.model,
+            max_retries_per_panel=batch_spec.max_retries_per_panel,
+            spend_cap_usd=batch_spec.spend_cap_usd,
+            require_verification=batch_spec.require_verification,
+            request_fingerprint=batch_spec.request_fingerprint,
         )
         self._persist_batch_summary(temp_summary)
 
@@ -627,7 +836,7 @@ class BatchOrchestrator:
     def resume_batch(
         self,
         batch_spec: BatchSpec,
-        prior_summary: BatchSummary
+        prior_summary: Optional[BatchSummary] = None
     ) -> BatchSummary:
         """
         Resumes a partial or failed batch without regenerating previously accepted panels.
@@ -635,6 +844,15 @@ class BatchOrchestrator:
         Validates that referenced asset files physically exist on disk before reuse.
         Ensures resumed attempt numbering continues seamlessly without ID collisions.
         """
+        if prior_summary is None:
+            if not self.run_log_dir:
+                raise ValueError("Cannot auto-load prior summary: run_log_dir is not configured.")
+            summary_path = self.run_log_dir / f"{batch_spec.batch_id}.json"
+            if not summary_path.is_file():
+                raise FileNotFoundError(f"Prior batch summary not found at '{summary_path}' to resume.")
+            data = json.loads(summary_path.read_text(encoding="utf-8"))
+            prior_summary = BatchSummary.model_validate(data)
+
         sorted_scenes = sorted(batch_spec.scenes, key=lambda s: s.scene_index)
         bible_version_str = str(getattr(batch_spec.story_bible, "bible_version", getattr(batch_spec.story_bible, "version", "1.0.0")))
         prior_panels_by_id = {p.panel_id: p for p in prior_summary.panel_results}
@@ -660,20 +878,30 @@ class BatchOrchestrator:
 
             prior_panel = prior_panels_by_id.get(panel_id)
 
-            # Check that output asset file physically exists on disk before deciding to reuse
-            file_exists = True
+            # Check that output asset file physically exists on disk and satisfies integrity checks before deciding to reuse
+            file_valid = True
             if prior_panel and prior_panel.output_asset_path:
                 p_file = Path(prior_panel.output_asset_path)
                 if not p_file.is_absolute():
                     p_file = PROJECT_ROOT / p_file
-                file_exists = p_file.exists() and p_file.stat().st_size > 0
+                if p_file.exists() and p_file.is_file() and p_file.stat().st_size > 0:
+                    if prior_panel.output_content_hash:
+                        try:
+                            disk_hash = hashlib.sha256(p_file.read_bytes()).hexdigest()
+                            file_valid = (disk_hash == prior_panel.output_content_hash)
+                        except Exception:
+                            file_valid = False
+                    else:
+                        file_valid = True
+                else:
+                    file_valid = False
 
-            # Reusable if: was ACCEPTED, context fingerprint matches, and output file exists
+            # Reusable if: was ACCEPTED, context fingerprint matches, and output file is verified intact
             if (
                 prior_panel
                 and prior_panel.status == PanelStatus.ACCEPTED
                 and prior_panel.context_fingerprint == cur_packet.context_fingerprint
-                and file_exists
+                and file_valid
             ):
                 reused_panel_results[panel_id] = prior_panel
                 reused_attempts.extend(prior_attempts_by_panel.get(panel_id, []))
@@ -681,6 +909,8 @@ class BatchOrchestrator:
                 scenes_to_run.append(scene)
                 # Track prior attempts count so resumed attempt IDs continue without collision
                 prior_attempt_offsets[panel_id] = len(prior_attempts_by_panel.get(panel_id, []))
+                # Preserve prior attempts for audit provenance
+                reused_attempts.extend(prior_attempts_by_panel.get(panel_id, []))
 
         # If everything is already accepted and unchanged, return existing summary
         if not scenes_to_run:
@@ -698,6 +928,7 @@ class BatchOrchestrator:
             spend_cap_usd=batch_spec.spend_cap_usd,
             output_dir=batch_spec.output_dir,
             require_verification=batch_spec.require_verification,
+            request_fingerprint=prior_summary.request_fingerprint,
         )
 
         sub_summary = self.orchestrate_batch(sub_spec, prior_attempt_offsets=prior_attempt_offsets)
@@ -715,14 +946,16 @@ class BatchOrchestrator:
         combined_attempts = reused_attempts + sub_summary.attempt_history
 
         total_panels = len(sorted_scenes)
+        generated_panels = sum(1 for p in combined_panel_results if p.output_asset_path is not None)
+        verified_panels = sum(1 for p in combined_panel_results if p.verification_status == "PASSED")
         successful_panels = sum(1 for p in combined_panel_results if p.status == PanelStatus.ACCEPTED)
-        unverified_panels = sum(1 for p in combined_panel_results if p.status == PanelStatus.GENERATED_PENDING_VERIFICATION)
+        unverified_panels = sum(1 for p in combined_panel_results if p.verification_status in ("UNVERIFIED", "PENDING") or p.status == PanelStatus.GENERATED_PENDING_VERIFICATION)
         failed_panels = sum(1 for p in combined_panel_results if p.status in (PanelStatus.FAILED, PanelStatus.REJECTED_BY_VERIFIER))
         unresolved_panels = sum(1 for p in combined_panel_results if p.status in (PanelStatus.PENDING, PanelStatus.NEEDS_HUMAN, PanelStatus.GENERATED_PENDING_VERIFICATION))
 
         if successful_panels == total_panels:
             b_status = BatchStatus.COMPLETED
-        elif successful_panels > 0:
+        elif successful_panels > 0 or unverified_panels > 0:
             b_status = BatchStatus.COMPLETED_WITH_FAILURES
         else:
             b_status = BatchStatus.FAILED
@@ -730,10 +963,13 @@ class BatchOrchestrator:
         merged_summary = BatchSummary(
             batch_id=batch_spec.batch_id,
             status=b_status,
+            project_id=batch_spec.project_id,
             story_id=batch_spec.story_id,
             bible_version=bible_version_str,
             total_panels=total_panels,
             successful_panels=successful_panels,
+            generated_panels=generated_panels,
+            verified_panels=verified_panels,
             failed_panels=failed_panels,
             unresolved_panels=unresolved_panels,
             unverified_panels=unverified_panels,
@@ -752,6 +988,12 @@ class BatchOrchestrator:
             missing_usage_information=prior_summary.missing_usage_information or sub_summary.missing_usage_information,
             panel_results=combined_panel_results,
             attempt_history=combined_attempts,
+            source_scenes=batch_spec.scenes,
+            model=batch_spec.model,
+            max_retries_per_panel=batch_spec.max_retries_per_panel,
+            spend_cap_usd=batch_spec.spend_cap_usd,
+            require_verification=batch_spec.require_verification,
+            request_fingerprint=prior_summary.request_fingerprint,
         )
 
         self._persist_batch_summary(merged_summary)

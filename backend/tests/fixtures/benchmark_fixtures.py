@@ -19,6 +19,7 @@ CANONICAL_NOUR_SPEC = CharacterSpec(
         AttributeCheck(id="hair", text="short messy black hair, one white streak on the left", required=True),
         AttributeCheck(id="glasses", text="round glasses", required=True),
         AttributeCheck(id="jacket", text="oversized hooded jacket, lightning-bolt patch on chest", required=True),
+        AttributeCheck(id="scar", text="small scar on right cheek", required=False),
     ]
 )
 

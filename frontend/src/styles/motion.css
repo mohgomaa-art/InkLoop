@@ -1,0 +1,302 @@
+/* ==========================================================================
+   INKLOOP UNIFIED MOTION DESIGN SYSTEM
+   Professional, calm, restrained, compositor-first desktop interaction tokens
+   ========================================================================== */
+
+:root {
+  /* --- Durations --- */
+  --motion-duration-instant: 0ms;
+  --motion-duration-fast: 120ms;       /* Hover, focus rings, press feedback, micro-toggles */
+  --motion-duration-normal: 180ms;     /* Standard dropdowns, tooltips, list highlights, pills */
+  --motion-duration-slow: 260ms;       /* Modals, drawers, sidebars, toast notifications */
+  --motion-duration-deliberate: 320ms; /* Spatial view crossfades, large workspace transitions */
+
+  /* --- Easing Curves (Cubic Bezier) --- */
+  --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);       /* Smooth deceleration into view */
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);           /* Snappy acceleration out of view */
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);       /* Calm, controlled desktop movement */
+  --motion-ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1); /* Restrained settling without wobble */
+  --motion-ease-linear: linear;
+
+  /* --- Spatial Distances --- */
+  --motion-distance-xs: 2px;
+  --motion-distance-sm: 4px;
+  --motion-distance-md: 8px;
+  --motion-distance-lg: 16px;
+  --motion-distance-xl: 24px;
+
+  /* --- Scale Ratios --- */
+  --motion-scale-press: 0.98;
+  --motion-scale-popover: 0.98;
+  --motion-scale-dialog: 0.97;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced Motion Overrides (System & In-App Preferences)
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-fast: 0ms;
+    --motion-duration-normal: 0ms;
+    --motion-duration-slow: 0ms;
+    --motion-duration-deliberate: 0ms;
+  }
+}
+
+[data-motion="reduced"] {
+  --motion-duration-fast: 0ms !important;
+  --motion-duration-normal: 60ms !important;
+  --motion-duration-slow: 80ms !important;
+  --motion-duration-deliberate: 100ms !important;
+}
+
+[data-motion="off"] {
+  --motion-duration-fast: 0ms !important;
+  --motion-duration-normal: 0ms !important;
+  --motion-duration-slow: 0ms !important;
+  --motion-duration-deliberate: 0ms !important;
+}
+
+[data-motion="reduced"] *,
+[data-motion="off"] * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* --------------------------------------------------------------------------
+   Hardware-Accelerated Compositor Keyframes
+   Strictly transform & opacity to guarantee 60/120 FPS
+   -------------------------------------------------------------------------- */
+@keyframes motionFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes motionFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes motionSlideUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-distance-md));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes motionSlideUpOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(var(--motion-distance-md));
+  }
+}
+
+@keyframes motionSlideDownIn {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--motion-distance-md)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes motionSlideDownOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--motion-distance-md)));
+  }
+}
+
+@keyframes motionSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(var(--motion-distance-lg));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes motionSlideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(var(--motion-distance-lg));
+  }
+}
+
+@keyframes motionScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(var(--motion-scale-dialog));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes motionScaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(var(--motion-scale-dialog));
+  }
+}
+
+@keyframes motionSettlePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+@keyframes motionShimmer {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.85; }
+  100% { opacity: 0.4; }
+}
+
+/* --------------------------------------------------------------------------
+   Utility Classes
+   -------------------------------------------------------------------------- */
+.motion-fade-in {
+  animation: motionFadeIn var(--motion-duration-normal) var(--motion-ease-enter) forwards;
+}
+
+.motion-fade-out {
+  animation: motionFadeOut var(--motion-duration-fast) var(--motion-ease-exit) forwards;
+}
+
+.motion-slide-up-in {
+  animation: motionSlideUpIn var(--motion-duration-normal) var(--motion-ease-enter) forwards;
+}
+
+.motion-slide-up-out {
+  animation: motionSlideUpOut var(--motion-duration-fast) var(--motion-ease-exit) forwards;
+}
+
+.motion-slide-down-in {
+  animation: motionSlideDownIn var(--motion-duration-normal) var(--motion-ease-enter) forwards;
+}
+
+.motion-dialog-enter {
+  animation: motionScaleIn var(--motion-duration-slow) var(--motion-ease-enter) forwards;
+}
+
+.motion-dialog-exit {
+  animation: motionScaleOut var(--motion-duration-normal) var(--motion-ease-exit) forwards;
+}
+
+.motion-backdrop-enter {
+  animation: motionFadeIn var(--motion-duration-slow) var(--motion-ease-enter) forwards;
+}
+
+.motion-backdrop-exit {
+  animation: motionFadeOut var(--motion-duration-normal) var(--motion-ease-exit) forwards;
+}
+
+.motion-drawer-right-enter {
+  animation: motionSlideInRight var(--motion-duration-slow) var(--motion-ease-enter) forwards;
+}
+
+.motion-drawer-right-exit {
+  animation: motionSlideOutRight var(--motion-duration-normal) var(--motion-ease-exit) forwards;
+}
+
+.motion-settle {
+  animation: motionSettlePulse var(--motion-duration-normal) var(--motion-ease-spring) forwards;
+}
+
+.motion-shimmer {
+  animation: motionShimmer 2s ease-in-out infinite;
+}
+
+/* Compositor-friendly interactive control transitions */
+.motion-interactive {
+  transition: transform var(--motion-duration-fast) var(--motion-ease-standard),
+              background-color var(--motion-duration-fast) var(--motion-ease-standard),
+              border-color var(--motion-duration-fast) var(--motion-ease-standard),
+              box-shadow var(--motion-duration-fast) var(--motion-ease-standard),
+              color var(--motion-duration-fast) var(--motion-ease-standard);
+  will-change: auto;
+}
+
+.motion-interactive:active {
+  transform: scale(var(--motion-scale-press));
+}
+
+.motion-card {
+  transition: transform var(--motion-duration-fast) var(--motion-ease-standard),
+              border-color var(--motion-duration-fast) var(--motion-ease-standard),
+              box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.motion-card:hover {
+  transform: translateY(-1px);
+}
+
+/* Accordion expand/collapse transition */
+.motion-accordion-content {
+  display: grid;
+  transition: grid-template-rows var(--motion-duration-slow) var(--motion-ease-standard),
+              opacity var(--motion-duration-slow) var(--motion-ease-standard);
+}
+
+.motion-accordion-content.closed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.motion-accordion-content.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.motion-accordion-inner {
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   STRICT CANVAS ISOLATION INVARIANT (GATE G3)
+   During active pointer dragging, vertex editing, transforming, or panning,
+   no CSS transitions must ever delay coordinate application.
+   -------------------------------------------------------------------------- */
+.canvas-raw-manipulation,
+.canvas-raw-manipulation *,
+.canvas-raw-manipulation svg,
+.canvas-raw-manipulation g,
+.canvas-raw-manipulation path,
+.canvas-raw-manipulation polygon,
+.canvas-raw-manipulation rect,
+.canvas-raw-manipulation circle {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Smooth selection handle entrance (applied only on selection mount, not drag) */
+.canvas-selection-enter {
+  animation: motionFadeIn var(--motion-duration-fast) var(--motion-ease-enter) forwards;
+}

@@ -1,0 +1,5756 @@
+{
+  "schema_version": "1.0.0",
+  "source": "backend/app/agent/registry.py::CapabilityRegistry",
+  "adapters_invoked": false,
+  "registered_count": 66,
+  "callable_adapter_count": 57,
+  "tools": [
+    {
+      "tool_id": "assets.list_assets",
+      "version": "1.0.0",
+      "name": "List Registered Assets",
+      "domain": "assets",
+      "owning_service": "shared",
+      "purpose": "Lists content-addressed registered assets with SHA-256 and dimensions.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "asset_type": {
+            "type": "string"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_image_chat_tool_catalog.py"
+      ]
+    },
+    {
+      "tool_id": "assets.verify_file_integrity",
+      "version": "1.0.0",
+      "name": "Verify Asset Integrity",
+      "domain": "assets",
+      "owning_service": "shared",
+      "purpose": "Streams on-disk bytes to verify SHA-256 integrity and detect tampering.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id"
+        ]
+      },
+      "required_arguments": [
+        "asset_id"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "canon.apply_approved_mutation",
+      "version": "1.0.0",
+      "name": "Apply Approved Canon Mutation",
+      "domain": "canon",
+      "owning_service": "shared",
+      "purpose": "Applies an approved canon mutation proposal incrementing the Story Bible snapshot.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "proposal_id": {
+            "type": "string"
+          },
+          "approval_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "proposal_id"
+        ]
+      },
+      "required_arguments": [
+        "proposal_id"
+      ],
+      "output_schema": {},
+      "side_effect": "MUTATES_PROJECT_CANON",
+      "requires_approval": true,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_runtime.py",
+        "backend/tests/test_image_chat_tool_catalog.py"
+      ]
+    },
+    {
+      "tool_id": "canon.inspect_characters",
+      "version": "1.0.0",
+      "name": "Inspect Canonical Characters",
+      "domain": "canon",
+      "owning_service": "shared",
+      "purpose": "Inspect character invariants, visual specs, tolerances, restrictions, and canonical anchor hash.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_autonomous_execution.py",
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_canvas_routing.py",
+        "backend/tests/test_agent_runtime.py",
+        "backend/tests/test_agent_tool_discovery.py",
+        "backend/tests/test_chat_wire.py",
+        "backend/tests/test_image_chat_tool_catalog.py",
+        "backend/tests/test_multi_style_dynamic_prompts.py",
+        "backend/tests/test_panel_plan_recovery.py"
+      ]
+    },
+    {
+      "tool_id": "canon.inspect_reference_anchor",
+      "version": "1.0.0",
+      "name": "Inspect Reference Anchor",
+      "domain": "canon",
+      "owning_service": "shared",
+      "purpose": "Inspects canonical reference image anchor, dimensions, SHA-256 digest, and invariants.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "character_id": {
+            "type": "string"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_runtime.py",
+        "backend/tests/test_agent_tool_discovery.py",
+        "backend/tests/test_chat_wire.py",
+        "backend/tests/test_multi_style_dynamic_prompts.py"
+      ]
+    },
+    {
+      "tool_id": "canon.propose_character_mutation",
+      "version": "1.0.0",
+      "name": "Propose Canon Mutation",
+      "domain": "canon",
+      "owning_service": "shared",
+      "purpose": "Draft a structured character or style mutation proposal for human review.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "target_type": {
+            "type": "string"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "change_description": {
+            "type": "string"
+          },
+          "proposed_changes": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "target_id",
+          "change_description"
+        ]
+      },
+      "required_arguments": [
+        "target_id",
+        "change_description"
+      ],
+      "output_schema": {},
+      "side_effect": "MUTATES_PROJECT_CANON",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py"
+      ]
+    },
+    {
+      "tool_id": "canon.set_reference_anchor",
+      "version": "1.0.0",
+      "name": "Set Canonical Reference Anchor",
+      "domain": "canon",
+      "owning_service": "shared",
+      "purpose": "Registers an existing registered asset or approved portrait as the canonical reference anchor for a Story Bible character.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "character_id": {
+            "type": "string",
+            "description": "Character identifier (e.g. cassian_vane, maeve)"
+          },
+          "asset_id": {
+            "type": "string",
+            "description": "Asset ID of the reference image in AssetRegistry"
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Project ID"
+          }
+        },
+        "required": [
+          "character_id",
+          "asset_id"
+        ]
+      },
+      "required_arguments": [
+        "character_id",
+        "asset_id"
+      ],
+      "output_schema": {},
+      "side_effect": "MUTATES_PROJECT_CANON",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_generation_context.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.add_speech_bubble",
+      "version": "1.0.0",
+      "name": "Add Expressive Speech Bubble",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Places short audible dialogue from a named selected character, or internal thoughts in a thought bubble. Choose the bubble style from dialogue delivery and story emotion/action context. Automatically measures the artwork's focal subject, avoids the subject and existing lettering, and points the tail at a saved speaker anchor or clearly labeled single-cast visual estimate; it fails when safe placement cannot be established.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "panel_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "description": "Exact spoken words for this selected character. Keep newly drafted lines brief; preserve exact creator-authored wording without truncation."
+          },
+          "layer_id": {
+            "type": "string",
+            "maxLength": 128,
+            "description": "Optional stable bubble layer ID for idempotent retries."
+          },
+          "speaker": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "speaker_character_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Stable Story Bible ID for the character who speaks this line. In Agent chat this must be one of the creator-selected characters; required when more than one character is selected."
+          },
+          "emotional_intent": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The speaker's current delivery/emotion in this beat; used to choose the bubble treatment."
+          },
+          "narrative_function": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Beat role such as reveal, reaction, or dialogue."
+          },
+          "delivery": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "How the character says the line, such as whisper, shout, calm, robotic, or remote."
+          },
+          "action_context": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Short action context only when it affects how the character speaks."
+          },
+          "story_event": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Narrative event for this panel; use only cues that affect the speaker's delivery."
+          },
+          "dialogue_text": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The exact dialogue, used to detect clear emphasis such as a shout or stammer; never rewritten."
+          },
+          "carrier": {
+            "type": "string",
+            "enum": [
+              "speech_bubble",
+              "thought_bubble"
+            ]
+          },
+          "bubble_preset_id": {
+            "type": "string",
+            "description": "Stable ID from canvas.search_bubble_presets; applies its real shape, tail, accent, and style."
+          },
+          "bubble_shape": {
+            "type": "string",
+            "enum": [
+              "oval",
+              "rounded_rectangle",
+              "thought_cloud",
+              "shout_burst",
+              "explosive_blast",
+              "fear_tremble",
+              "affection_heart",
+              "splat_surprise",
+              "electric_robotic",
+              "tilted_banner",
+              "speedline_aura",
+              "connected_lobes",
+              "radio_broadcast_zigzag",
+              "folded_ribbon_3d",
+              "dark_aura_ghost",
+              "icicle_frost",
+              "whisper_cloud_soft",
+              "double_border_impact",
+              "droplet_tear_sad",
+              "glitch_digital_crt",
+              "scalloped_flower",
+              "spiky_ring_scream",
+              "heavy_weight_emphasis"
+            ],
+            "default": "oval"
+          },
+          "tail_type": {
+            "type": "string",
+            "enum": [
+              "smooth_pointer",
+              "lightning_bolt",
+              "bubble_chain",
+              "whisper_dashed",
+              "smoke_puff",
+              "dual_pointer",
+              "off_screen_pointer",
+              "curved_hook_tail",
+              "zigzag_antenna",
+              "none"
+            ],
+            "default": "smooth_pointer"
+          },
+          "tail_target": {
+            "type": "object",
+            "description": "A saved speaker anchor. Agent calls must not invent this point; when absent, the runtime uses an explicitly labeled detected focal-subject estimate for a single selected character.",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            }
+          },
+          "secondary_tail_target": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            }
+          },
+          "accent": {
+            "type": "string",
+            "enum": [
+              "none",
+              "speedline_needles",
+              "sparkles",
+              "sweat_drop",
+              "shock_marks",
+              "anger_vein_cross",
+              "heart_flutter",
+              "dizziness_swirl",
+              "electric_sparks"
+            ],
+            "default": "none"
+          },
+          "inverted_dark_mode": {
+            "type": "boolean",
+            "default": false
+          },
+          "has_halftone_shadow": {
+            "type": "boolean",
+            "default": false
+          },
+          "font_size": {
+            "type": "number",
+            "default": 24.0
+          },
+          "font_family": {
+            "type": "string",
+            "description": "Use Comic Neue for readable dialogue, Bangers for short sound effects, or a verified project font."
+          },
+          "font_weight": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "bold"
+            ],
+            "default": "normal"
+          },
+          "line_height": {
+            "type": "number",
+            "minimum": 0.8,
+            "maximum": 2.0,
+            "default": 1.2
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "height": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "position": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "panel_id",
+          "text"
+        ]
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "panel_id",
+        "text"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_tools.py",
+        "backend/tests/test_agent_lettering_continuation.py",
+        "backend/tests/test_agent_tool_discovery.py",
+        "backend/tests/test_image_chat_tool_catalog.py",
+        "backend/tests/test_story_to_canvas_workflow.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.assemble_full_page",
+      "version": "1.0.0",
+      "name": "Assemble Full Comic Page",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "One-shot autonomous page assembly: creates page with template, places artwork into panels, and positions expressive speech bubbles pointing towards characters.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "layout_template": {
+            "type": "string"
+          },
+          "panel_preset_id": {
+            "type": "string",
+            "description": "Stable ID from canvas.search_panel_layout_presets"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "page_id": {
+            "type": "string"
+          },
+          "reading_direction": {
+            "type": "string",
+            "enum": [
+              "rtl",
+              "ltr"
+            ],
+            "default": "rtl"
+          },
+          "panel_assignments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "panel_id": {
+                  "type": "string"
+                },
+                "asset_id": {
+                  "type": "string"
+                },
+                "fit_mode": {
+                  "type": "string",
+                  "enum": [
+                    "cover",
+                    "contain"
+                  ]
+                },
+                "dialogues": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "bubble_preset_id": {
+                        "type": "string",
+                        "description": "Stable ID from canvas.search_bubble_presets"
+                      },
+                      "speaker": {
+                        "type": "string"
+                      },
+                      "speaker_character_id": {
+                        "type": "string",
+                        "description": "Stable Story Bible ID for the voice; use explicit beat speaker IDs, never infer from the character count."
+                      },
+                      "bubble_shape": {
+                        "type": "string"
+                      },
+                      "tail_type": {
+                        "type": "string"
+                      },
+                      "tail_target": {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "accent": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "panel_id"
+              ]
+            }
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "layout_template"
+            ]
+          },
+          {
+            "required": [
+              "panel_preset_id"
+            ]
+          }
+        ]
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_tools.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.composite_page",
+      "version": "1.0.0",
+      "name": "Composite Full Page to High-DPI Image",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Renders all panels, artwork, vector masks, bubbles, lettering, and borders of a saved page into a high-DPI 300 DPI composite PNG.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "description": "Saved page ID to composite"
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional project ID scope"
+          }
+        },
+        "required": [
+          "page_id"
+        ]
+      },
+      "required_arguments": [
+        "page_id"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_autonomous_execution.py",
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.create_custom_page",
+      "version": "1.0.0",
+      "name": "Scratch Custom Canvas Page",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Creates a new persisted editable page from custom panel rectangles or polygon cuts. Supply normalized geometry (0–1) inside the usable page area; IDs and reading order are stable and validated before the page is saved.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "page_id": {
+            "type": "string"
+          },
+          "page_format": {
+            "type": "string",
+            "enum": [
+              "custom",
+              "a4",
+              "b5",
+              "webtoon"
+            ],
+            "default": "custom"
+          },
+          "width_px": {
+            "type": "number",
+            "minimum": 240,
+            "default": 900
+          },
+          "height_px": {
+            "type": "number",
+            "minimum": 240,
+            "default": 1200
+          },
+          "reading_direction": {
+            "type": "string",
+            "enum": [
+              "rtl",
+              "ltr"
+            ],
+            "default": "rtl"
+          },
+          "panel_geometry": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 24,
+            "description": "One object per panel in normalized usable-area coordinates. Use rect for a rectangle or polygon for a custom scratch-cut; each polygon point is x/y from 0 to 1.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "panel_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reading_order": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "rect": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "y": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "width": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 1
+                    },
+                    "height": {
+                      "type": "number",
+                      "exclusiveMinimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y",
+                    "width",
+                    "height"
+                  ],
+                  "additionalProperties": false
+                },
+                "polygon": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 32,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "y": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "z_index": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "panel_id",
+                "reading_order"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "rect"
+                  ]
+                },
+                {
+                  "required": [
+                    "polygon"
+                  ]
+                }
+              ],
+              "additionalProperties": false
+            }
+          },
+          "panel_plans": {
+            "type": "array",
+            "description": "Optional validated story beats to attach to matching custom panel IDs.",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "panel_geometry"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "panel_geometry"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_autonomous_execution.py",
+        "backend/tests/test_agent_canvas_tools.py",
+        "backend/tests/test_agent_lettering_continuation.py",
+        "backend/tests/test_story_to_canvas_workflow.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.create_page_from_template",
+      "version": "1.0.0",
+      "name": "Create Page from Template",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Creates a new editable comic page using a canonical template or one of 100 searchable stable-ID panel layout recipes. Search a recipe first when the creator describes a narrative use case.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "$defs": {
+          "CameraAngle": {
+            "description": "Vertical and horizontal angle of view on the represented subject.",
+            "enum": [
+              "eye_level",
+              "high_angle",
+              "low_angle",
+              "overhead",
+              "ground_level",
+              "dutch_canted",
+              "pov",
+              "over_the_shoulder"
+            ],
+            "title": "CameraAngle",
+            "type": "string"
+          },
+          "CameraPosition": {
+            "description": "Camera placement relative to the subject, separate from vertical angle.",
+            "enum": [
+              "environmental",
+              "front",
+              "three_quarter",
+              "profile",
+              "rear",
+              "over_the_shoulder",
+              "subjective_pov"
+            ],
+            "title": "CameraPosition",
+            "type": "string"
+          },
+          "CompositionType": {
+            "description": "Placement of subjects and visual weight inside the panel frame.",
+            "enum": [
+              "environmental_negative_space",
+              "leading_lines",
+              "diagonal_action",
+              "off_center_reveal",
+              "face_focused",
+              "detail_focused",
+              "two_shot_balanced",
+              "stillness_negative_space",
+              "aftermath_negative_space",
+              "symbolic",
+              "rule_of_thirds",
+              "centered",
+              "custom"
+            ],
+            "title": "CompositionType",
+            "type": "string"
+          },
+          "FramingScale": {
+            "description": "Subject scale relative to frame boundaries.",
+            "enum": [
+              "extreme_long_shot",
+              "long_shot",
+              "full_shot",
+              "medium_long_shot",
+              "medium_shot",
+              "medium_close_up",
+              "close_up",
+              "extreme_close_up"
+            ],
+            "title": "FramingScale",
+            "type": "string"
+          },
+          "LayoutRelation": {
+            "description": "How the panel relates spatially to neighboring panels on the page/canvas.",
+            "enum": [
+              "regular_grid",
+              "unequal_grid",
+              "tiered",
+              "horizontal_stagger",
+              "vertical_stagger",
+              "blockage",
+              "widescreen_stack",
+              "vertical_column",
+              "inset",
+              "overlapping",
+              "floating",
+              "diagonal",
+              "mixed_diagonal",
+              "radial",
+              "spiral",
+              "split_view",
+              "montage",
+              "compound",
+              "full_page_splash",
+              "double_page_spread",
+              "four_koma",
+              "vertical_scroll"
+            ],
+            "title": "LayoutRelation",
+            "type": "string"
+          },
+          "NarrativeFunction": {
+            "description": "Story beat intent, independent from shot scale and frame geometry.",
+            "enum": [
+              "establishing",
+              "action_preparation",
+              "action_continuation",
+              "impact",
+              "reveal",
+              "reaction",
+              "aftermath",
+              "detail",
+              "dialogue",
+              "silent",
+              "transition",
+              "symbolic",
+              "cutaway"
+            ],
+            "title": "NarrativeFunction",
+            "type": "string"
+          },
+          "PanelShapeType": {
+            "description": "The 2D geometric boundary category of an individual panel region.",
+            "enum": [
+              "square",
+              "horizontal_rectangle",
+              "vertical_rectangle",
+              "panoramic",
+              "narrow_strip",
+              "triangle_wedge",
+              "trapezoid",
+              "parallelogram",
+              "general_polygon",
+              "circular",
+              "oval",
+              "curved_organic",
+              "hybrid",
+              "borderless",
+              "custom_path"
+            ],
+            "title": "PanelShapeType",
+            "type": "string"
+          },
+          "PanelTextPlan": {
+            "additionalProperties": false,
+            "description": "Text semantics and visual carrier, recorded before lettering layout.",
+            "properties": {
+              "content_kind": {
+                "$ref": "#/$defs/TextContentKind",
+                "description": "Meaning of the text: audible spoken dialogue, internal thought, narration, SFX, or none. Scene/action descriptions are not dialogue."
+              },
+              "carrier": {
+                "$ref": "#/$defs/TextCarrier",
+                "description": "Visual holder matched to meaning: spoken/emotional speech uses speech_bubble; internal_thought uses thought_bubble; narration uses caption or narration_box; omit with none."
+              },
+              "text_content": {
+                "anyOf": [
+                  {
+                    "maxLength": 4000,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Exact creator-authored/approved wording, or the exact Agent-drafted line explicitly present in this typed plan. For newly drafted audible dialogue, aim for 8 words or fewer and never exceed 12; preserve creator wording even when longer. Omit text rather than filling every panel.",
+                "title": "Text Content"
+              },
+              "text_block_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 16,
+                "title": "Text Block Ids",
+                "type": "array"
+              },
+              "speaker_id": {
+                "anyOf": [
+                  {
+                    "maxLength": 128,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Stable ID of the selected canonical character who speaks or thinks this text. For story-local characters, leave this empty and use speaker_name; the compiler assigns a job-local ID.",
+                "title": "Speaker Id"
+              },
+              "speaker_name": {
+                "anyOf": [
+                  {
+                    "maxLength": 80,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Exact name of a visible story-local character who speaks or thinks this text. Use only when the story has no creator-selected Canon cast; never invent a Canon ID.",
+                "title": "Speaker Name"
+              },
+              "reading_order_index": {
+                "default": 1,
+                "minimum": 1,
+                "title": "Reading Order Index",
+                "type": "integer"
+              },
+              "reserve_space": {
+                "default": false,
+                "title": "Reserve Space",
+                "type": "boolean"
+              },
+              "preferred_region": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/TextRegion"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "override_reason": {
+                "anyOf": [
+                  {
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Override Reason"
+              }
+            },
+            "required": [
+              "content_kind",
+              "carrier"
+            ],
+            "title": "PanelTextPlan",
+            "type": "object"
+          },
+          "PanelTransitionType": {
+            "description": "Qualitative narrative relationship between this panel and the preceding panel.",
+            "enum": [
+              "moment_to_moment",
+              "action_to_action",
+              "subject_to_subject",
+              "scene_to_scene",
+              "aspect_to_aspect",
+              "non_sequitur",
+              "first_panel_in_scene"
+            ],
+            "title": "PanelTransitionType",
+            "type": "string"
+          },
+          "ShotType": {
+            "description": "Narrative camera choice; intentionally distinct from subject scale.",
+            "enum": [
+              "establishing",
+              "wide",
+              "medium",
+              "close_up",
+              "extreme_close_up",
+              "reaction",
+              "impact",
+              "insert",
+              "silent",
+              "transition",
+              "pov",
+              "two_shot",
+              "dramatic_wide"
+            ],
+            "title": "ShotType",
+            "type": "string"
+          },
+          "TextCarrier": {
+            "enum": [
+              "speech_bubble",
+              "thought_bubble",
+              "narration_box",
+              "caption",
+              "sfx_lettering",
+              "diegetic_layer",
+              "direct_overlay",
+              "none"
+            ],
+            "title": "TextCarrier",
+            "type": "string"
+          },
+          "TextContentKind": {
+            "enum": [
+              "spoken_dialogue",
+              "emotional_speech",
+              "internal_thought",
+              "narration",
+              "sfx",
+              "date_or_place",
+              "diegetic",
+              "translation",
+              "none"
+            ],
+            "title": "TextContentKind",
+            "type": "string"
+          },
+          "TextRegion": {
+            "enum": [
+              "top_left",
+              "top_center",
+              "top_right",
+              "bottom_left",
+              "bottom_center",
+              "bottom_right",
+              "reserved_negative_space",
+              "author_review"
+            ],
+            "title": "TextRegion",
+            "type": "string"
+          }
+        },
+        "properties": {
+          "layout_template": {
+            "type": "string",
+            "description": "Template ID or alias"
+          },
+          "panel_preset_id": {
+            "type": "string",
+            "description": "Stable ID from canvas.search_panel_layout_presets"
+          },
+          "page_id": {
+            "type": "string",
+            "description": "Optional page ID"
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Target project ID"
+          },
+          "page_format": {
+            "type": "string",
+            "enum": [
+              "custom",
+              "a4",
+              "b5",
+              "webtoon"
+            ],
+            "default": "custom"
+          },
+          "width_px": {
+            "type": "number",
+            "default": 900.0
+          },
+          "height_px": {
+            "type": "number",
+            "default": 1200.0
+          },
+          "reading_direction": {
+            "type": "string",
+            "enum": [
+              "rtl",
+              "ltr"
+            ],
+            "default": "rtl"
+          },
+          "template_parameters": {
+            "type": "object",
+            "description": "Typed parameters supported by the selected layout template, such as row/column ratios."
+          },
+          "panel_plans": {
+            "type": "array",
+            "description": "Optional S5 plans to attach to the matching page panels in this same persisted Canvas document.",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "panel_id": {
+                  "title": "Panel Id",
+                  "type": "string"
+                },
+                "beat_id": {
+                  "title": "Beat Id",
+                  "type": "string"
+                },
+                "scene_id": {
+                  "title": "Scene Id",
+                  "type": "string"
+                },
+                "page_number": {
+                  "anyOf": [
+                    {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Page Number"
+                },
+                "reading_order_index": {
+                  "default": 1,
+                  "minimum": 1,
+                  "title": "Reading Order Index",
+                  "type": "integer"
+                },
+                "narrative_function": {
+                  "$ref": "#/$defs/NarrativeFunction"
+                },
+                "story_event": {
+                  "title": "Story Event",
+                  "type": "string"
+                },
+                "reader_takeaway": {
+                  "default": "",
+                  "title": "Reader Takeaway",
+                  "type": "string"
+                },
+                "character_ids": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Character Ids",
+                  "type": "array"
+                },
+                "prop_ids": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Prop Ids",
+                  "type": "array"
+                },
+                "prop_states": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Prop States",
+                  "type": "object"
+                },
+                "characterless": {
+                  "default": false,
+                  "title": "Characterless",
+                  "type": "boolean"
+                },
+                "character_selection_source": {
+                  "default": "none_selected",
+                  "enum": [
+                    "explicit_beat",
+                    "creator_selected_default",
+                    "characterless",
+                    "none_selected"
+                  ],
+                  "title": "Character Selection Source",
+                  "type": "string"
+                },
+                "environment": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Environment"
+                },
+                "shot_type": {
+                  "$ref": "#/$defs/ShotType"
+                },
+                "subject_scale": {
+                  "$ref": "#/$defs/FramingScale",
+                  "default": "medium_shot"
+                },
+                "camera_angle": {
+                  "$ref": "#/$defs/CameraAngle",
+                  "default": "eye_level"
+                },
+                "camera_position": {
+                  "$ref": "#/$defs/CameraPosition",
+                  "default": "three_quarter"
+                },
+                "composition_type": {
+                  "$ref": "#/$defs/CompositionType",
+                  "default": "environmental_negative_space"
+                },
+                "emotional_intent": {
+                  "default": "",
+                  "title": "Emotional Intent",
+                  "type": "string"
+                },
+                "visual_focus": {
+                  "default": "",
+                  "title": "Visual Focus",
+                  "type": "string"
+                },
+                "movement_direction": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Movement Direction"
+                },
+                "lighting_intent": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Lighting Intent"
+                },
+                "protected_visual_elements": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Protected Visual Elements",
+                  "type": "array"
+                },
+                "prohibited_visual_elements": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Prohibited Visual Elements",
+                  "type": "array"
+                },
+                "transition_role": {
+                  "$ref": "#/$defs/PanelTransitionType",
+                  "default": "action_to_action"
+                },
+                "transition_to_next": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/PanelTransitionType"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "text": {
+                  "$ref": "#/$defs/PanelTextPlan"
+                },
+                "shape_preference": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/PanelShapeType"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "layout_relation": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/LayoutRelation"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null
+                },
+                "image_brief": {
+                  "default": "",
+                  "title": "Image Brief",
+                  "type": "string"
+                },
+                "planning_rationale": {
+                  "default": "",
+                  "title": "Planning Rationale",
+                  "type": "string"
+                },
+                "decision_sources": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Decision Sources",
+                  "type": "object"
+                },
+                "planning_signature": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Planning Signature",
+                  "type": "object"
+                },
+                "repetition_justification": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "default": null,
+                  "title": "Repetition Justification"
+                }
+              },
+              "required": [
+                "panel_id",
+                "beat_id",
+                "scene_id",
+                "narrative_function",
+                "story_event",
+                "shot_type",
+                "text"
+              ],
+              "title": "PanelPlan",
+              "type": "object"
+            }
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "layout_template"
+            ]
+          },
+          {
+            "required": [
+              "panel_preset_id"
+            ]
+          }
+        ]
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_autonomous_execution.py",
+        "backend/tests/test_agent_canvas_routing.py",
+        "backend/tests/test_agent_canvas_tools.py",
+        "backend/tests/test_agent_lettering_continuation.py",
+        "backend/tests/test_agent_tool_discovery.py",
+        "backend/tests/test_panel_plan_recovery.py",
+        "backend/tests/test_story_to_canvas_workflow.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.detect_character_anchor",
+      "version": "1.0.0",
+      "name": "Detect Character Anchor",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Measures a likely focal-subject bounding box from the panel's placed artwork and returns a head-area tail estimate plus safe-space measurements. This is an image-analysis estimate, not identity recognition; it fails when no usable artwork is present.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "panel_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "panel_id"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "panel_id"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_tools.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.generate_layout",
+      "version": "1.0.0",
+      "name": "Generate Canvas Layout",
+      "domain": "geometry",
+      "owning_service": "shared",
+      "purpose": "Generates page layout panels conforming to margins, gutters, bleed, and safe area.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "template_id": {
+            "type": "string"
+          },
+          "page_format": {
+            "type": "string"
+          },
+          "gutter_px": {
+            "type": "integer"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "canvas.inspect_page_spacing",
+      "version": "1.0.0",
+      "name": "Inspect Canvas Panel Spacing",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Reads the saved Canvas page and measures panel-to-panel gaps and actual trim-edge clearance from stored rectangle/polygon boundaries. Returns measurements plus configured margins/gutters and does not mutate geometry.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "panel_id": {
+            "type": "string",
+            "description": "Optional panel whose nearest neighbors should be returned."
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_autonomous_execution.py",
+        "backend/tests/test_agent_canvas_routing.py",
+        "backend/tests/test_agent_canvas_tools.py",
+        "backend/tests/test_story_to_canvas_workflow.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.list_templates",
+      "version": "1.0.0",
+      "name": "List Canvas Templates",
+      "domain": "geometry",
+      "owning_service": "shared",
+      "purpose": "Lists all deterministic manga and comic page layout templates.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "canvas.place_panel_artwork",
+      "version": "1.0.0",
+      "name": "Place Artwork in Panel",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Places a registered or generated artwork image into an editable page panel slot with aspect-ratio-safe fit.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "panel_id": {
+            "type": "string"
+          },
+          "asset_id": {
+            "type": "string"
+          },
+          "fit_mode": {
+            "type": "string",
+            "enum": [
+              "cover",
+              "contain"
+            ],
+            "default": "cover"
+          },
+          "replace_existing": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "panel_id",
+          "asset_id"
+        ]
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "panel_id",
+        "asset_id"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_routing.py",
+        "backend/tests/test_agent_canvas_tools.py",
+        "backend/tests/test_agent_lettering_continuation.py",
+        "backend/tests/test_story_to_canvas_recovery.py",
+        "backend/tests/test_story_to_canvas_workflow.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.reshape_panel",
+      "version": "1.0.0",
+      "name": "Reshape Canvas Panel Geometry",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Directs custom panel polygon or rectangle coordinates on an editable page (angles, wedges, slanted gutters, or bleeds).",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "panel_id": {
+            "type": "string"
+          },
+          "rect": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              }
+            }
+          },
+          "polygon": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "panel_id"
+        ]
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "panel_id"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "canvas.search_bubble_presets",
+      "version": "1.0.0",
+      "name": "Find Speech Bubble Presets",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Search 50 stable-ID speech bubble presets by dialogue intent and use case. Return the exact preset ID, implemented shape/tail/accent, styling, and Pinterest inspiration search for canvas.add_speech_bubble.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 5
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "query"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_tools.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.search_panel_layout_presets",
+      "version": "1.0.0",
+      "name": "Find Panel Layout Recipes",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Search 100 stable-ID panel layout recipes by narrative use case (reveal, dialogue, action, chase, pause, comedy, suspense, aftermath). Return IDs, geometry template, Pinterest inspiration search, and Agent guidance before creating a page.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 5
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "query"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_routing.py",
+        "backend/tests/test_agent_canvas_tools.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.switch_page_template",
+      "version": "1.0.0",
+      "name": "Switch Page Layout Template",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Switches an existing page's grid template to a new layout while preserving or remapping placed artwork and text layers.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "layout_template": {
+            "type": "string"
+          },
+          "panel_preset_id": {
+            "type": "string",
+            "description": "Stable ID from canvas.search_panel_layout_presets"
+          },
+          "template_parameters": {
+            "type": "object"
+          },
+          "preserve_layers": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "layout_template"
+            ]
+          },
+          {
+            "required": [
+              "panel_preset_id"
+            ]
+          }
+        ]
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_tools.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.update_speech_bubble",
+      "version": "1.0.0",
+      "name": "Refine Speech Bubble",
+      "domain": "canvas",
+      "owning_service": "shared",
+      "purpose": "Refines an existing bubble on the same persisted page while preserving its stable ID. Recomputes real bubble and tail vectors after changing shape, position, text, font, or tail anchor.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "bubble_id": {
+            "type": "string"
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "speaker": {
+                "type": "string"
+              },
+              "speaker_character_id": {
+                "type": "string"
+              },
+              "bubble_preset_id": {
+                "type": "string"
+              },
+              "bubble_shape": {
+                "type": "string"
+              },
+              "tail_type": {
+                "type": "string"
+              },
+              "tail_target": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              },
+              "secondary_tail_target": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              },
+              "accent": {
+                "type": "string"
+              },
+              "position": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              },
+              "width": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "height": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "font_family": {
+                "type": "string"
+              },
+              "font_size": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "font_weight": {
+                "type": "string",
+                "enum": [
+                  "normal",
+                  "bold"
+                ]
+              },
+              "line_height": {
+                "type": "number",
+                "minimum": 0.8,
+                "maximum": 2.0
+              },
+              "align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ]
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "ltr",
+                  "rtl"
+                ]
+              },
+              "color": {
+                "type": "string"
+              },
+              "bg_color": {
+                "type": "string"
+              },
+              "border_color": {
+                "type": "string"
+              },
+              "stroke_width": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "stroke_dash": {
+                "type": "string"
+              },
+              "inverted_dark_mode": {
+                "type": "boolean"
+              },
+              "has_halftone_shadow": {
+                "type": "boolean"
+              },
+              "scale": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 5.0,
+                "description": "Uniform zoom multiplier to scale width, height, and font_size proportionally."
+              },
+              "zoom": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 5.0,
+                "description": "Alias for scale."
+              }
+            },
+            "minProperties": 1
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "bubble_id",
+          "properties"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "bubble_id",
+        "properties"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_tools.py"
+      ]
+    },
+    {
+      "tool_id": "canvas.verify_page",
+      "version": "1.0.0",
+      "name": "Verify Persisted Canvas Page",
+      "domain": "verification",
+      "owning_service": "shared",
+      "purpose": "Checks the persisted page revision, panel order, artwork asset integrity, and expected editable text records. It does not claim visual character verification.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "expected_panel_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "required_artwork_panel_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expected_artworks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "panel_id": {
+                  "type": "string"
+                },
+                "asset_id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "panel_id",
+                "asset_id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "expected_texts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "panel_id": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "speaker_character_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "panel_id",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "expected_panel_ids"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "expected_panel_ids"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_routing.py",
+        "backend/tests/test_agent_lettering_continuation.py",
+        "backend/tests/test_story_to_canvas_workflow.py"
+      ]
+    },
+    {
+      "tool_id": "catalogue.get_summary",
+      "version": "1.0.0",
+      "name": "Get Catalogue Summary",
+      "domain": "catalogue",
+      "owning_service": "shared",
+      "purpose": "Inspects research coverage across all 60 taxonomy groups and 840 elements.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "catalogue.list_licenses",
+      "version": "1.0.0",
+      "name": "List Licenses",
+      "domain": "catalogue",
+      "owning_service": "shared",
+      "purpose": "Audits commercial rights, font embedding, and model license records.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "catalogue.retrieve_knowledge",
+      "version": "1.0.0",
+      "name": "Retrieve Knowledge Catalogue Rules",
+      "domain": "catalogue",
+      "owning_service": "shared",
+      "purpose": "Retrieves evidence-backed generation rules and recipes for a scene from the 60-group catalogue.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "shot_type": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "camera_angle": {
+            "type": "string"
+          },
+          "lighting": {
+            "type": "string"
+          },
+          "character_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visual_invariants": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "has_reference_images": {
+            "type": "boolean"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_runtime.py"
+      ]
+    },
+    {
+      "tool_id": "compositor.composite_panels",
+      "version": "1.0.0",
+      "name": "Compositor Composite_Panels",
+      "domain": "future_engine",
+      "owning_service": "shared",
+      "purpose": "Legacy artifact compositor is opt-in; persisted pages use canvas.composite_page.",
+      "status": "NOT_IMPLEMENTED",
+      "status_reason": "Legacy artifact compositor is opt-in; persisted pages use canvas.composite_page.",
+      "is_callable": false,
+      "adapter_registered": false,
+      "adapter": null,
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_downstream_tools.py",
+        "backend/tests/test_agent_runtime.py"
+      ]
+    },
+    {
+      "tool_id": "compositor.render_page",
+      "version": "1.0.0",
+      "name": "Compositor Render_Page",
+      "domain": "future_engine",
+      "owning_service": "shared",
+      "purpose": "Legacy artifact compositor is opt-in; persisted pages use canvas.composite_page.",
+      "status": "NOT_IMPLEMENTED",
+      "status_reason": "Legacy artifact compositor is opt-in; persisted pages use canvas.composite_page.",
+      "is_callable": false,
+      "adapter_registered": false,
+      "adapter": null,
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "context_builder.compile_packet",
+      "version": "1.0.0",
+      "name": "Compile Generation Context",
+      "domain": "workspace",
+      "owning_service": "shared",
+      "purpose": "Compile pure-code narrative prompt, style rules, and reference links for a panel.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "scene_id": {
+            "type": "string"
+          },
+          "panel_id": {
+            "type": "string"
+          },
+          "beat": {
+            "type": "string"
+          },
+          "character_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "prop_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Stable IDs of selected recurring objects from the active Story Bible."
+          },
+          "prop_states": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Panel-specific object states such as lit or carried; does not change the saved identity."
+          }
+        },
+        "required": [
+          "panel_id"
+        ]
+      },
+      "required_arguments": [
+        "panel_id"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "creative.approve_canon",
+      "version": "1.0.0",
+      "name": "Approve Creative Canon Mutation",
+      "domain": "creative",
+      "owning_service": "shared",
+      "purpose": "Commits approved characters, visual invariants, and style profiles from the creative package into the authoritative Story Bible.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "character_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "commit_style": {
+            "type": "boolean"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "MUTATES_PROJECT_CANON",
+      "requires_approval": true,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "creative.develop_universe",
+      "version": "1.0.0",
+      "name": "AI Creative Director & Universe Builder",
+      "domain": "creative",
+      "owning_service": "shared",
+      "purpose": "Transforms natural-language story briefs into a complete, coherent, reviewable comic production package with Story Bible, Cast, World Rules, Narrative Arcs, Style Profile, and Contracts.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Natural language creative brief describing character, story, or world"
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Target project ID"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "quick_concept",
+              "full_production_bible",
+              "develop_one_character",
+              "build_ensemble",
+              "develop_story_arc",
+              "visual_development",
+              "continue_existing_work"
+            ]
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
+      "required_arguments": [
+        "prompt"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "creative.get_package",
+      "version": "1.0.0",
+      "name": "Get Creative Production Package",
+      "domain": "creative",
+      "owning_service": "shared",
+      "purpose": "Retrieves the active creative package including characters, world bible, relationship graph, and machine-readable contracts.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "creative.validate_coherence",
+      "version": "1.0.0",
+      "name": "Validate Creative Coherence",
+      "domain": "creative",
+      "owning_service": "shared",
+      "purpose": "Executes multi-category cross-document consistency checks and detects canon conflicts against the active Story Bible.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "diagnostics.get_engine_readiness",
+      "version": "1.0.0",
+      "name": "Get Engine Readiness",
+      "domain": "diagnostics",
+      "owning_service": "shared",
+      "purpose": "Reports implementation status across all specialist engines.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "diagnostics.get_health",
+      "version": "1.0.0",
+      "name": "Get Health Status",
+      "domain": "diagnostics",
+      "owning_service": "shared",
+      "purpose": "Reports service health, uptime, and version.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "editor.add_image_to_panel",
+      "version": "1.0.0",
+      "name": "Place Image in Panel",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Adds or replaces a registered image in an editable page panel; creates an immutable revision and preserves source lineage.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "panel_id": {
+            "type": "string"
+          },
+          "asset_id": {
+            "type": "string"
+          },
+          "fit_mode": {
+            "type": "string",
+            "enum": [
+              "cover",
+              "contain"
+            ]
+          },
+          "replace_existing": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "panel_id",
+          "asset_id"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "panel_id",
+        "asset_id"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "editor.add_line_layer",
+      "version": "1.0.0",
+      "name": "Add Editable Line",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Adds a revisioned vector line with editable endpoints, color, width, and optional dash pattern.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "panel_id": {
+            "type": "string"
+          },
+          "x1": {
+            "type": "number"
+          },
+          "y1": {
+            "type": "number"
+          },
+          "x2": {
+            "type": "number"
+          },
+          "y2": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string"
+          },
+          "stroke_width": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "dash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "x1",
+          "y1",
+          "x2",
+          "y2"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "x1",
+        "y1",
+        "x2",
+        "y2"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "editor.add_text_layer",
+      "version": "1.0.0",
+      "name": "Add Editable Text",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Adds editable page text with font family, size, weight, color, alignment, and reading direction; stores text as a separate revisioned layer.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "panel_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "layer_id": {
+            "type": "string",
+            "maxLength": 128,
+            "description": "Optional stable layer ID for idempotent retries."
+          },
+          "font_asset_id": {
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "font_family": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "font_size": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "font_weight": {
+            "type": [
+              "string",
+              "integer"
+            ]
+          },
+          "color": {
+            "type": "string"
+          },
+          "align": {
+            "type": "string",
+            "enum": [
+              "left",
+              "center",
+              "right"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "ltr",
+              "rtl"
+            ]
+          },
+          "line_height": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "text"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_routing.py",
+        "backend/tests/test_agent_tool_discovery.py",
+        "backend/tests/test_story_to_canvas_workflow.py"
+      ]
+    },
+    {
+      "tool_id": "editor.get_page",
+      "version": "1.0.0",
+      "name": "Inspect Editable Page",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Loads a revisioned page document, panel geometry, image layers, and source asset IDs.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "editor.list_pages",
+      "version": "1.0.0",
+      "name": "List Editable Pages",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Lists saved editable pages for the active project, including their current revisions.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "editor.remove_image_layer",
+      "version": "1.0.0",
+      "name": "Remove Image from Page",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Removes an image layer without deleting its source asset; prior immutable page revisions remain restorable.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "layer_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "layer_id"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "layer_id"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "editor.remove_layer",
+      "version": "1.0.0",
+      "name": "Delete Editable Layer",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Deletes a named image, text, or line layer from the current page revision; source assets are retained.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "layer_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "layer_id"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "layer_id"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "editor.reshape_panel",
+      "version": "1.0.0",
+      "name": "Reshape Page Panel",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Changes a page panel rectangle or polygon, validates page bounds and unintended overlap, and saves a new revision.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "panel_id": {
+            "type": "string"
+          },
+          "rect": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              }
+            }
+          },
+          "polygon": {
+            "type": "array",
+            "minItems": 3,
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "panel_id"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "panel_id"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "editor.update_image_placement",
+      "version": "1.0.0",
+      "name": "Adjust Image Fit and Position",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Changes an image layer's cover/contain crop, uniform scale, rotation, or translation without distorting its aspect ratio.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "layer_id": {
+            "type": "string",
+            "description": "Optional image layer ID; if omitted, panel_id finds the panel's artwork."
+          },
+          "panel_id": {
+            "type": "string",
+            "description": "Target panel ID to identify the image layer."
+          },
+          "fit_mode": {
+            "type": "string",
+            "enum": [
+              "cover",
+              "contain"
+            ]
+          },
+          "zoom": {
+            "type": "number",
+            "minimum": 0.05,
+            "maximum": 10.0,
+            "description": "Direct zoom multiplier; sets uniform scale_x and scale_y."
+          },
+          "scale": {
+            "type": "number",
+            "minimum": 0.05,
+            "maximum": 10.0,
+            "description": "Alias for zoom."
+          },
+          "transform": {
+            "type": "object",
+            "properties": {
+              "scale_x": {
+                "type": "number"
+              },
+              "scale_y": {
+                "type": "number"
+              },
+              "translate_x": {
+                "type": "number"
+              },
+              "translate_y": {
+                "type": "number"
+              },
+              "rotation_deg": {
+                "type": "number"
+              },
+              "anchor_x": {
+                "type": "number"
+              },
+              "anchor_y": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "editor.update_vector_layer",
+      "version": "1.0.0",
+      "name": "Update Text or Line",
+      "domain": "editor",
+      "owning_service": "shared",
+      "purpose": "Updates editable text or line properties in a page revision, including text/font styling or line geometry.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "type": "string"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "layer_id": {
+            "type": "string"
+          },
+          "properties": {
+            "type": "object",
+            "minProperties": 1
+          }
+        },
+        "required": [
+          "page_id",
+          "expected_revision",
+          "layer_id",
+          "properties"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "page_id",
+        "expected_revision",
+        "layer_id",
+        "properties"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "effects.apply_fx",
+      "version": "1.0.0",
+      "name": "Effects Apply_Fx",
+      "domain": "future_engine",
+      "owning_service": "shared",
+      "purpose": "Legacy E7 artifact adapter is opt-in; a persisted page-effects workflow is not yet connected.",
+      "status": "NOT_IMPLEMENTED",
+      "status_reason": "Legacy E7 artifact adapter is opt-in; a persisted page-effects workflow is not yet connected.",
+      "is_callable": false,
+      "adapter_registered": false,
+      "adapter": null,
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_downstream_tools.py",
+        "backend/tests/test_agent_runtime.py"
+      ]
+    },
+    {
+      "tool_id": "execution.get_budget_allowance",
+      "version": "1.0.0",
+      "name": "Get Budget Allowance",
+      "domain": "execution",
+      "owning_service": "shared",
+      "purpose": "Inspects global and project-level available budget headroom in strict minor units.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "execution.run_crash_recovery",
+      "version": "1.0.0",
+      "name": "Reconcile Execution Ledger",
+      "domain": "execution",
+      "owning_service": "shared",
+      "purpose": "Audits uncompleted SQLite runs and transitions interrupted states safely.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "export.export_page",
+      "version": "1.0.0",
+      "name": "Export Export_Page",
+      "domain": "future_engine",
+      "owning_service": "shared",
+      "purpose": "Legacy artifact export adapter is opt-in; persisted pages use export.generate_comic_book.",
+      "status": "NOT_IMPLEMENTED",
+      "status_reason": "Legacy artifact export adapter is opt-in; persisted pages use export.generate_comic_book.",
+      "is_callable": false,
+      "adapter_registered": false,
+      "adapter": null,
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_downstream_tools.py",
+        "backend/tests/test_agent_runtime.py"
+      ]
+    },
+    {
+      "tool_id": "export.generate_comic_book",
+      "version": "1.0.0",
+      "name": "Generate Print-Ready Comic Book Package",
+      "domain": "export",
+      "owning_service": "shared",
+      "purpose": "Composites one or more saved comic pages and compiles them into a print-ready PDF book or PNG package.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "page_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of saved page IDs in reading order"
+          },
+          "page_id": {
+            "type": "string",
+            "description": "Single page ID if exporting only one page"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "target_format": {
+            "type": "string",
+            "enum": [
+              "pdf",
+              "png"
+            ],
+            "default": "pdf"
+          },
+          "reading_direction": {
+            "type": "string",
+            "enum": [
+              "rtl",
+              "ltr"
+            ],
+            "default": "rtl"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_autonomous_execution.py",
+        "backend/tests/test_agent_tool_discovery.py"
+      ]
+    },
+    {
+      "tool_id": "export.package_delivery",
+      "version": "1.0.0",
+      "name": "Export Package_Delivery",
+      "domain": "future_engine",
+      "owning_service": "shared",
+      "purpose": "Legacy artifact export adapter is opt-in; persisted pages use export.generate_comic_book.",
+      "status": "NOT_IMPLEMENTED",
+      "status_reason": "Legacy artifact export adapter is opt-in; persisted pages use export.generate_comic_book.",
+      "is_callable": false,
+      "adapter_registered": false,
+      "adapter": null,
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "generation.check_readiness",
+      "version": "1.0.0",
+      "name": "Check Generation Readiness",
+      "domain": "generation",
+      "owning_service": "shared",
+      "purpose": "Inspect model configuration, API credentials, and spend caps without leaking secrets.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "generation.generate_image",
+      "version": "1.0.0",
+      "name": "Generate Image Panel",
+      "domain": "generation",
+      "owning_service": "shared",
+      "purpose": "Generates one artwork panel after compiling its scene brief through the project's Story Bible, canonical character references, style rules, and optional accepted S5 PanelPlan. Use reference_asset_id to continue from a creator-selected image.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Creator-specified scene/action brief. Do not invent extra scenes or embedded lettering."
+          },
+          "panel_id": {
+            "type": "string"
+          },
+          "scene_id": {
+            "type": "string"
+          },
+          "scene_index": {
+            "type": "integer"
+          },
+          "scene_title": {
+            "type": "string"
+          },
+          "shot_type": {
+            "type": "string"
+          },
+          "character_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "prop_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Stable IDs of selected recurring objects from the active Story Bible."
+          },
+          "prop_states": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Panel-specific object state such as lit or carried; identity remains unchanged."
+          },
+          "prop_versions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Expected object profile versions."
+          },
+          "object_anchor_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Draft objects whose first generated panel may become a provisional visual reference."
+          },
+          "style_profile_id": {
+            "type": "string"
+          },
+          "style_profile_version": {
+            "type": "integer"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "location_version": {
+            "type": "integer"
+          },
+          "panel_plan": {
+            "type": "object",
+            "description": "Accepted S5 PanelPlan for this story panel; required for planned narrative sequences."
+          },
+          "reference_asset_id": {
+            "type": "string",
+            "description": "Registered image explicitly selected by the creator as the visual source for a continuation/variant."
+          },
+          "previous_panel_summary": {
+            "type": "string"
+          },
+          "is_anchor_generation": {
+            "type": "boolean",
+            "description": "Set to true when generating an initial portrait or reference anchor for a newly declared character that has no image anchor yet."
+          },
+          "width": {
+            "type": "integer"
+          },
+          "height": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
+      "required_arguments": [
+        "prompt"
+      ],
+      "output_schema": {},
+      "side_effect": "CREATES_ASSET",
+      "requires_approval": false,
+      "cost_semantics": "ESTIMATED",
+      "estimated_cost_usd": 0.01,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_autonomous_execution.py",
+        "backend/tests/test_agent_canvas_routing.py",
+        "backend/tests/test_agent_generation_context.py",
+        "backend/tests/test_agent_lettering_continuation.py",
+        "backend/tests/test_agent_runtime.py",
+        "backend/tests/test_agent_tool_discovery.py",
+        "backend/tests/test_image_chat_tool_catalog.py",
+        "backend/tests/test_panel_plan_recovery.py",
+        "backend/tests/test_quick_styles.py",
+        "backend/tests/test_story_blueprint.py",
+        "backend/tests/test_story_to_canvas_recovery.py",
+        "backend/tests/test_story_to_canvas_workflow.py"
+      ]
+    },
+    {
+      "tool_id": "image.analyze_semantics",
+      "version": "1.0.0",
+      "name": "Analyze Image Semantics",
+      "domain": "future_engine",
+      "owning_service": "shared",
+      "purpose": "Unavailable: semantic image analysis requires a configured vision model and grounded result contract.",
+      "status": "NOT_IMPLEMENTED",
+      "status_reason": "No semantic vision adapter is configured; metadata inspection is not semantic analysis.",
+      "is_callable": false,
+      "adapter_registered": false,
+      "adapter": null,
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_downstream_tools.py",
+        "backend/tests/test_image_chat_tool_catalog.py"
+      ]
+    },
+    {
+      "tool_id": "image.inspect_file_metadata",
+      "version": "1.0.0",
+      "name": "Inspect Image File Metadata",
+      "domain": "inspection",
+      "owning_service": "shared",
+      "purpose": "Inspect decodability, dimensions, magic bytes, and SHA-256 digest of an attached image.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "attachment_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "attachment_id"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "attachment_id"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_runtime.py",
+        "backend/tests/test_chat_wire.py"
+      ]
+    },
+    {
+      "tool_id": "image.verify_visual_consistency",
+      "version": "1.0.0",
+      "name": "Verify Visual Consistency",
+      "domain": "verification",
+      "owning_service": "shared",
+      "purpose": "Executes multi-tier verification (L0/L1) comparing an image against canonical character invariants.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "attachment_id": {
+            "type": "string"
+          },
+          "character_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "attachment_id"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "attachment_id"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_runtime.py"
+      ]
+    },
+    {
+      "tool_id": "plan.dispatch_plan",
+      "version": "1.0.0",
+      "name": "Dispatch Execution Plan",
+      "domain": "planning",
+      "owning_service": "shared",
+      "purpose": "Validates budget ceiling and dispatches execution of an approved plan DAG.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "plan_id": {
+            "type": "string"
+          },
+          "approval_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan_id"
+        ]
+      },
+      "required_arguments": [
+        "plan_id"
+      ],
+      "output_schema": {},
+      "side_effect": "SPENDS_PROVIDER_BUDGET",
+      "requires_approval": true,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_runtime.py"
+      ]
+    },
+    {
+      "tool_id": "plan.draft_plan",
+      "version": "1.0.0",
+      "name": "Draft Sequential Plan",
+      "domain": "planning",
+      "owning_service": "shared",
+      "purpose": "Synthesizes a structured sequential generation plan with per-panel beats, canvas layout, and separate user run cap vs project balance.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "goal": {
+            "type": "string"
+          },
+          "panel_count": {
+            "type": "integer"
+          },
+          "requested_run_budget_cap_usd": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "goal"
+        ]
+      },
+      "required_arguments": [
+        "goal"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_tool_discovery.py",
+        "backend/tests/test_chat_wire.py"
+      ]
+    },
+    {
+      "tool_id": "planning.plan_lettering",
+      "version": "1.0.0",
+      "name": "Plan Page Lettering",
+      "domain": "planning",
+      "owning_service": "S5 Scene/Story Planning Service",
+      "purpose": "Plan concise, source-grounded dialogue, thoughts, captions, or silence for every panel of the supplied saved Canvas job. Use only the saved panel IDs and selected characters provided in context. Spoken words require a selected speaker. Do not turn visual actions into dialogue, do not fill every panel with text, and do not generate or alter artwork or page geometry.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "decisions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 24,
+            "items": {
+              "type": "object",
+              "properties": {
+                "panel_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "text": {
+                  "type": "object",
+                  "properties": {
+                    "content_kind": {
+                      "type": "string",
+                      "enum": [
+                        "spoken_dialogue",
+                        "emotional_speech",
+                        "internal_thought",
+                        "narration",
+                        "date_or_place",
+                        "none"
+                      ]
+                    },
+                    "carrier": {
+                      "type": "string",
+                      "enum": [
+                        "speech_bubble",
+                        "thought_bubble",
+                        "narration_box",
+                        "caption",
+                        "none"
+                      ]
+                    },
+                    "text_content": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 500
+                    },
+                    "speaker_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 128
+                    },
+                    "preferred_region": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "top_left",
+                        "top_center",
+                        "top_right",
+                        "bottom_left",
+                        "bottom_center",
+                        "bottom_right",
+                        "reserved_negative_space",
+                        "author_review",
+                        null
+                      ]
+                    }
+                  },
+                  "required": [
+                    "content_kind",
+                    "carrier",
+                    "text_content",
+                    "speaker_id"
+                  ],
+                  "additionalProperties": false
+                },
+                "delivery": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 120
+                },
+                "emotional_intent": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 240
+                }
+              },
+              "required": [
+                "panel_id",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "job_id",
+          "decisions"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "job_id",
+        "decisions"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_lettering_continuation.py"
+      ]
+    },
+    {
+      "tool_id": "planning.plan_panels",
+      "version": "1.0.0",
+      "name": "Plan Narrative Panels",
+      "domain": "planning",
+      "owning_service": "S5 Scene/Story Planning Service",
+      "purpose": "Convert a supplied story into per-panel narrative, shot, composition, transition, and text-carrier decisions. Requires scene_id and non-empty beats; the coordinator may derive source-grounded beats from the creator's story text and explicit panel count. This does not generate images or page geometry.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "$defs": {
+          "CameraAngle": {
+            "description": "Vertical and horizontal angle of view on the represented subject.",
+            "enum": [
+              "eye_level",
+              "high_angle",
+              "low_angle",
+              "overhead",
+              "ground_level",
+              "dutch_canted",
+              "pov",
+              "over_the_shoulder"
+            ],
+            "title": "CameraAngle",
+            "type": "string"
+          },
+          "CameraPosition": {
+            "description": "Camera placement relative to the subject, separate from vertical angle.",
+            "enum": [
+              "environmental",
+              "front",
+              "three_quarter",
+              "profile",
+              "rear",
+              "over_the_shoulder",
+              "subjective_pov"
+            ],
+            "title": "CameraPosition",
+            "type": "string"
+          },
+          "CompositionType": {
+            "description": "Placement of subjects and visual weight inside the panel frame.",
+            "enum": [
+              "environmental_negative_space",
+              "leading_lines",
+              "diagonal_action",
+              "off_center_reveal",
+              "face_focused",
+              "detail_focused",
+              "two_shot_balanced",
+              "stillness_negative_space",
+              "aftermath_negative_space",
+              "symbolic",
+              "rule_of_thirds",
+              "centered",
+              "custom"
+            ],
+            "title": "CompositionType",
+            "type": "string"
+          },
+          "FramingScale": {
+            "description": "Subject scale relative to frame boundaries.",
+            "enum": [
+              "extreme_long_shot",
+              "long_shot",
+              "full_shot",
+              "medium_long_shot",
+              "medium_shot",
+              "medium_close_up",
+              "close_up",
+              "extreme_close_up"
+            ],
+            "title": "FramingScale",
+            "type": "string"
+          },
+          "LayoutRelation": {
+            "description": "How the panel relates spatially to neighboring panels on the page/canvas.",
+            "enum": [
+              "regular_grid",
+              "unequal_grid",
+              "tiered",
+              "horizontal_stagger",
+              "vertical_stagger",
+              "blockage",
+              "widescreen_stack",
+              "vertical_column",
+              "inset",
+              "overlapping",
+              "floating",
+              "diagonal",
+              "mixed_diagonal",
+              "radial",
+              "spiral",
+              "split_view",
+              "montage",
+              "compound",
+              "full_page_splash",
+              "double_page_spread",
+              "four_koma",
+              "vertical_scroll"
+            ],
+            "title": "LayoutRelation",
+            "type": "string"
+          },
+          "NarrativeBeat": {
+            "additionalProperties": false,
+            "description": "One authored event and its intended reader takeaway.",
+            "properties": {
+              "beat_id": {
+                "maxLength": 128,
+                "minLength": 1,
+                "title": "Beat Id",
+                "type": "string"
+              },
+              "panel_id": {
+                "anyOf": [
+                  {
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Panel Id"
+              },
+              "page_number": {
+                "anyOf": [
+                  {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Optional explicit page grouping in the approved story plan.",
+                "title": "Page Number"
+              },
+              "narrative_function": {
+                "$ref": "#/$defs/NarrativeFunction"
+              },
+              "story_event": {
+                "maxLength": 2000,
+                "minLength": 1,
+                "title": "Story Event",
+                "type": "string"
+              },
+              "reader_takeaway": {
+                "maxLength": 1000,
+                "minLength": 1,
+                "title": "Reader Takeaway",
+                "type": "string"
+              },
+              "character_ids": {
+                "description": "Characters explicitly used in this beat. Empty inherits the active creator-selected cast unless characterless is true.",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 16,
+                "title": "Character Ids",
+                "type": "array"
+              },
+              "prop_ids": {
+                "description": "Stable project object IDs visible in this beat",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 24,
+                "title": "Prop Ids",
+                "type": "array"
+              },
+              "prop_states": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Scene state for listed objects; does not change their stable identity",
+                "title": "Prop States",
+                "type": "object"
+              },
+              "characterless": {
+                "default": false,
+                "description": "Set true only for an intentional environment/detail/cutaway panel with no selected character visible.",
+                "title": "Characterless",
+                "type": "boolean"
+              },
+              "environment": {
+                "anyOf": [
+                  {
+                    "maxLength": 1000,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Environment"
+              },
+              "visual_focus": {
+                "maxLength": 500,
+                "minLength": 1,
+                "title": "Visual Focus",
+                "type": "string"
+              },
+              "emotional_intent": {
+                "maxLength": 500,
+                "minLength": 1,
+                "title": "Emotional Intent",
+                "type": "string"
+              },
+              "movement_direction": {
+                "anyOf": [
+                  {
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Movement Direction"
+              },
+              "lighting_intent": {
+                "anyOf": [
+                  {
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Lighting Intent"
+              },
+              "protected_visual_elements": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 32,
+                "title": "Protected Visual Elements",
+                "type": "array"
+              },
+              "prohibited_visual_elements": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 32,
+                "title": "Prohibited Visual Elements",
+                "type": "array"
+              },
+              "text": {
+                "$ref": "#/$defs/PanelTextPlan"
+              },
+              "shot_type": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/ShotType"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "subject_scale": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/FramingScale"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "camera_angle": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/CameraAngle"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "camera_position": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/CameraPosition"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "composition_type": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/CompositionType"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "transition_role": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/PanelTransitionType"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "This panel's relationship to the panel immediately before it in reading order"
+              },
+              "shape_preference": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/PanelShapeType"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Story-aware panel geometry preference applied by the custom E2 page generator where supported"
+              },
+              "layout_relation": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/LayoutRelation"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Suggestion for E2 layout; never changes geometry"
+              },
+              "intentional_repetition_reason": {
+                "anyOf": [
+                  {
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Intentional Repetition Reason"
+              }
+            },
+            "required": [
+              "beat_id",
+              "narrative_function",
+              "story_event",
+              "reader_takeaway",
+              "visual_focus",
+              "emotional_intent",
+              "text"
+            ],
+            "title": "NarrativeBeat",
+            "type": "object"
+          },
+          "NarrativeFunction": {
+            "description": "Story beat intent, independent from shot scale and frame geometry.",
+            "enum": [
+              "establishing",
+              "action_preparation",
+              "action_continuation",
+              "impact",
+              "reveal",
+              "reaction",
+              "aftermath",
+              "detail",
+              "dialogue",
+              "silent",
+              "transition",
+              "symbolic",
+              "cutaway"
+            ],
+            "title": "NarrativeFunction",
+            "type": "string"
+          },
+          "PanelShapeType": {
+            "description": "The 2D geometric boundary category of an individual panel region.",
+            "enum": [
+              "square",
+              "horizontal_rectangle",
+              "vertical_rectangle",
+              "panoramic",
+              "narrow_strip",
+              "triangle_wedge",
+              "trapezoid",
+              "parallelogram",
+              "general_polygon",
+              "circular",
+              "oval",
+              "curved_organic",
+              "hybrid",
+              "borderless",
+              "custom_path"
+            ],
+            "title": "PanelShapeType",
+            "type": "string"
+          },
+          "PanelTextPlan": {
+            "additionalProperties": false,
+            "description": "Text semantics and visual carrier, recorded before lettering layout.",
+            "properties": {
+              "content_kind": {
+                "$ref": "#/$defs/TextContentKind",
+                "description": "Meaning of the text: audible spoken dialogue, internal thought, narration, SFX, or none. Scene/action descriptions are not dialogue."
+              },
+              "carrier": {
+                "$ref": "#/$defs/TextCarrier",
+                "description": "Visual holder matched to meaning: spoken/emotional speech uses speech_bubble; internal_thought uses thought_bubble; narration uses caption or narration_box; omit with none."
+              },
+              "text_content": {
+                "anyOf": [
+                  {
+                    "maxLength": 4000,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Exact creator-authored/approved wording, or the exact Agent-drafted line explicitly present in this typed plan. For newly drafted audible dialogue, aim for 8 words or fewer and never exceed 12; preserve creator wording even when longer. Omit text rather than filling every panel.",
+                "title": "Text Content"
+              },
+              "text_block_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 16,
+                "title": "Text Block Ids",
+                "type": "array"
+              },
+              "speaker_id": {
+                "anyOf": [
+                  {
+                    "maxLength": 128,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Stable ID of the selected canonical character who speaks or thinks this text. For story-local characters, leave this empty and use speaker_name; the compiler assigns a job-local ID.",
+                "title": "Speaker Id"
+              },
+              "speaker_name": {
+                "anyOf": [
+                  {
+                    "maxLength": 80,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Exact name of a visible story-local character who speaks or thinks this text. Use only when the story has no creator-selected Canon cast; never invent a Canon ID.",
+                "title": "Speaker Name"
+              },
+              "reading_order_index": {
+                "default": 1,
+                "minimum": 1,
+                "title": "Reading Order Index",
+                "type": "integer"
+              },
+              "reserve_space": {
+                "default": false,
+                "title": "Reserve Space",
+                "type": "boolean"
+              },
+              "preferred_region": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/TextRegion"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "override_reason": {
+                "anyOf": [
+                  {
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Override Reason"
+              }
+            },
+            "required": [
+              "content_kind",
+              "carrier"
+            ],
+            "title": "PanelTextPlan",
+            "type": "object"
+          },
+          "PanelTransitionType": {
+            "description": "Qualitative narrative relationship between this panel and the preceding panel.",
+            "enum": [
+              "moment_to_moment",
+              "action_to_action",
+              "subject_to_subject",
+              "scene_to_scene",
+              "aspect_to_aspect",
+              "non_sequitur",
+              "first_panel_in_scene"
+            ],
+            "title": "PanelTransitionType",
+            "type": "string"
+          },
+          "ReadingDirection": {
+            "description": "Panel traversal direction determining the canonical reading order sequence.",
+            "enum": [
+              "rtl",
+              "ltr"
+            ],
+            "title": "ReadingDirection",
+            "type": "string"
+          },
+          "ShotType": {
+            "description": "Narrative camera choice; intentionally distinct from subject scale.",
+            "enum": [
+              "establishing",
+              "wide",
+              "medium",
+              "close_up",
+              "extreme_close_up",
+              "reaction",
+              "impact",
+              "insert",
+              "silent",
+              "transition",
+              "pov",
+              "two_shot",
+              "dramatic_wide"
+            ],
+            "title": "ShotType",
+            "type": "string"
+          },
+          "TextCarrier": {
+            "enum": [
+              "speech_bubble",
+              "thought_bubble",
+              "narration_box",
+              "caption",
+              "sfx_lettering",
+              "diegetic_layer",
+              "direct_overlay",
+              "none"
+            ],
+            "title": "TextCarrier",
+            "type": "string"
+          },
+          "TextContentKind": {
+            "enum": [
+              "spoken_dialogue",
+              "emotional_speech",
+              "internal_thought",
+              "narration",
+              "sfx",
+              "date_or_place",
+              "diegetic",
+              "translation",
+              "none"
+            ],
+            "title": "TextContentKind",
+            "type": "string"
+          },
+          "TextRegion": {
+            "enum": [
+              "top_left",
+              "top_center",
+              "top_right",
+              "bottom_left",
+              "bottom_center",
+              "bottom_right",
+              "reserved_negative_space",
+              "author_review"
+            ],
+            "title": "TextRegion",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "project_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional project/story identifier scoping this panel plan.",
+            "title": "Project Id"
+          },
+          "scene_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Scene Id",
+            "type": "string"
+          },
+          "scene_summary": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scene Summary"
+          },
+          "reading_direction": {
+            "$ref": "#/$defs/ReadingDirection",
+            "default": "rtl"
+          },
+          "selected_character_ids": {
+            "description": "Authoritative character IDs supplied by the active creator selection; the Agent must not invent or replace these IDs.",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 16,
+            "title": "Selected Character Ids",
+            "type": "array"
+          },
+          "available_prop_ids": {
+            "description": "Project prop IDs available to this plan",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Available Prop Ids",
+            "type": "array"
+          },
+          "beats": {
+            "items": {
+              "$ref": "#/$defs/NarrativeBeat"
+            },
+            "maxItems": 24,
+            "minItems": 1,
+            "title": "Beats",
+            "type": "array"
+          }
+        },
+        "required": [
+          "scene_id",
+          "beats"
+        ],
+        "title": "PanelPlanningRequest",
+        "type": "object"
+      },
+      "required_arguments": [
+        "scene_id",
+        "beats"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_canvas_routing.py",
+        "backend/tests/test_agent_canvas_tools.py",
+        "backend/tests/test_agent_lettering_continuation.py",
+        "backend/tests/test_agent_runtime.py",
+        "backend/tests/test_agent_tool_discovery.py",
+        "backend/tests/test_panel_planner.py",
+        "backend/tests/test_panel_plan_recovery.py",
+        "backend/tests/test_story_blueprint.py",
+        "backend/tests/test_story_to_canvas_recovery.py",
+        "backend/tests/test_story_to_canvas_workflow.py"
+      ]
+    },
+    {
+      "tool_id": "speech_bubble.place_bubbles",
+      "version": "1.0.0",
+      "name": "Speech_Bubble Place_Bubbles",
+      "domain": "future_engine",
+      "owning_service": "shared",
+      "purpose": "Legacy E6 artifact adapter is opt-in; persisted editable bubbles use canvas.add_speech_bubble.",
+      "status": "NOT_IMPLEMENTED",
+      "status_reason": "Legacy E6 artifact adapter is opt-in; persisted editable bubbles use canvas.add_speech_bubble.",
+      "is_callable": false,
+      "adapter_registered": false,
+      "adapter": null,
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_downstream_tools.py",
+        "backend/tests/test_agent_runtime.py"
+      ]
+    },
+    {
+      "tool_id": "text.generate_dialogue",
+      "version": "1.0.0",
+      "name": "Generate Structured E4 Text",
+      "domain": "text",
+      "owning_service": "E4 Text Generation Engine",
+      "purpose": "Generates structured text using the deterministic simulated E4 adapter in explicit offline mode.",
+      "status": "NOT_IMPLEMENTED",
+      "status_reason": "The live E4 text-generation adapter is not implemented; deterministic output is available only in explicit offline mode.",
+      "is_callable": false,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "scene_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "panel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "scene_action": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "character_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12
+          },
+          "block_kinds_requested": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": {
+              "type": "string",
+              "enum": [
+                "dialogue",
+                "narration",
+                "caption",
+                "monologue",
+                "off_panel",
+                "sfx"
+              ]
+            }
+          },
+          "exact_user_text": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "target_language": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en",
+              "mixed",
+              "und"
+            ]
+          },
+          "target_direction": {
+            "type": "string",
+            "enum": [
+              "rtl",
+              "ltr",
+              "auto"
+            ]
+          },
+          "tone_guidance": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "scene_id",
+          "panel_id",
+          "scene_action"
+        ],
+        "additionalProperties": false
+      },
+      "required_arguments": [
+        "scene_id",
+        "panel_id",
+        "scene_action"
+      ],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": false,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_downstream_tools.py",
+        "backend/tests/test_agent_runtime.py",
+        "backend/tests/test_agent_workflow_skills.py"
+      ]
+    },
+    {
+      "tool_id": "typography.shape_text",
+      "version": "1.0.0",
+      "name": "Typography Shape_Text",
+      "domain": "future_engine",
+      "owning_service": "shared",
+      "purpose": "Legacy E5 raster artifact adapter is opt-in; page text uses editor.add_text_layer. Page-integrated font shaping and typography QA remain incomplete.",
+      "status": "NOT_IMPLEMENTED",
+      "status_reason": "Legacy E5 raster artifact adapter is opt-in; page text uses editor.add_text_layer. Page-integrated font shaping and typography QA remain incomplete.",
+      "is_callable": false,
+      "adapter_registered": false,
+      "adapter": null,
+      "parameters_schema": {},
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_behavioral_acceptance.py",
+        "backend/tests/test_agent_downstream_tools.py",
+        "backend/tests/test_agent_runtime.py",
+        "backend/tests/test_agent_workflow_skills.py"
+      ]
+    },
+    {
+      "tool_id": "verification.inspect_report",
+      "version": "1.0.0",
+      "name": "Inspect Verification Reports",
+      "domain": "verification",
+      "owning_service": "shared",
+      "purpose": "Audits multi-tier quality check results and pass/fail verdicts.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "batch_id": {
+            "type": "string"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    },
+    {
+      "tool_id": "workspace.get_project_context",
+      "version": "1.0.0",
+      "name": "Get Project Context",
+      "domain": "workspace",
+      "owning_service": "shared",
+      "purpose": "Read active Story Bible, canon hash, characters, and settings.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          }
+        }
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": [
+        "backend/tests/test_agent_runtime.py",
+        "backend/tests/test_image_chat_tool_catalog.py"
+      ]
+    },
+    {
+      "tool_id": "workspace.list_projects",
+      "version": "1.0.0",
+      "name": "List Projects",
+      "domain": "workspace",
+      "owning_service": "shared",
+      "purpose": "List accessible projects with Bible version and Canon hashes.",
+      "status": "AVAILABLE",
+      "status_reason": null,
+      "is_callable": true,
+      "adapter_registered": true,
+      "adapter": "<lambda>",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "required_arguments": [],
+      "output_schema": {},
+      "side_effect": "READ_ONLY",
+      "requires_approval": false,
+      "cost_semantics": "FREE",
+      "estimated_cost_usd": 0.0,
+      "idempotent": true,
+      "timeout_seconds": 30.0,
+      "adapter_literal_error_codes": [],
+      "generic_dispatch_failures": [
+        "ERR_TOOL_NOT_FOUND",
+        "ERR_TOOL_NOT_IMPLEMENTED",
+        "ERR_TOOL_BLOCKED",
+        "ERR_ADAPTER_MISSING",
+        "ERR_TOOL_SCHEMA_INVALID",
+        "ERR_TOOL_SCHEMA_VALIDATION_FAILED",
+        "ERR_APPROVAL_REQUIRED",
+        "ERR_TOOL_EXECUTION_FAILED"
+      ],
+      "existing_tests_containing_tool_id": []
+    }
+  ]
+}

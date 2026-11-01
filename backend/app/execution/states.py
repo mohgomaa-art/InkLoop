@@ -97,6 +97,7 @@ class ExecutionEventType(str, Enum):
 
     RECOVERY_DISCOVERED = "recovery_discovered"
     RECOVERY_RECONCILED = "recovery_reconciled"
+    CREATIVE_JOB_CHECKPOINT = "creative_job_checkpoint"
 
 
 class ExecutionErrorCategory(str, Enum):

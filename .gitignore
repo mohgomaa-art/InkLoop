@@ -1,4 +1,8 @@
-# Environment variables and secrets
+# ==============================================================================
+# InkLoop Public Release .gitignore
+# ==============================================================================
+
+# Environment variables, credentials and secrets
 .env
 .env*.local
 *.key
@@ -6,7 +10,50 @@
 *.secret
 *.token
 
-# Python
+# Configurable user data directory and databases
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Runtime outputs, generated assets, batches, and agent sessions
+runs/
+!runs/m0_visual/
+!runs/m0_visual/**
+!runs/batches/benchmark_six_panel_m1.json
+!runs/m0_api_smoke_test.json
+!runs/m0_consistency_results.json
+!runs/m0_model_catalog.json
+!runs/m0_sam_results.json
+!runs/m0_text_smoke_test.json
+!runs/m0_verifier_results.json
+backend/runs/
+scratch/
+all_manga_output_images/
+chosen/
+docs/research/
+docs/CREATOR_FIRST_ACCEPTANCE_REPORT.md
+docs/visual_forensics/
+docs/*AUDIT*.md
+docs/*TRACEABILITY*.md
+docs/*RECONCILIATION*.md
+docs/*PROGRESS*.md
+docs/*specification*.md
+docs/agent-runtime.md
+docs/canvas-engine.md
+docs/panel-planning-engine.md
+docs/text-generation-engine.md
+docs/multi_style_dynamic_prompt_walkthrough.md
+*.log
+*_repaired.png
+
+# Large media, archives and video recordings (>50MB)
+*.mp4
+*.zip
+*.tar.gz
+*.7z
+
+# Python artifacts and caches
 __pycache__/
 *.py[cod]
 *$py.class
@@ -19,22 +66,22 @@ venv/
 .coverage
 htmlcov/
 
-# Node / Frontend
+# Node, frontend bundles and build outputs
 node_modules/
 dist/
-build/
+frontend/dist/
+frontend/node_modules/
 .npm
 
-# OS & IDE
+# Operating System & IDE / Agent workspace caches
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+.agents/
+.deepread/
+.codex/
+.claude/
+.cursor/
 *.swp
 *.swo
-
-# Run artifacts and temporary outputs
-*.log
-runs/local_temp/
-runs/m1_orchestrations/
-runs/test_project/

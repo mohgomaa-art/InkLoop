@@ -85,13 +85,14 @@ class StoryBible(BaseModel):
     External structured source of truth for characters, visual style, locations, and props.
     """
     project_id: str = Field(..., description="Unique project identifier")
+    title: str = Field(default="Untitled Comic", description="User-facing project title")
     schema_version: str = Field(default="1.0.0", description="Schema version of the Bible specification")
     bible_version: int = Field(default=1, description="Monotonic integer version of the Bible definition")
     created_at: str = Field(..., description="ISO 8601 timestamp of creation")
     updated_at: str = Field(..., description="ISO 8601 timestamp of last update")
     status: Literal["draft", "validated", "locked"] = Field(default="draft", description="Lifecycle status")
-    language: str = Field(default="ar", description="Primary project language (e.g. ar, en)")
-    reading_direction: Literal["rtl", "ltr"] = Field(default="rtl", description="Reading direction")
+    language: str = Field(default="en", description="Primary project language (e.g. ar, en)")
+    reading_direction: Literal["rtl", "ltr"] = Field(default="ltr", description="Reading direction")
     user_story_text: Optional[str] = Field(
         default=None,
         description="Original immutable user-supplied story text; preserved exactly without modification"
@@ -131,6 +132,10 @@ class StoryBible(BaseModel):
             props={k: v.model_copy(deep=True) for k, v in self.props.items()}
         )
 
+    def create_canon_snapshot(self) -> CanonSnapshot:
+        """Convenience alias for get_canon_snapshot."""
+        return self.get_canon_snapshot()
+
     def to_project_spec(self) -> ProjectSpec:
         """Extracts high-level project metadata and configuration."""
         return ProjectSpec(
@@ -158,6 +163,7 @@ class StoryBible(BaseModel):
             LocationSpec as SchemasLocationSpec,
             PropSpec as SchemasPropSpec
         )
+        canon_snapshot = self.get_canon_snapshot()
         schemas_style = SchemasStyleBible(
             id=self.style.style_id,
             name=self.style.name,
@@ -165,7 +171,12 @@ class StoryBible(BaseModel):
             line_and_tone=self.style.rendering_approach,
             palette=str(self.style.palette_or_screentone),
             negative_rules=self.style.negative_constraints,
-            version=str(self.style.version)
+            version=str(self.style.version),
+            line_art_rules=list(self.style.line_art_rules),
+            tonal_rules=list(self.style.tonal_rules),
+            positive_constraints=list(self.style.positive_constraints),
+            lighting_constraints=list(self.style.lighting_constraints),
+            background_detail_rules=self.style.background_detail_rules,
         )
 
         char_specs = {}
@@ -198,6 +209,22 @@ class StoryBible(BaseModel):
                 name=prop.name,
                 description=prop.description,
                 required_attributes=prop.required_attributes,
+                reference_assets=[
+                    SchemasReferenceAsset(
+                        asset_id=ref.asset_id,
+                        file_path=ref.path,
+                        content_hash=ref.expected_hash,
+                        mime_type=ref.mime_type,
+                    )
+                    for ref in prop.reference_assets
+                ],
+                form_and_proportions=prop.form_and_proportions,
+                materials=list(prop.materials),
+                palette=list(prop.palette),
+                components=list(prop.components),
+                distinctive_marks=list(prop.distinctive_marks),
+                stable_invariants=list(prop.stable_invariants),
+                allowed_states=list(prop.allowed_states),
                 version=str(prop.version)
             )
             for pid, prop in self.props.items()
@@ -206,13 +233,14 @@ class StoryBible(BaseModel):
         return SchemasStoryBible(
             bible_id=self.project_id,
             version=str(self.bible_version),
+            canon_hash=canon_snapshot.canon_hash,
             project_id=self.project_id,
             style=schemas_style,
             characters=char_specs,
             character_assets=char_assets,
             locations=loc_specs,
             props=prop_specs,
-            story_facts=self.style.positive_constraints
+            story_facts=list(self.style.positive_constraints)
         )
 
     def validate(
@@ -620,7 +648,7 @@ def propose_canon_mutation(
             raise EntityNotFoundError(f"Target location '{proposal.target_id}' not found for mutation")
         elif proposal.target_type == "prop" and proposal.target_id not in bible.props:
             raise EntityNotFoundError(f"Target prop '{proposal.target_id}' not found for mutation")
-        elif proposal.target_type == "style" and proposal.target_id != bible.style.style_id:
+        elif proposal.target_type == "style" and proposal.target_id not in (bible.style.style_id, "style", "default", "project_style"):
             raise EntityNotFoundError(f"Target style '{proposal.target_id}' does not match project style '{bible.style.style_id}'")
     elif action == "add":
         if proposal.target_type == "character" and proposal.target_id in bible.characters:
@@ -629,6 +657,24 @@ def propose_canon_mutation(
             raise CanonMutationError(f"Cannot add location '{proposal.target_id}': already declared in canon")
         elif proposal.target_type == "prop" and proposal.target_id in bible.props:
             raise CanonMutationError(f"Cannot add prop '{proposal.target_id}': already declared in canon")
+    elif action == "delete":
+        if proposal.target_type == "character":
+            if proposal.target_id not in bible.characters:
+                raise EntityNotFoundError(f"Target character '{proposal.target_id}' not found for deletion")
+            if len(bible.characters) <= 1:
+                raise CanonMutationError(f"Cannot delete character '{proposal.target_id}': project must have at least one canonical character")
+            ref_props = [p_id for p_id, p in bible.props.items() if proposal.target_id in p.associated_character_ids]
+            if ref_props:
+                props_str = ", ".join(f"'{p}'" for p in ref_props)
+                raise CanonMutationError(f"Cannot delete character '{proposal.target_id}': referenced by prop {props_str}")
+        elif proposal.target_type == "location":
+            if proposal.target_id not in bible.locations:
+                raise EntityNotFoundError(f"Target location '{proposal.target_id}' not found for deletion")
+        elif proposal.target_type == "prop":
+            if proposal.target_id not in bible.props:
+                raise EntityNotFoundError(f"Target prop '{proposal.target_id}' not found for deletion")
+        elif proposal.target_type == "style":
+            raise CanonMutationError("Cannot delete project style definition: style definition cannot be deleted; style is required for all projects")
 
     proposals_file = base_dir / "canon_proposals.jsonl"
     proposals_file.parent.mkdir(parents=True, exist_ok=True)
@@ -642,7 +688,7 @@ def propose_canon_mutation(
 
 def apply_canon_mutation(
     project_id_or_path: Union[str, Path],
-    proposal_id: str,
+    proposal_id: Union[str, CanonMutationProposal],
     approved_by: str
 ) -> StoryBible:
     """
@@ -651,6 +697,8 @@ def apply_canon_mutation(
     """
     base_dir, bible_file = resolve_bible_paths(project_id_or_path)
     bible = load_bible(bible_file)
+
+    target_prop_id = proposal_id if isinstance(proposal_id, str) else proposal_id.proposal_id
 
     proposals_file = base_dir / "canon_proposals.jsonl"
     if not proposals_file.is_file():
@@ -662,15 +710,15 @@ def apply_canon_mutation(
         for line in f:
             if line.strip():
                 p = CanonMutationProposal.model_validate_json(line.strip())
-                if p.proposal_id == proposal_id:
+                if p.proposal_id == target_prop_id:
                     target_proposal = p
                 all_proposals.append(p)
 
     if target_proposal is None:
-        raise CanonMutationError(f"Proposal '{proposal_id}' not found")
+        raise CanonMutationError(f"Proposal '{target_prop_id}' not found")
 
     if target_proposal.status != "pending":
-        raise CanonMutationError(f"Proposal '{proposal_id}' already has status '{target_proposal.status}'")
+        raise CanonMutationError(f"Proposal '{target_prop_id}' already has status '{target_proposal.status}'. It is already rejected.")
 
     # Authorize proposal
     target_proposal.status = "approved"
@@ -685,70 +733,139 @@ def apply_canon_mutation(
     old_version = bible.bible_version
     bible.bible_version += 1
 
-    action = target_proposal.proposed_changes.get("action", "update")
+    raw_changes = target_proposal.proposed_changes
+    action = raw_changes.get("action", "update")
+    payload = dict(raw_changes.get("data")) if isinstance(raw_changes.get("data"), dict) else dict(raw_changes)
+    payload.pop("action", None)
+    payload.pop("data", None)
+
     if target_proposal.target_type == "character":
+        if "clothing_traits" in payload:
+            payload["clothing_attributes"] = list(payload["clothing_traits"])
+        if "canonical_name" in payload and "name" not in payload:
+            payload["name"] = payload.pop("canonical_name")
+        if "role" in payload:
+            role_val = payload.pop("role")
+            if "description" in payload and payload["description"]:
+                payload["description"] = f"{role_val} - {payload['description']}"
+            elif "description" not in payload:
+                payload["description"] = role_val
+
+        if "attributes" in payload and isinstance(payload["attributes"], list):
+            norm_attrs = []
+            for item in payload["attributes"]:
+                if isinstance(item, dict):
+                    it = dict(item)
+                    if "trait_name" in it and "id" not in it:
+                        it["id"] = it.pop("trait_name")
+                    if "expected_value" in it and "text" not in it:
+                        it["text"] = it.pop("expected_value")
+                    it.setdefault("required", True)
+                    # Keep only valid AttributeCheck fields
+                    valid_attr_keys = AttributeCheck.model_fields.keys()
+                    clean_it = {k: v for k, v in it.items() if k in valid_attr_keys}
+                    norm_attrs.append(AttributeCheck.model_validate(clean_it))
+                else:
+                    norm_attrs.append(item)
+            payload["attributes"] = norm_attrs
+
+        if "tolerances" in payload and isinstance(payload["tolerances"], dict):
+            tol = dict(payload["tolerances"])
+            valid_fields = Tolerances.model_fields.keys()
+            filtered_tol = {k: v for k, v in tol.items() if k in valid_fields}
+            payload["tolerances"] = Tolerances(**filtered_tol)
+
         if action == "add":
             if target_proposal.target_id in bible.characters:
                 raise CanonMutationError(f"Cannot add character '{target_proposal.target_id}': already declared")
-            char_data = dict(target_proposal.proposed_changes)
-            char_data.pop("action", None)
+            char_data = payload
             char_data["character_id"] = target_proposal.target_id
             char_data.setdefault("canon_version", 1)
             char_data.setdefault("name", target_proposal.target_id.capitalize())
+            if not char_data.get("attributes"):
+                desc = char_data.get("description") or f"Canonical character {target_proposal.target_id}"
+                char_data["attributes"] = [{"id": f"{target_proposal.target_id}_appearance", "text": desc, "required": True}]
             new_char = CharacterDefinition.model_validate(char_data)
             bible.characters[target_proposal.target_id] = new_char
+        elif action == "delete":
+            if target_proposal.target_id not in bible.characters:
+                raise EntityNotFoundError(f"Character '{target_proposal.target_id}' not found for deletion")
+            if len(bible.characters) <= 1:
+                raise CanonMutationError(f"Cannot delete character '{target_proposal.target_id}': project must have at least one canonical character")
+            ref_props = [p_id for p_id, p in bible.props.items() if target_proposal.target_id in p.associated_character_ids]
+            if ref_props:
+                raise CanonMutationError(f"Cannot delete character '{target_proposal.target_id}': referenced by prop(s): {', '.join(ref_props)}")
+            del bible.characters[target_proposal.target_id]
         else:
             if target_proposal.target_id not in bible.characters:
                 raise EntityNotFoundError(f"Character '{target_proposal.target_id}' not found for update")
             char = bible.characters[target_proposal.target_id]
             char.canon_version += 1
-            for k, v in target_proposal.proposed_changes.items():
-                if k != "action" and hasattr(char, k):
+            for k, v in payload.items():
+                if hasattr(char, k):
+                    if k == "attributes" and isinstance(v, list):
+                        v = [AttributeCheck.model_validate(item) if isinstance(item, dict) else item for item in v]
+                    elif k == "tolerances" and isinstance(v, dict):
+                        v = Tolerances.model_validate(v)
                     setattr(char, k, v)
     elif target_proposal.target_type == "location":
+        if "state_relevant_properties" in payload and isinstance(payload["state_relevant_properties"], dict):
+            payload["state_relevant_properties"] = list(payload["state_relevant_properties"].keys())
+
         if action == "add":
             if target_proposal.target_id in bible.locations:
                 raise CanonMutationError(f"Cannot add location '{target_proposal.target_id}': already declared")
-            loc_data = dict(target_proposal.proposed_changes)
-            loc_data.pop("action", None)
+            loc_data = payload
             loc_data["location_id"] = target_proposal.target_id
             loc_data.setdefault("version", 1)
             loc_data.setdefault("name", target_proposal.target_id.capitalize())
             loc_data.setdefault("description", "Declared location")
             new_loc = LocationDefinition.model_validate(loc_data)
             bible.locations[target_proposal.target_id] = new_loc
+        elif action == "delete":
+            if target_proposal.target_id not in bible.locations:
+                raise EntityNotFoundError(f"Location '{target_proposal.target_id}' not found for deletion")
+            del bible.locations[target_proposal.target_id]
         else:
             if target_proposal.target_id not in bible.locations:
                 raise EntityNotFoundError(f"Location '{target_proposal.target_id}' not found for update")
             loc = bible.locations[target_proposal.target_id]
             loc.version += 1
-            for k, v in target_proposal.proposed_changes.items():
-                if k != "action" and hasattr(loc, k):
+            for k, v in payload.items():
+                if hasattr(loc, k):
                     setattr(loc, k, v)
     elif target_proposal.target_type == "prop":
+        if "state_relevant_properties" in payload and isinstance(payload["state_relevant_properties"], dict):
+            payload["state_relevant_properties"] = list(payload["state_relevant_properties"].keys())
+
         if action == "add":
             if target_proposal.target_id in bible.props:
                 raise CanonMutationError(f"Cannot add prop '{target_proposal.target_id}': already declared")
-            prop_data = dict(target_proposal.proposed_changes)
-            prop_data.pop("action", None)
+            prop_data = payload
             prop_data["prop_id"] = target_proposal.target_id
             prop_data.setdefault("version", 1)
             prop_data.setdefault("name", target_proposal.target_id.capitalize())
             prop_data.setdefault("description", "Declared prop")
             new_prop = PropDefinition.model_validate(prop_data)
             bible.props[target_proposal.target_id] = new_prop
+        elif action == "delete":
+            if target_proposal.target_id not in bible.props:
+                raise EntityNotFoundError(f"Prop '{target_proposal.target_id}' not found for deletion")
+            del bible.props[target_proposal.target_id]
         else:
             if target_proposal.target_id not in bible.props:
                 raise EntityNotFoundError(f"Prop '{target_proposal.target_id}' not found for update")
             prop = bible.props[target_proposal.target_id]
             prop.version += 1
-            for k, v in target_proposal.proposed_changes.items():
-                if k != "action" and hasattr(prop, k):
+            for k, v in payload.items():
+                if hasattr(prop, k):
                     setattr(prop, k, v)
     elif target_proposal.target_type == "style":
         bible.style.version += 1
-        for k, v in target_proposal.proposed_changes.items():
-            if k != "action" and hasattr(bible.style, k):
+        for k, v in payload.items():
+            if hasattr(bible.style, k):
+                if k in ("line_art_rules", "tonal_rules", "positive_constraints", "negative_constraints") and isinstance(v, str):
+                    v = [v]
                 setattr(bible.style, k, v)
 
     save_bible(bible, target_path=base_dir, expected_version=old_version)
@@ -790,6 +907,7 @@ def reject_canon_mutation(
     target_proposal.approved_by = rejected_by
     target_proposal.approved_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     if reason:
+        target_proposal.rejection_reason = reason
         target_proposal.change_description += f" [REJECTED: {reason}]"
 
     rewritten_proposals = "\n".join(p.model_dump_json() for p in all_proposals) + "\n"
@@ -919,12 +1037,22 @@ def create_canonical_nour_bible(
             )
         ],
         tolerances=Tolerances(min_face_px_for_check=80),
-        clothing_attributes=["oversized hooded jacket with lightning-bolt chest patch"],
+        clothing_attributes=["oversized hooded jacket in solid deep black ink with lightning-bolt chest patch"],
         visual_invariants=[
             "white hair streak always on character's left side",
-            "round wireframe glasses frames"
+            "round wireframe glasses frames",
+            "16-year-old androgynous youth with gender-neutral facial appearance",
+            "soft oval chin, smooth jawline, round manga eyes, minimalist line mouth",
+            "clean unblemished skin with no facial scars, cuts, or markings",
+            "oversized hooded jacket in solid deep black ink, not gray"
         ],
-        restrictions=["never bare-eyed unless explicitly scripted in canon proposal"],
+        restrictions=[
+            "never bare-eyed unless explicitly scripted in canon proposal",
+            "no facial scars or marks unless explicitly scripted in canon proposal",
+            "no feminine makeup, heavy eyelashes, or glossy lipstick",
+            "no adult or mature facial aging",
+            "no light gray or colored hoodie; must remain solid black ink"
+        ],
         reference_assets=[style_ref],
         approval_status="approved"
     )
@@ -942,3 +1070,8 @@ def create_canonical_nour_bible(
         locations={},
         props={}
     )
+
+
+# Aliases for explicit clarity
+save_project_bible = save_bible
+load_project_bible = load_bible

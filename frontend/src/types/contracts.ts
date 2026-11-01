@@ -306,6 +306,7 @@ export enum EngineId {
   S6_COMPOSITOR = 's6_compositor',
   S7_QUALITY_VERIFICATION = 's7_quality_verification',
   S8_EXPORT_DELIVERY = 's8_export_delivery',
+  S9_AGENT_COORDINATOR = 's9_agent_coordinator',
 }
 
 export enum EngineStatus {
@@ -384,4 +385,72 @@ export interface EngineRunResponse<TOutput = unknown> {
   validation_errors: ValidationErrorDetail[];
   error?: EngineFailure | null;
   retryable: boolean;
+}
+
+// --- Agent & Coordinator Contracts (ADR / Specification Phase) ---
+
+export enum AgentPlanStatus {
+  DRAFT = 'DRAFT',
+  PLANNED = 'PLANNED',
+  VALIDATING = 'VALIDATING',
+  AWAITING_APPROVAL = 'AWAITING_APPROVAL',
+  READY = 'READY',
+  RUNNING = 'RUNNING',
+  VERIFYING = 'VERIFYING',
+  COMPLETED = 'COMPLETED',
+  REJECTED = 'REJECTED',
+  BLOCKED = 'BLOCKED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
+  INTERRUPTED = 'INTERRUPTED',
+  NEEDS_HUMAN = 'NEEDS_HUMAN',
+  NEEDS_REPAIR = 'NEEDS_REPAIR',
+}
+
+export enum AgentCapabilityStatus {
+  AVAILABLE = 'AVAILABLE',
+  EXPERIMENTAL = 'EXPERIMENTAL',
+  BLOCKED = 'BLOCKED',
+  NOT_IMPLEMENTED = 'NOT_IMPLEMENTED',
+}
+
+export interface AgentStep {
+  step_id: string;
+  title: string;
+  engine_id: EngineId | string;
+  tool_name: string;
+  dependencies: string[];
+  required_inputs: Record<string, unknown>;
+  expected_outputs: string[];
+  requires_approval: boolean;
+  estimated_cost_usd?: number | null;
+  status: EngineStatus;
+}
+
+export interface AgentPlan {
+  plan_id: string;
+  plan_version: number;
+  plan_hash: string;
+  project_id: string;
+  goal: string;
+  acceptance_criteria: string[];
+  status: AgentPlanStatus;
+  steps: AgentStep[];
+  canon_version: number;
+  canon_hash: string;
+  created_at: string;
+  budget_limit_usd?: number | null;
+}
+
+export interface ApprovalRequest {
+  approval_id: string;
+  plan_id: string;
+  step_id: string;
+  operation: string;
+  scope: string;
+  affected_resources: string[];
+  reversibility: 'REVERSIBLE' | 'IRREVERSIBLE';
+  consequence: string;
+  cost_exposure_usd?: number | null;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'INVALIDATED';
 }

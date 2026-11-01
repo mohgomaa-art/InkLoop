@@ -270,7 +270,7 @@ class PanelPlanningRequest(BaseModel):
     )
     scene_id: str = Field(..., min_length=1, max_length=128)
     scene_summary: Optional[str] = Field(default=None, max_length=2000)
-    reading_direction: ReadingDirection = ReadingDirection.RTL
+    reading_direction: ReadingDirection = ReadingDirection.LTR
     selected_character_ids: List[str] = Field(
         default_factory=list,
         max_length=16,
@@ -404,7 +404,7 @@ class StoryBlueprintDraft(BaseModel):
     recurring_objects: List[StoryObjectDraft] = Field(default_factory=list, max_length=32, description="New project-scoped object drafts needed across multiple panels. Use stable prop_ids in every relevant beat.")
     story_arc: str = Field(..., min_length=1, max_length=4000)
     assumptions: List[str] = Field(default_factory=list, max_length=32)
-    reading_direction: ReadingDirection = ReadingDirection.RTL
+    reading_direction: ReadingDirection = ReadingDirection.LTR
     pages: List[StoryPageDraft] = Field(..., min_length=1, max_length=50)
 
     @model_validator(mode="after")
@@ -943,7 +943,7 @@ def _deduce_shape_preference(
 
 def recommend_layout_template(
     plans: Sequence[PanelPlan],
-    reading_direction: ReadingDirection = ReadingDirection.RTL,
+    reading_direction: ReadingDirection = ReadingDirection.LTR,
 ) -> LayoutTemplateId:
     count = len(plans)
     if count == 3:

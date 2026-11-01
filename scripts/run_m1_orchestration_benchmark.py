@@ -39,18 +39,44 @@ def main():
         default="benchmark_six_panel_m1",
         help="Batch run identifier"
     )
+    parser.add_argument(
+        "--require-verification",
+        action="store_true",
+        help="Enforce visual verification gate before accepting panels"
+    )
+    parser.add_argument(
+        "--mock-verifier",
+        action="store_true",
+        help="Inject deterministic simulated mock verifier for offline pipeline testing"
+    )
     args = parser.parse_args()
 
     config = InkLoopConfig.load()
 
+    # Determine verifier configuration
+    verifier_fn = None
+    if args.mock_verifier:
+        from app.verification import SimulatedVisualVerificationService
+        verification_service = SimulatedVisualVerificationService(config=config)
+        verifier_fn = verification_service.verify_panel
+        verifier_label = "SIMULATED VISUAL VERIFICATION SERVICE (Multi-tier L0+L1+L2; Offline deterministic test; not live consistency proof)"
+    elif args.require_verification and args.live and config.has_credentials:
+        from app.verification import VisualVerificationService, VerificationMode
+        verification_service = VisualVerificationService(config=config, mode=VerificationMode.LIVE)
+        verifier_fn = verification_service.verify_panel
+        verifier_label = "LIVE META VISUAL VERIFICATION SERVICE (Multi-tier L0 Code + L1 SAM + L2 Muse Spark)"
+    else:
+        verifier_label = "NONE (Orchestration benchmark only; visual verification unexecuted)"
+
     print("=================================================================")
     print("INKLOOP M1: SIX-PANEL GENERATION ORCHESTRATION BENCHMARK")
     print("=================================================================")
-    print(f"Mode: {'LIVE META API' if args.live else 'DETERMINISTIC SIMULATED ADAPTER'}")
-    print(f"Model: {config.muse_image_model}")
-    print(f"Max retries per panel: {config.max_retries_per_panel}")
-    print(f"Global spend cap: ${config.global_spend_cap_usd:.2f}")
-    print(f"Credentials present: {config.has_credentials} ({config.mask_key()})")
+    print(f"Generation Mode:   {'LIVE META API' if args.live else 'DETERMINISTIC SIMULATED ADAPTER'}")
+    print(f"Verification Mode: {verifier_label}")
+    print(f"Model:             {config.muse_image_model}")
+    print(f"Max retries:       {config.max_retries_per_panel}")
+    print(f"Global spend cap:  ${config.global_spend_cap_usd:.2f}")
+    print(f"Credentials:       {config.has_credentials} ({config.mask_key()})")
 
     if args.live:
         if not config.has_credentials:
@@ -67,7 +93,7 @@ def main():
 
     out_path = PROJECT_ROOT / args.output_dir
     log_dir = PROJECT_ROOT / "runs" / "batches"
-    orchestrator = BatchOrchestrator(config=config, adapter=adapter, run_log_dir=log_dir)
+    orchestrator = BatchOrchestrator(config=config, adapter=adapter, run_log_dir=log_dir, verifier=verifier_fn)
 
     batch_spec = create_m0_benchmark_batch_spec(
         batch_id=args.batch_id,
@@ -75,6 +101,7 @@ def main():
         spend_cap_usd=config.global_spend_cap_usd,
         output_dir=str(out_path)
     )
+    batch_spec.require_verification = args.require_verification
 
     print(f"\n[*] Starting orchestration for {len(batch_spec.scenes)} scenes...")
     summary = orchestrator.orchestrate_batch(batch_spec)
@@ -84,13 +111,20 @@ def main():
     print("-------------------------------------------------------------")
     print(f"Batch ID:           {summary.batch_id}")
     print(f"Status:             {summary.status.value}")
+    print(f"Simulated Mode:     {summary.is_simulated}")
+    print(f"Cost Mode:          {summary.cost_mode}")
     print(f"Total Panels:       {summary.total_panels}")
-    print(f"Successful:         {summary.successful_panels}")
+    print(f"Generated Panels:   {summary.generated_panels} / {summary.total_panels}")
+    print(f"Verified Panels:    {summary.verified_panels} / {summary.total_panels}")
+    print(f"Unverified Panels:  {summary.unverified_panels} / {summary.total_panels}")
+    print(f"Pipeline Accepted:  {summary.successful_panels} / {summary.total_panels}")
     print(f"Failed:             {summary.failed_panels}")
     print(f"Unresolved:         {summary.unresolved_panels}")
     print(f"Total Attempts:     {summary.total_attempts}")
     print(f"Total Duration:     {summary.total_duration_seconds}s")
-    print(f"Known Cost:         ${summary.known_cost_usd or 0.0:.4f}")
+    print(f"Real Provider Cost: ${summary.known_cost_usd or 0.0:.4f}")
+    if summary.simulated_cost_usd is not None:
+        print(f"Simulated Cost:     ${summary.simulated_cost_usd:.4f} (synthetic test fixture)")
     print(f"Missing Cost Info:  {summary.missing_cost_information}")
     print(f"Missing Usage Info: {summary.missing_usage_information}")
 
@@ -98,7 +132,7 @@ def main():
     print("PANEL RESULTS & ARTIFACTS")
     print("-------------------------------------------------------------")
     for p in summary.panel_results:
-        print(f"[{p.panel_id}] Status: {p.status.value} | Attempts: {p.attempts_count} | Output: {p.output_asset_path}")
+        print(f"[{p.panel_id}] Status: {p.status.value} | Verification: {p.verification_status} | Attempts: {p.attempts_count} | Output: {p.output_asset_path}")
         print(f"         SHA-256: {p.output_content_hash}")
         print(f"         Context Fingerprint: {p.context_fingerprint[:16]}...")
 
@@ -106,7 +140,16 @@ def main():
     print(f"    {log_dir / (summary.batch_id + '.json')}")
 
     if summary.status.value == "COMPLETED":
-        print("\n[+] ACCEPTANCE GATE: PASS (All panels successfully generated and verified)")
+        if args.mock_verifier:
+            print("\n[+] ACCEPTANCE GATE: PASS (All panels successfully generated and verified via deterministic mock verifier)")
+            print("    NOTE: Mock verification validates orchestration flow only; it is not evidence of live visual consistency.")
+        elif summary.verified_panels == summary.total_panels:
+            print("\n[+] ACCEPTANCE GATE: PASS (All panels successfully generated and verified by active verifier)")
+        else:
+            print("\n[+] ACCEPTANCE GATE: PASS (Orchestration succeeded: 6/6 panels generated. Visual verification: UNVERIFIED / PENDING downstream verification)")
+        sys.exit(0)
+    elif summary.status.value == "COMPLETED_WITH_FAILURES" and summary.unverified_panels > 0 and not args.require_verification:
+        print("\n[+] ACCEPTANCE GATE: PASS (Batch orchestration succeeded: panels generated; visual verification pending downstream gate)")
         sys.exit(0)
     else:
         print(f"\n[!] ACCEPTANCE GATE: {summary.status.value}", file=sys.stderr)

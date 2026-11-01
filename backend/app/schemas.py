@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import List, Literal, Optional, Dict, Any
 from pydantic import BaseModel, Field
+from app.planning.panel_planner import PanelPlan
 
 # ---------------------------------------------------------------------------
 # M0 Foundation Schemas (Preserved without modification)
@@ -13,12 +14,28 @@ class AttributeCheck(BaseModel):
 
 class Tolerances(BaseModel):
     min_face_px_for_check: int = Field(default=80, description="Minimum face pixel size required to run identity check")
+    face_check_applicable: bool = Field(default=True, description="Whether this identity has face-specific landmarks that should be checked")
+
+    @property
+    def min_face_resolution_px(self) -> int:
+        """Backwards compatibility alias for min_face_px_for_check."""
+        return self.min_face_px_for_check
+
+    def __init__(self, **data: Any):
+        if "min_face_resolution_px" in data and "min_face_px_for_check" not in data:
+            data["min_face_px_for_check"] = data.pop("min_face_resolution_px")
+        super().__init__(**data)
 
 class CharacterSpec(BaseModel):
     id: str = Field(..., description="Character identifier in lowercase (e.g. nour)")
     name: Optional[str] = Field(default=None, description="Character display name")
+    entity_kind: str = Field(default="unspecified being", description="Open vocabulary for any human, creature, object-like, abstract, or hybrid identity")
+    morphology: str = Field(default="", description="Declared overall form/body plan; no human anatomy is implied")
+    surface_description: str = Field(default="", description="Declared colors, material, texture, or pattern")
+    physical_height_cm: Optional[float] = Field(default=None, description="Canonical physical height in centimeters")
+    proportion_constraints: Optional[Dict[str, Any]] = Field(default=None, description="Structured proportion guidelines (e.g. {'head_ratio': 0.60, 'body_ratio': 0.40})")
     attributes: List[AttributeCheck] = Field(..., description="List of declared attributes to verify")
-    tolerances: Tolerances = Field(default_factory=Tolerances)
+    tolerances: Tolerances = Field(default_factory=lambda: Tolerances(face_check_applicable=False))
     visual_invariants: List[str] = Field(default_factory=list, description="Explicit character visual invariants")
     restrictions: List[str] = Field(default_factory=list, description="Character-specific negative constraints")
     clothing_attributes: List[str] = Field(default_factory=list, description="Canonical clothing traits")
@@ -32,6 +49,11 @@ class VerificationResult(BaseModel):
     passed: bool = Field(..., description="True only if all required attributes have verdict 'pass'")
     verdicts: List[AttributeVerdict]
     rejection_reason: Optional[str] = None
+    l0_passed: Optional[bool] = None
+    l1_passed: Optional[bool] = None
+    l2_passed: Optional[bool] = None
+    is_simulated: bool = False
+    details: Dict[str, Any] = Field(default_factory=dict)
 
 class BoundingBox(BaseModel):
     x: float
@@ -82,6 +104,11 @@ class StyleBible(BaseModel):
         "no blurry artifacts"
     ], description="Negative constraints for the style")
     version: str = Field(default="1.0.0", description="Semantic version of the style specification")
+    line_art_rules: List[str] = Field(default_factory=list, description="Rules governing line weight and contours")
+    tonal_rules: List[str] = Field(default_factory=list, description="Rules for screentone density, hatching, and solid blacks")
+    positive_constraints: List[str] = Field(default_factory=list, description="Required positive visual tokens/rules")
+    lighting_constraints: List[str] = Field(default_factory=list, description="Canonical lighting rules")
+    background_detail_rules: str = Field(default="", description="Guidance on background density vs subject focus")
 
 class LocationSpec(BaseModel):
     """Specification of a narrative location/setting."""
@@ -97,6 +124,14 @@ class PropSpec(BaseModel):
     name: str = Field(..., description="Prop display name")
     description: str = Field(default="", description="Visual and physical description")
     required_attributes: List[str] = Field(default_factory=list, description="Mandatory visual attributes")
+    reference_assets: List[ReferenceAsset] = Field(default_factory=list, description="Verified visual identity references")
+    form_and_proportions: str = ""
+    materials: List[str] = Field(default_factory=list)
+    palette: List[str] = Field(default_factory=list)
+    components: List[str] = Field(default_factory=list)
+    distinctive_marks: List[str] = Field(default_factory=list)
+    stable_invariants: List[str] = Field(default_factory=list)
+    allowed_states: List[str] = Field(default_factory=list)
     version: str = Field(default="1.0.0", description="Specification version")
 
 class StoryBible(BaseModel):
@@ -122,12 +157,18 @@ class SceneSpec(BaseModel):
     camera_angle: Optional[str] = Field(default=None, description="Camera perspective or angle")
     lighting: Optional[str] = Field(default=None, description="Scene lighting description")
     character_ids: List[str] = Field(default_factory=list, description="List of character IDs present in this scene")
+    prop_ids: List[str] = Field(default_factory=list, description="Stable IDs of recurring objects visible in this panel")
+    prop_states: Dict[str, str] = Field(default_factory=dict, description="Panel-specific state for selected recurring objects")
     scene_state: Dict[str, Any] = Field(default_factory=dict, description="Explicit narrative state deltas (e.g. outfit variations, props held)")
     panel_instructions: Optional[str] = Field(default=None, description="Panel-specific composition directives")
     dimensions: Optional[List[int]] = Field(default=None, description="Target pixel dimensions [width, height]")
     aspect_ratio: Optional[str] = Field(default=None, description="Aspect ratio constraint (e.g. 2:3, 3:2, 1:1)")
     previous_panel_id: Optional[str] = Field(default=None, description="Preceding panel ID if applicable")
     previous_panel_summary: Optional[str] = Field(default=None, description="Explicit summary of prior panel beat")
+    panel_plan: Optional[PanelPlan] = Field(
+        default=None,
+        description="Accepted S5 plan for this panel; when supplied, its shot/composition/event fields are authoritative for context compilation.",
+    )
 
 class PanelContextPacket(BaseModel):
     """
@@ -141,11 +182,16 @@ class PanelContextPacket(BaseModel):
     panel_id: str
     scene_id: str
     scene_index: int
+    panel_plan: Optional[Dict[str, Any]] = Field(default=None, description="Accepted S5 plan included in prompt compilation and fingerprinting")
     scene_description: str
     generation_prompt: str
     character_ids: List[str]
     character_specs: List[CharacterSpec]
     reference_assets: List[ReferenceAsset]
+    prop_ids: List[str] = Field(default_factory=list)
+    prop_specs: Dict[str, PropSpec] = Field(default_factory=dict)
+    prop_reference_assets: List[ReferenceAsset] = Field(default_factory=list)
+    prop_states: Dict[str, str] = Field(default_factory=dict)
     dimensions: Optional[List[int]] = None
     aspect_ratio: Optional[str] = None
     previous_panel_continuity: Optional[str] = None
@@ -155,6 +201,11 @@ class PanelContextPacket(BaseModel):
     model: str
     generation_params: Dict[str, Any] = Field(default_factory=dict)
     context_fingerprint: str = Field(..., description="Deterministic SHA-256 hash of canonical packet content")
+    catalogue_version: Optional[str] = None
+    knowledge_selection_hash: Optional[str] = None
+    selected_knowledge_ids: List[str] = Field(default_factory=list, description="IDs of knowledge rules/recipes selected from catalogue")
+    knowledge_provenance_ids: List[str] = Field(default_factory=list, description="IDs of supporting bibliographic/experimental sources")
+    knowledge_rationale: Dict[str, str] = Field(default_factory=dict, description="Explainable selection rationale per item")
 
 class ErrorCategory(str, Enum):
     CONTENT_POLICY_VIOLATION = "CONTENT_POLICY_VIOLATION"
@@ -257,11 +308,13 @@ class BatchSpec(BaseModel):
     spend_cap_usd: float = Field(default=25.0)
     output_dir: Optional[str] = None
     require_verification: bool = Field(default=False, description="If True, panels without passing verifier verdict stay in GENERATED_PENDING_VERIFICATION")
+    request_fingerprint: Optional[str] = Field(default=None, description="Stable hash used to make batch submission retries idempotent")
 
 class BatchSummary(BaseModel):
     """Auditable batch execution summary with complete attempt provenance."""
     batch_id: str
     status: BatchStatus
+    project_id: str = "default_project"
     story_id: str
     bible_version: str
     total_panels: int
@@ -286,3 +339,9 @@ class BatchSummary(BaseModel):
     missing_usage_information: bool = False
     panel_results: List[PanelResult] = Field(default_factory=list)
     attempt_history: List[GenerationAttemptRecord] = Field(default_factory=list)
+    source_scenes: List[SceneSpec] = Field(default_factory=list, description="Original typed scene inputs required for truthful job resume")
+    model: str = "muse-image-1.0"
+    max_retries_per_panel: int = 2
+    spend_cap_usd: Optional[float] = None
+    require_verification: bool = False
+    request_fingerprint: Optional[str] = None

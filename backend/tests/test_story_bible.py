@@ -653,8 +653,8 @@ def test_project_spec_and_orchestrator_bridge(sample_bible):
     ps = sample_bible.to_project_spec()
     assert isinstance(ps, ProjectSpec)
     assert ps.project_id == "test_project"
-    assert ps.language == "ar"
-    assert ps.reading_direction == "rtl"
+    assert ps.language == "en"
+    assert ps.reading_direction == "ltr"
 
     # Test Orchestrator StoryBible bridge
     orch_bible = sample_bible.to_orchestrator_bible()

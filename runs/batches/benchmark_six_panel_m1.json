@@ -5,8 +5,11 @@
   "bible_version": "1.0.0",
   "total_panels": 6,
   "successful_panels": 6,
+  "generated_panels": 6,
+  "verified_panels": 0,
   "failed_panels": 0,
   "unresolved_panels": 0,
+  "unverified_panels": 6,
   "total_attempts": 6,
   "attempts_per_panel": {
     "panel_01": 1,
@@ -17,11 +20,15 @@
     "panel_06": 1
   },
   "total_duration_seconds": 0.049,
-  "started_at": "2026-10-29T00:55:39.727866+00:00",
-  "completed_at": "2026-10-29T00:55:39.777133+00:00",
-  "known_cost_usd": 0.06,
+  "started_at": "2026-10-29T02:38:29.451557+00:00",
+  "completed_at": "2026-10-29T02:38:29.500453+00:00",
+  "is_simulated": true,
+  "cost_mode": "synthetic_simulated",
+  "known_cost_usd": 0.0,
+  "simulated_cost_usd": 0.06,
   "missing_cost_information": false,
-  "known_usage": {
+  "known_usage": {},
+  "simulated_usage": {
     "input_tokens": 74400,
     "output_tokens": 6000,
     "total_tokens": 80400
@@ -35,9 +42,10 @@
       "status": "ACCEPTED",
       "attempts_count": 1,
       "accepted_attempt_id": "benchmark_six_panel_m1_panel_01_att1",
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_01.png",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
-      "context_fingerprint": "f9f7f33dcc9840f20ef69cf6842742acb34de11a6b10a5d9f1d3e6744391ade8",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_01.png",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
+      "context_fingerprint": "699fa541060de0a6b5a9c6b004f03fa03527ed9ba13f2cf895d7b3cdbedf53d8",
+      "verification_status": "UNVERIFIED",
       "verification_result": null
     },
     {
@@ -47,9 +55,10 @@
       "status": "ACCEPTED",
       "attempts_count": 1,
       "accepted_attempt_id": "benchmark_six_panel_m1_panel_02_att1",
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_02.png",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
-      "context_fingerprint": "72430e94dc8f04886b549a2fac56271579857820b8450b1c45c01e3a18c66632",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_02.png",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
+      "context_fingerprint": "94b4dcea4e777a2fa8ca7ca6da1a404b3ab4edfe691677619acb550864178d10",
+      "verification_status": "UNVERIFIED",
       "verification_result": null
     },
     {
@@ -59,9 +68,10 @@
       "status": "ACCEPTED",
       "attempts_count": 1,
       "accepted_attempt_id": "benchmark_six_panel_m1_panel_03_att1",
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_03.png",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
-      "context_fingerprint": "8a9fdd3c36cefeea90f8aec6c01d152bcec979683a45cc42fe0b611e446ec0eb",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_03.png",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
+      "context_fingerprint": "a65f5343fc3fecd296b322c5a4a34ad6a7d1943be34468f3cfdf3c29b1f5fa5e",
+      "verification_status": "UNVERIFIED",
       "verification_result": null
     },
     {
@@ -71,9 +81,10 @@
       "status": "ACCEPTED",
       "attempts_count": 1,
       "accepted_attempt_id": "benchmark_six_panel_m1_panel_04_att1",
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_04.png",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
-      "context_fingerprint": "d6e9b64b7194d4a7ece3cb17137d93523c2de99926cba94289d4219cc0b94910",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_04.png",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
+      "context_fingerprint": "cf79d407800bdfd8661e8ceed28bf5ddceca8b9a955fec4f2e0fbc78ead295cd",
+      "verification_status": "UNVERIFIED",
       "verification_result": null
     },
     {
@@ -83,9 +94,10 @@
       "status": "ACCEPTED",
       "attempts_count": 1,
       "accepted_attempt_id": "benchmark_six_panel_m1_panel_05_att1",
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_05.png",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
-      "context_fingerprint": "190d8ceddf79e51567636dca694f902544343aa27efd248147b1bba92b567b09",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_05.png",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
+      "context_fingerprint": "ce99c87c6c1ee18bb3e7d09063bf73253173163234e319f08f562e9a1e95a58c",
+      "verification_status": "UNVERIFIED",
       "verification_result": null
     },
     {
@@ -95,9 +107,10 @@
       "status": "ACCEPTED",
       "attempts_count": 1,
       "accepted_attempt_id": "benchmark_six_panel_m1_panel_06_att1",
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_06.png",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
-      "context_fingerprint": "a5e0a904451de412572586008b3f9550b3cdd55366edfc9a951f0c0929ee763f",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_06.png",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
+      "context_fingerprint": "0e1c8e22bb7a3184ba5af29bc6825a41b1040e8b997a16e41d42a147a1383ecf",
+      "verification_status": "UNVERIFIED",
       "verification_result": null
     }
   ],
@@ -108,11 +121,13 @@
       "scene_id": "scene_01",
       "attempt_id": "benchmark_six_panel_m1_panel_01_att1",
       "attempt_number": 1,
-      "started_at": "2026-10-29T00:55:39.729172+00:00",
-      "completed_at": "2026-10-29T00:55:39.752116+00:00",
+      "retry_count": 0,
+      "is_simulated": true,
+      "started_at": "2026-10-29T02:38:29.452563+00:00",
+      "completed_at": "2026-10-29T02:38:29.482507+00:00",
       "duration_seconds": 0.05,
       "story_bible_version": "1.0.0",
-      "context_fingerprint": "f9f7f33dcc9840f20ef69cf6842742acb34de11a6b10a5d9f1d3e6744391ade8",
+      "context_fingerprint": "699fa541060de0a6b5a9c6b004f03fa03527ed9ba13f2cf895d7b3cdbedf53d8",
       "reference_asset_ids": [
         "nour_reference"
       ],
@@ -136,9 +151,9 @@
         "total_tokens": 13400
       },
       "cost_usd": 0.01,
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_01.png",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_01.png",
       "output_asset_id": "asset_panel_01",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
       "verification_status": "UNVERIFIED",
       "verification_result": null,
       "final_panel_status": "ACCEPTED"
@@ -149,11 +164,13 @@
       "scene_id": "scene_02",
       "attempt_id": "benchmark_six_panel_m1_panel_02_att1",
       "attempt_number": 1,
-      "started_at": "2026-10-29T00:55:39.754772+00:00",
-      "completed_at": "2026-10-29T00:55:39.754772+00:00",
+      "retry_count": 0,
+      "is_simulated": true,
+      "started_at": "2026-10-29T02:38:29.484514+00:00",
+      "completed_at": "2026-10-29T02:38:29.486514+00:00",
       "duration_seconds": 0.05,
       "story_bible_version": "1.0.0",
-      "context_fingerprint": "72430e94dc8f04886b549a2fac56271579857820b8450b1c45c01e3a18c66632",
+      "context_fingerprint": "94b4dcea4e777a2fa8ca7ca6da1a404b3ab4edfe691677619acb550864178d10",
       "reference_asset_ids": [
         "nour_reference"
       ],
@@ -177,9 +194,9 @@
         "total_tokens": 13400
       },
       "cost_usd": 0.01,
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_02.png",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_02.png",
       "output_asset_id": "asset_panel_02",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
       "verification_status": "UNVERIFIED",
       "verification_result": null,
       "final_panel_status": "ACCEPTED"
@@ -190,11 +207,13 @@
       "scene_id": "scene_03",
       "attempt_id": "benchmark_six_panel_m1_panel_03_att1",
       "attempt_number": 1,
-      "started_at": "2026-10-29T00:55:39.756782+00:00",
-      "completed_at": "2026-10-29T00:55:39.757785+00:00",
+      "retry_count": 0,
+      "is_simulated": true,
+      "started_at": "2026-10-29T02:38:29.488513+00:00",
+      "completed_at": "2026-10-29T02:38:29.489513+00:00",
       "duration_seconds": 0.05,
       "story_bible_version": "1.0.0",
-      "context_fingerprint": "8a9fdd3c36cefeea90f8aec6c01d152bcec979683a45cc42fe0b611e446ec0eb",
+      "context_fingerprint": "a65f5343fc3fecd296b322c5a4a34ad6a7d1943be34468f3cfdf3c29b1f5fa5e",
       "reference_asset_ids": [
         "nour_reference"
       ],
@@ -218,9 +237,9 @@
         "total_tokens": 13400
       },
       "cost_usd": 0.01,
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_03.png",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_03.png",
       "output_asset_id": "asset_panel_03",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
       "verification_status": "UNVERIFIED",
       "verification_result": null,
       "final_panel_status": "ACCEPTED"
@@ -231,11 +250,13 @@
       "scene_id": "scene_04",
       "attempt_id": "benchmark_six_panel_m1_panel_04_att1",
       "attempt_number": 1,
-      "started_at": "2026-10-29T00:55:39.758785+00:00",
-      "completed_at": "2026-10-29T00:55:39.758785+00:00",
+      "retry_count": 0,
+      "is_simulated": true,
+      "started_at": "2026-10-29T02:38:29.491513+00:00",
+      "completed_at": "2026-10-29T02:38:29.492018+00:00",
       "duration_seconds": 0.05,
       "story_bible_version": "1.0.0",
-      "context_fingerprint": "d6e9b64b7194d4a7ece3cb17137d93523c2de99926cba94289d4219cc0b94910",
+      "context_fingerprint": "cf79d407800bdfd8661e8ceed28bf5ddceca8b9a955fec4f2e0fbc78ead295cd",
       "reference_asset_ids": [
         "nour_reference"
       ],
@@ -259,9 +280,9 @@
         "total_tokens": 13400
       },
       "cost_usd": 0.01,
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_04.png",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_04.png",
       "output_asset_id": "asset_panel_04",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
       "verification_status": "UNVERIFIED",
       "verification_result": null,
       "final_panel_status": "ACCEPTED"
@@ -272,11 +293,13 @@
       "scene_id": "scene_05",
       "attempt_id": "benchmark_six_panel_m1_panel_05_att1",
       "attempt_number": 1,
-      "started_at": "2026-10-29T00:55:39.760787+00:00",
-      "completed_at": "2026-10-29T00:55:39.761298+00:00",
+      "retry_count": 0,
+      "is_simulated": true,
+      "started_at": "2026-10-29T02:38:29.494028+00:00",
+      "completed_at": "2026-10-29T02:38:29.495934+00:00",
       "duration_seconds": 0.05,
       "story_bible_version": "1.0.0",
-      "context_fingerprint": "190d8ceddf79e51567636dca694f902544343aa27efd248147b1bba92b567b09",
+      "context_fingerprint": "ce99c87c6c1ee18bb3e7d09063bf73253173163234e319f08f562e9a1e95a58c",
       "reference_asset_ids": [
         "nour_reference"
       ],
@@ -300,9 +323,9 @@
         "total_tokens": 13400
       },
       "cost_usd": 0.01,
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_05.png",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_05.png",
       "output_asset_id": "asset_panel_05",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
       "verification_status": "UNVERIFIED",
       "verification_result": null,
       "final_panel_status": "ACCEPTED"
@@ -313,11 +336,13 @@
       "scene_id": "scene_06",
       "attempt_id": "benchmark_six_panel_m1_panel_06_att1",
       "attempt_number": 1,
-      "started_at": "2026-10-29T00:55:39.776113+00:00",
-      "completed_at": "2026-10-29T00:55:39.776113+00:00",
+      "retry_count": 0,
+      "is_simulated": true,
+      "started_at": "2026-10-29T02:38:29.497941+00:00",
+      "completed_at": "2026-10-29T02:38:29.499446+00:00",
       "duration_seconds": 0.05,
       "story_bible_version": "1.0.0",
-      "context_fingerprint": "a5e0a904451de412572586008b3f9550b3cdd55366edfc9a951f0c0929ee763f",
+      "context_fingerprint": "0e1c8e22bb7a3184ba5af29bc6825a41b1040e8b997a16e41d42a147a1383ecf",
       "reference_asset_ids": [
         "nour_reference"
       ],
@@ -341,9 +366,9 @@
         "total_tokens": 13400
       },
       "cost_usd": 0.01,
-      "output_asset_path": "C:\\Users\\mnile\\Desktop\\InkLoob\\runs\\m1_orchestrations\\m0_benchmark\\panel_06.png",
+      "output_asset_path": "runs\\m1_orchestrations\\m0_benchmark\\panel_06.png",
       "output_asset_id": "asset_panel_06",
-      "output_content_hash": "72f7d687d23701e1f9365a917f3b6bae26ecf55130e30d14ea0cbcc9a03ef548",
+      "output_content_hash": "ac74eb1b6fa57d98c4d922a9da9de68da54c9e5a8faa5f0a513897bef00aa80a",
       "verification_status": "UNVERIFIED",
       "verification_result": null,
       "final_panel_status": "ACCEPTED"

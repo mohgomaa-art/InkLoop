@@ -277,7 +277,7 @@ Machine-readable error codes eliminate ambiguous error handling:
 
 ## 7. Protected Image Generation Engine Adapter
 
-The completed M0 Image Generation Engine is integrated via [`ImageGenerationEngineAdapter`](file:///C:/Users/mnile/Desktop/InkLoob/backend/app/contracts/adapters/image_generation.py).
+The completed M0 Image Generation Engine is integrated via [`ImageGenerationEngineAdapter`](../backend/app/contracts/adapters/image_generation.py).
 
 ### Verified Integration Capabilities:
 1. **Pre-flight Validation:** Verifies non-empty prompt and existence of reference image before any network dispatch.

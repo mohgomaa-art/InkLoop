@@ -1487,6 +1487,8 @@ class CapabilityRegistry:
                         "align": {"type": "string", "enum": ["left", "center", "right"]},
                         "direction": {"type": "string", "enum": ["auto", "ltr", "rtl"]},
                         "line_height": {"type": "number", "exclusiveMinimum": 0},
+                        "type_id": {"type": "string", "enum": ["narration.box", "caption.timeplace", "sfx.text"], "description": "Semantic lettering type ID."},
+                        "reading_order": {"type": "integer", "minimum": 1, "description": "Reading sequence order index."},
                     },
                     "required": ["page_id", "expected_revision", "text"], "additionalProperties": False,
                 },
@@ -1597,7 +1599,7 @@ class CapabilityRegistry:
                         "page_format": {"type": "string", "enum": ["custom", "a4", "b5", "webtoon"], "default": "custom"},
                         "width_px": {"type": "number", "minimum": 240, "default": 900},
                         "height_px": {"type": "number", "minimum": 240, "default": 1200},
-                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "rtl"},
+                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "ltr"},
                         "panel_geometry": {
                             "type": "array", "minItems": 1, "maxItems": 24,
                             "description": "One object per panel in normalized usable-area coordinates. Use rect for a rectangle or polygon for a custom scratch-cut; each polygon point is x/y from 0 to 1.",
@@ -1672,7 +1674,7 @@ class CapabilityRegistry:
                         "page_format": {"type": "string", "enum": ["custom", "a4", "b5", "webtoon"], "default": "custom"},
                         "width_px": {"type": "number", "default": 900.0},
                         "height_px": {"type": "number", "default": 1200.0},
-                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "rtl"},
+                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "ltr"},
                         "template_parameters": {"type": "object", "description": "Typed parameters supported by the selected layout template, such as row/column ratios."},
                         "panel_plans": {
                             "type": "array",
@@ -1785,7 +1787,7 @@ class CapabilityRegistry:
                         "expected_revision": {"type": "integer", "minimum": 1},
                         "panel_id": {"type": "string"},
                         "text": {"type": "string", "description": "Exact spoken words for this selected character. Keep the exact wording; over-limit lines return a structured validation error instead of being rewritten."},
-                        "type_id": {"type": "string", "enum": ["speech.normal", "speech.shout", "speech.whisper", "thought.cloud", "speech.offpanel", "narration.box", "caption.timeplace", "sfx.text"], "description": "Canonical semantic lettering type. Omit only for legacy callers; carrier and delivery then resolve the type."},
+                        "type_id": {"type": "string", "enum": ["speech.normal", "speech.shout", "speech.whisper", "thought.cloud", "speech.offpanel"], "description": "Canonical semantic lettering type for spoken dialogue or internal thoughts. For narration or captions, use editor.add_text_layer."},
                         "layer_id": {"type": "string", "maxLength": 128, "description": "Optional stable bubble layer ID for idempotent retries."},
                         "speaker": {"type": ["string", "null"]},
                         "speaker_character_id": {"type": ["string", "null"], "description": "Stable Story Bible ID for the character who speaks this line. In Agent chat this must be one of the creator-selected characters; required when more than one character is selected."},
@@ -2016,7 +2018,7 @@ class CapabilityRegistry:
                         "page_id": {"type": "string"},
                         "expected_revision": {"type": "integer", "minimum": 1},
                         "panel_id": {"type": "string"},
-                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "rtl"},
+                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "ltr"},
                     },
                     "required": ["page_id", "panel_id"],
                 },
@@ -2084,7 +2086,7 @@ class CapabilityRegistry:
                         "panel_preset_id": {"type": "string", "description": "Stable ID from canvas.search_panel_layout_presets"},
                         "project_id": {"type": "string"},
                         "page_id": {"type": "string"},
-                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "rtl"},
+                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "ltr"},
                         "panel_assignments": {
                             "type": "array",
                             "items": {
@@ -2156,7 +2158,7 @@ class CapabilityRegistry:
                         "page_id": {"type": "string", "description": "Single page ID if exporting only one page"},
                         "project_id": {"type": "string"},
                         "target_format": {"type": "string", "enum": ["pdf", "png"], "default": "pdf"},
-                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "rtl"},
+                        "reading_direction": {"type": "string", "enum": ["rtl", "ltr"], "default": "ltr"},
                     },
                 },
             ),
@@ -2589,18 +2591,27 @@ class CapabilityRegistry:
             if font.metadata.project_id != document.project_id or font.metadata.asset_type.value != "font_file":
                 raise ToolError("ERR_FONT_ASSET_INVALID", "Font must be a verified font asset registered to this project.")
             font_family = font.metadata.name
+        type_id = args.get("type_id") or "narration.box"
+        reading_order = int(args.get("reading_order", 1))
+        layout_lines = None
+        layout_font_size = args.get("font_size", 20)
+        layout_line_height = args.get("line_height", 1.25)
         if panel and "width" not in args:
             from app.text.lettering_layout import layout_lettering_text
+            target_max_w = min(220.0, panel.rect.width * 0.55) if panel.rect.width > 320 else panel.rect.width * 0.65
             layout = layout_lettering_text(
                 text=args["text"],
-                type_id="narration.box",
-                max_width_px=panel.rect.width * 0.55,
+                type_id=type_id,
+                max_width_px=target_max_w,
                 max_height_px=panel.rect.height * 0.38,
                 font_family=font_family,
-                requested_font_size_px=float(args.get("font_size", 20)),
+                requested_font_size_px=float(args.get("font_size", 18)),
             )
-            width = max(80.0, layout.content_width_px + 32.0)
-            height = max(38.0, layout.content_height_px + 24.0)
+            width = max(120.0, layout.content_width_px + 32.0)
+            height = max(52.0, layout.content_height_px + 26.0)
+            layout_lines = layout.lines
+            layout_font_size = layout.font_size_px
+            layout_line_height = layout.line_height_px / max(1.0, float(layout.font_size_px)) if layout.font_size_px else 1.25
         else:
             width = args.get("width", max(1.0, panel.rect.width - 32) if panel else document.layout.canvas_spec.width_px - 64)
             height = args.get("height", 60.0)
@@ -2614,24 +2625,31 @@ class CapabilityRegistry:
             "height": height,
             "font_family": font_family,
             "font_asset_id": font_asset_id,
-            "font_size": args.get("font_size", 20),
+            "font_size": layout_font_size,
             "font_weight": args.get("font_weight", "normal"),
             "color": args.get("color", "#111111"),
             "align": args.get("align", "center"),
             "direction": args.get("direction", "auto"),
-            "line_height": args.get("line_height", 1.25),
+            "line_height": layout_line_height,
             "bubble_shape": "rounded_rectangle",
             "tail_type": "none",
-            "type_id": "narration.box",
-            "semantic_type": "narration.box",
+            "type_id": type_id,
+            "semantic_type": type_id,
+            "carrier": "caption",
+            "reading_order": reading_order,
+            "bubble_id": layer_id,
+            "padding_x": 16.0,
+            "padding_y": 12.0,
         }
+        if layout_lines:
+            metadata["lines"] = layout_lines
         from app.canvas.bubble_vector import BubbleVectorBuilder
         from app.contracts.geometry import Rect
         vb = BubbleVectorBuilder()
         bounds = Rect(x=float(metadata["x"]), y=float(metadata["y"]), width=float(width), height=float(height))
         vec = vb.build_bubble_vector(
             bounds=bounds,
-            type_id="narration.box",
+            type_id=type_id,
             shape="rounded_rectangle",
             tail_type="none",
             tail_target=None,
@@ -2805,6 +2823,13 @@ class CapabilityRegistry:
                 for point in slot.polygon
             ]
         slot.rect = target_rect
+        page_w = document.layout.canvas_spec.width_px
+        page_h = document.layout.canvas_spec.height_px
+        if target_rect.right > page_w or target_rect.bottom > page_h or target_rect.x < 0 or target_rect.y < 0:
+            raise ToolError(
+                "ERR_PANEL_OUT_OF_BOUNDS",
+                f"Panel geometry [{target_rect.x}, {target_rect.y}, {target_rect.width}, {target_rect.height}] exceeds page dimensions [{page_w}, {page_h}]."
+            )
         try:
             diagnostics = get_template(document.layout.template_id).validate_layout(document.layout, strict=True)
             errors = [item for item in diagnostics if str(getattr(item.severity, "value", item.severity)).lower() == "error"]
@@ -2842,7 +2867,7 @@ class CapabilityRegistry:
                 "page_format": args.get("page_format", "custom"),
                 "width_px": args.get("width_px", 900),
                 "height_px": args.get("height_px", 1200),
-                "reading_direction": args.get("reading_direction", "rtl"),
+                "reading_direction": args.get("reading_direction", "ltr"),
                 "template_parameters": {"panel_geometry": args["panel_geometry"]},
                 "panel_plans": args.get("panel_plans"),
             }, ctx)
@@ -2914,7 +2939,7 @@ class CapabilityRegistry:
                 gutters=GutterSpec.uniform(18.0),
             )
 
-        r_dir = ReadingDirection.RTL if args.get("reading_direction", "rtl").lower() == "rtl" else ReadingDirection.LTR
+        r_dir = ReadingDirection.RTL if args.get("reading_direction", "ltr").lower() == "rtl" else ReadingDirection.LTR
         page_id = args.get("page_id") or generate_id(IdPrefix.PAGE, "story")
         page_spec = PageSpec(page_id=page_id, reading_direction=r_dir)
 
@@ -3180,10 +3205,13 @@ class CapabilityRegistry:
         service = BubbleService()
         expected_revision = args.get("expected_revision", document.revision)
         try:
+            doc_dir = getattr(getattr(document, "layout", None), "reading_direction", "ltr")
+            if hasattr(doc_dir, "value"):
+                doc_dir = doc_dir.value
             results = service.place_all(
                 document=document,
                 panel_id=args["panel_id"],
-                reading_direction=args.get("reading_direction", "rtl"),
+                reading_direction=args.get("reading_direction", doc_dir or "ltr"),
             )
         except BubbleServiceError as exc:
             raise ToolError(exc.code, exc.message, exc.details) from exc
@@ -3231,6 +3259,21 @@ class CapabilityRegistry:
             )
         type_spec = BUBBLE_TYPE_BY_ID[type_id]
         is_agent_call = bool(ctx.get("_agent_chat"))
+        carrier_arg = args.get("carrier")
+        if carrier_arg and carrier_arg not in ("speech_bubble", "thought_bubble"):
+            raise ToolError(
+                "ERR_TOOL_SEMANTICS_MISMATCH",
+                f"canvas.add_speech_bubble carrier must be 'speech_bubble' or 'thought_bubble', received '{carrier_arg}'. "
+                "For narrator text / scene descriptions, use the dedicated tool 'editor.add_text_layer'.",
+                {"carrier": carrier_arg, "recommended_tool": "editor.add_text_layer"}
+            )
+        if type_id in ("narration.box", "caption.timeplace") or args.get("type_id") in ("narration.box", "caption.timeplace"):
+            raise ToolError(
+                "ERR_TOOL_SEMANTICS_MISMATCH",
+                f"canvas.add_speech_bubble does not support narration captions (type_id '{type_id}'). "
+                "Use the dedicated narration placement tool 'editor.add_text_layer'.",
+                {"type_id": type_id, "recommended_tool": "editor.add_text_layer"}
+            )
         font_size = float(args.get("font_size", min(24, type_spec.max_font_px)))
 
         if not type_spec.tail_required:
@@ -3249,7 +3292,7 @@ class CapabilityRegistry:
                     position=args.get("position"),
                     font_family=str(args.get("font_family", "Comic Neue")),
                     preferred_font_size=font_size,
-                    reading_direction=getattr(document.layout, "reading_direction", "rtl"),
+                    reading_direction=getattr(getattr(document, "layout", None), "reading_direction", "ltr"),
                 )
             except BubbleServiceError as exc:
                 raise ToolError(exc.code, exc.message, exc.details) from exc
@@ -3410,10 +3453,17 @@ class CapabilityRegistry:
             allow_fallback=not bool(ctx.get("_agent_chat")),
         )
         if ctx.get("_agent_chat") and len(selected_ids) > 1 and saved_anchor is None and detected_char is None:
-            raise ToolError(
-                "ERR_BUBBLE_TAIL_ANCHOR_REQUIRED",
-                "This panel has multiple selected characters, but no speaker anchor or detectable focal subject is available. Add artwork with a clear focal speaker or set the speaker anchor in Canvas first.",
-            )
+            if img_source is not None or ctx.get("_story_local_speakers"):
+                spk_idx = selected_ids.index(speaker_character_id) if speaker_character_id in selected_ids else 0
+                step_w = slot.rect.width / max(1, len(selected_ids))
+                spk_x = slot.rect.x + (spk_idx + 0.5) * step_w
+                spk_y = slot.rect.y + slot.rect.height * 0.45
+                saved_anchor = {"x": spk_x, "y": spk_y}
+            else:
+                raise ToolError(
+                    "ERR_BUBBLE_TAIL_ANCHOR_REQUIRED",
+                    "This panel has multiple selected characters, but no speaker anchor or detectable focal subject is available. Add artwork with a clear focal speaker or set the speaker anchor in Canvas first.",
+                )
         anchor_only_clearance = False
         if ctx.get("_agent_chat") and detected_char is None and saved_anchor is not None:
             # A user-confirmed head point is usable when the art file is absent,
@@ -3454,7 +3504,7 @@ class CapabilityRegistry:
                 bubble_w=bubble_w,
                 bubble_h=bubble_h,
                 character_bounds=detected_char,
-                reading_direction=getattr(document.layout, "reading_direction", "rtl"),
+                reading_direction=getattr(getattr(document, "layout", None), "reading_direction", "ltr"),
                 page_trim=trim,
                 obstacles=existing_bubble_rects,
                 allow_overlap_fallback=not bool(ctx.get("_agent_chat")),
@@ -3571,15 +3621,17 @@ class CapabilityRegistry:
             speaker = speaker or story_local_speakers[speaker_character_id]
             if ctx.get("_agent_chat") and raw_tail != TailType.NONE:
                 known_anchor = saved_anchor
-                if known_anchor is None and detected_char is not None and auto_tail is not None and len(story_local_speakers) == 1:
+                if known_anchor is None and detected_char is not None and auto_tail is not None:
                     known_anchor = {"x": auto_tail.x, "y": auto_tail.y}
                     tail_anchor_source = "story_local_focal_estimate"
-                if known_anchor is None:
-                    raise ToolError(
-                        "ERR_BUBBLE_TAIL_ANCHOR_REQUIRED",
-                        f"The story-local speaker is {speaker}, but its position is ambiguous in this panel. Set a speaker anchor in Canvas before adding the bubble.",
-                    )
-                if tail_anchor_source != "story_local_focal_estimate":
+                elif known_anchor is None:
+                    spk_idx = selected_ids.index(speaker_character_id) if speaker_character_id in selected_ids else 0
+                    step_w = slot.rect.width / max(1, len(selected_ids))
+                    spk_x = slot.rect.x + (spk_idx + 0.5) * step_w
+                    spk_y = slot.rect.y + slot.rect.height * 0.45
+                    known_anchor = {"x": spk_x, "y": spk_y}
+                    tail_anchor_source = "story_local_quadrant_estimate"
+                if tail_anchor_source not in ("story_local_focal_estimate", "story_local_quadrant_estimate"):
                     tail_anchor_source = "saved_character_anchor"
                 tail_target = Point(x=float(known_anchor["x"]), y=float(known_anchor["y"]))
                 if not (trim.x <= tail_target.x <= trim.right and trim.y <= tail_target.y <= trim.bottom):
@@ -3626,11 +3678,13 @@ class CapabilityRegistry:
                             else "single_selected_focal_estimate"
                         )
                     else:
-                        raise ToolError(
-                            "ERR_BUBBLE_TAIL_ANCHOR_REQUIRED",
-                            f"The speaker is {speaker}, but no creator-confirmed position is saved for them in this panel. Set their tail anchor in Canvas first; no guessed position was used.",
-                        )
-                    if tail_anchor_source != "multi_selected_focal_estimate":
+                        spk_idx = selected_ids.index(speaker_character_id) if speaker_character_id in selected_ids else 0
+                        step_w = slot.rect.width / max(1, len(selected_ids))
+                        spk_x = slot.rect.x + (spk_idx + 0.5) * step_w
+                        spk_y = slot.rect.y + slot.rect.height * 0.45
+                        known_anchor = {"x": spk_x, "y": spk_y}
+                        tail_anchor_source = "multi_selected_quadrant_estimate"
+                    if tail_anchor_source not in ("multi_selected_focal_estimate", "multi_selected_quadrant_estimate"):
                         tail_anchor_source = "single_selected_focal_estimate"
                 else:
                     tail_anchor_source = "saved_character_anchor"
@@ -3666,6 +3720,7 @@ class CapabilityRegistry:
         metadata = {
             "text": text,
             "type_id": type_id,
+            "reading_order": int(args.get("reading_order", 1)),
             "lettering_layout": lettering_layout.to_dict(),
             "text_measurement": {
                 "source": measurement_source,
@@ -3787,6 +3842,7 @@ class CapabilityRegistry:
             "revision": saved.revision,
             "layer_id": layer_id,
             "bubble_id": layer_id,
+            "reading_order": metadata["reading_order"],
             "panel_id": panel_id,
             "bubble_preset_id": applied_bubble_preset["id"] if applied_bubble_preset else None,
             "bubble_shape": raw_shape.value,
@@ -3941,7 +3997,7 @@ class CapabilityRegistry:
                 "layout_template": args.get("layout_template", ""),
                 "panel_preset_id": args.get("panel_preset_id"),
                 "project_id": project_id,
-                "reading_direction": args.get("reading_direction", "rtl"),
+                "reading_direction": args.get("reading_direction", "ltr"),
             }, ctx)
             page_id = create_res["page_id"]
             expected_revision = create_res["revision"]
@@ -4436,9 +4492,9 @@ class CapabilityRegistry:
                 else ""
             )
             style_reference_guidance = (
-                "Treat these style controls as the complete style specification. Apply them to the requested content without changing its subject, characters, objects, framing, panel layout, or number of panels.\n"
+                "Treat these style controls as the complete style specification. Apply them to the requested content without changing its subject, characters, objects, framing, panel layout, or number of panels. Style controls must never distort adult human anatomy into caricature, dwarf, or chibi proportions unless explicitly requested in the character profile.\n"
                 if is_quick_style_profile
-                else "Do not copy any style reference's subject, characters, objects, scene, text, framing, panel layout, or number of panels.\n"
+                else "Do not copy any style reference's subject, characters, objects, scene, text, framing, panel layout, or number of panels. Style controls must never distort adult human anatomy into caricature, dwarf, or chibi proportions unless explicitly requested in the character profile.\n"
             )
             packet.generation_prompt += (
                 f"\n\nCREATOR-SELECTED STYLE PROFILE {style_profile.profile_id}@v{style_profile.version}:\n"
@@ -5736,7 +5792,7 @@ class CapabilityRegistry:
         out = engine.export_delivery(
             params,
             asset_registry=_get_asset_registry(),
-            reading_direction=args.get("reading_direction", "rtl"),
+            reading_direction=args.get("reading_direction", "ltr"),
         )
         return {
             "success": True,
@@ -5796,7 +5852,7 @@ class CapabilityRegistry:
             composite_ids.append(comp_out.composite_page_artifact_id)
 
         target_fmt = AssetFormat.PDF if args.get("target_format", "pdf").lower() == "pdf" else AssetFormat.PNG
-        reading_dir = args.get("reading_direction", "rtl").lower()
+        reading_dir = args.get("reading_direction", "ltr").lower()
 
         engine = ExportDeliveryEngine()
         params = ExportParams(

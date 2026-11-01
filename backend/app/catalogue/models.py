@@ -147,6 +147,7 @@ class RecipeRecord(BaseModel):
     taxonomy_group_id: str = Field(..., description="Parent taxonomy group ID")
     intended_outcome: str = Field(..., description="Desired visual effect or composition target")
     use_case: str = Field(..., description="Comic production context where this recipe applies")
+    applies_to_character_ids: List[str] = Field(default_factory=list, description="Optional canonical characters this character-specific recipe may describe")
     required_prompt_components: List[str] = Field(..., description="Mandatory positive prompt tokens/clauses")
     prohibited_conditions: List[str] = Field(default_factory=list, description="Negative prompts or clashing attributes")
     target_model: str = Field(default="muse-image-1.0", description="Image generation model targeted")
@@ -265,6 +266,26 @@ class TaxonomyGroupRecord(BaseModel):
 
         return self
 
+    @property
+    def name(self) -> str:
+        return self.canonical_name
+
+    @property
+    def description(self) -> str:
+        return self.image_generation_relevance
+
+    @property
+    def coverage_status(self) -> CoverageStatus:
+        return self.status
+
+    @property
+    def research_claims(self) -> List[ResearchClaim]:
+        return self.claims
+
+    @property
+    def prompt_recipes(self) -> List[RecipeRecord]:
+        return self.recipes
+
 
 class CoverageSummary(BaseModel):
     """
@@ -277,6 +298,7 @@ class CoverageSummary(BaseModel):
     validated_count: int
     deprecated_count: int
     total_canonical_elements: int
+    total_elements: int = 840
     total_sources: int
     total_claims: int
     total_rules: int
