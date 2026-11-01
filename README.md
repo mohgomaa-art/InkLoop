@@ -10,13 +10,19 @@
 
 ## 1. Demo
 
-[![InkLoop Studio Interface](docs/media/demo-poster.png)](docs/media/demo.mp4)
+[![InkLoop — Autonomous Manga & Comic Studio | Meta AI Hackathon Demo](docs/media/youtube-thumbnail.png)](https://www.youtube.com/watch?v=7rvTbhmrQfs)
 
-### Studio Walkthrough Video
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=7rvTbhmrQfs">
+    <strong>▶ Watch Full 1080p Studio Walkthrough on YouTube (1:20)</strong>
+  </a>
+  &nbsp;•&nbsp;
+  <a href="docs/media/demo.mp4">
+    <strong>Direct MP4 Video (8.5 MB)</strong>
+  </a>
+</p>
 
-[▶ **Watch Full 1080p Walkthrough Video (docs/media/demo.mp4)**](docs/media/demo.mp4)
-
-*Full 1080p studio demonstration walkthrough illustrating script parsing, panel layout planning, character anchor locking, and collision-free speech bubble placement (1080p 60fps, 8.5 MB, faststart web-streamable).*
+*Full 1080p studio demonstration walkthrough illustrating script parsing, panel layout planning, character anchor locking, and collision-free speech bubble placement.*
 
 ---
 
