@@ -16,17 +16,17 @@ A full end-to-end studio demonstration illustrating script parsing, panel layout
 
 ## 2. Gallery
 
-A selection of sequential comic pages generated and lettered with InkLoop:
+A curated selection of sequential comic pages generated and lettered with InkLoop:
 
-| Action Confrontation | Narrative Dialogue | Two-Character Scene |
+| Two-Character Exchange | Expressive Character Acting | Dynamic Physical Movement |
 | :---: | :---: | :---: |
-| ![Action sequence](docs/images/composite_page_story_845a5cfcb78d_rev7_17.webp)<br>*Dynamic action paneling with dramatic low-angle perspective.* | ![Inked dialogue](docs/images/composite_page_story_0d52cb50bb7b_rev12_7f.webp)<br>*Inked narrative sequence with clear dialogue balloons.* | ![Two-shot scene](docs/images/composite_page_story_0d52cb50bb7b_rev13_81.webp)<br>*Over-the-shoulder conversation with character continuity.* |
+| ![Two-shot conversation](docs/images/composite_page_story_0d52cb50bb7b_rev13_81.webp)<br>*Two-character conversational staging with clear speaker tail geometry and reading order.* | ![Character acting](docs/images/composite_page_story_240a37ce136d_rev16_8e.webp)<br>*Expressive close-ups and medium shots maintaining facial morphology and clothing invariants.* | ![Dynamic movement](docs/images/composite_page_story_5c01519e702a_rev13_ab.webp)<br>*Physical movement paneling with somatic posture congruence across panels.* |
 
-| Dramatic Reveal | Multi-Beat Pacing | Character Acting |
+| Dialogue Tension | Grid Composition | Climax & Resolution |
 | :---: | :---: | :---: |
-| ![Dramatic reveal](docs/images/composite_page_story_240a37ce136d_rev7_08.webp)<br>*High-contrast splash panel capturing narrative tension.* | ![Multi-beat pacing](docs/images/composite_page_story_240a37ce136d_rev15_a5.webp)<br>*Four-panel sequential breakdown with controlled visual rhythm.* | ![Character acting](docs/images/composite_page_story_240a37ce136d_rev16_8e.webp)<br>*Expressive facial acting adhering to canonical character anchors.* |
+| ![Dialogue interaction](docs/images/composite_page_story_ddf145c1e9c2_rev22.webp)<br>*Dialogue interaction conveying narrative tension through restrained character acting.* | ![Grid composition](docs/images/composite_page_story_e1438f8a37f6_rev12_d8.webp)<br>*Multi-panel progression following strict left-to-right reading order and border gutters.* | ![Climax resolution](docs/images/composite_page_story_f90626ac07e3_rev18_96.webp)<br>*Final narrative pacing resolution with obstacle-free speech bubbles and tail clearance.* |
 
-*View the full 16-page sequential collection in the [Complete Gallery](docs/GALLERY.md).*
+*Detailed breakdowns and generation parameters available in the [Page Gallery](docs/GALLERY.md).*
 
 ---
 
