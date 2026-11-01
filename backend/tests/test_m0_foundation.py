@@ -49,8 +49,8 @@ def test_safe_credential_masking(monkeypatch):
     assert "confidential" not in masked
 
 def test_project_root_resolution():
-    """Ensure PROJECT_ROOT resolves to the repository root containing INKLOOP_PROJECT_BRIEF.md."""
-    assert (PROJECT_ROOT / "INKLOOP_PROJECT_BRIEF.md").exists()
+    """Ensure PROJECT_ROOT resolves to the repository root containing README.md."""
+    assert (PROJECT_ROOT / "README.md").exists()
     assert (PROJECT_ROOT / ".gitignore").exists()
 
 def test_credential_files_excluded_by_gitignore():
