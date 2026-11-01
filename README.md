@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/media/banner.svg" alt="InkLoop — Autonomous Manga & Comic Studio" width="100%" />
+</p>
+
 # InkLoop
 
 > **Autonomous comic, manga, and visual storytelling production engine powered by Meta AI models with guaranteed character continuity and deterministic canvas lettering.**
