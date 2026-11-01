@@ -16,9 +16,13 @@
   <a href="https://www.youtube.com/watch?v=7rvTbhmrQfs">
     <strong>▶ Watch Full 1080p Studio Walkthrough on YouTube (1:20)</strong>
   </a>
+  <br />
+  <a href="https://github.com/mohgomaa-art/InkLoop/raw/main/docs/media/demo.mp4">
+    <strong>⚡ Stream In-Browser (Raw MP4)</strong>
+  </a>
   &nbsp;•&nbsp;
-  <a href="docs/media/demo.mp4">
-    <strong>Direct MP4 Video (8.5 MB)</strong>
+  <a href="https://github.com/mohgomaa-art/InkLoop/releases/download/v1.0.0/demo.mp4">
+    <strong>💾 Download Release Asset (v1.0.0 · 8.5 MB)</strong>
   </a>
 </p>
 
