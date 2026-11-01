@@ -1,150 +1,154 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 280" width="1000" height="280">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 240" width="1000" height="240">
   <defs>
-    <!-- Background Gradient -->
-    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#09090B" />
-      <stop offset="50%" stop-color="#111116" />
-      <stop offset="100%" stop-color="#181820" />
+    <!-- Studio Background Gradient (Carbon to Deep Zinc) -->
+    <linearGradient id="studio-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#18181A" />
+      <stop offset="100%" stop-color="#121214" />
     </linearGradient>
 
-    <!-- Subtle Border Gradient -->
-    <linearGradient id="border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3F3F46" />
-      <stop offset="50%" stop-color="#27272A" />
-      <stop offset="100%" stop-color="#52525B" />
+    <!-- Studio Card Border Gradient -->
+    <linearGradient id="studio-border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38383E" />
+      <stop offset="50%" stop-color="#242428" />
+      <stop offset="100%" stop-color="#2E2E34" />
     </linearGradient>
 
-    <!-- Logo Glow Aura -->
-    <radialGradient id="aura-glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.25" />
-      <stop offset="60%" stop-color="#6366F1" stop-opacity="0.12" />
-      <stop offset="100%" stop-color="#09090B" stop-opacity="0" />
+    <!-- Logo Box Surface -->
+    <linearGradient id="logo-box-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#222227" />
+      <stop offset="100%" stop-color="#161619" />
+    </linearGradient>
+
+    <!-- Character Shading (ink-dark studio palette) -->
+    <radialGradient id="char-hood-grad" cx="44%" cy="32%" r="65%">
+      <stop offset="0%" stop-color="#71717A" />
+      <stop offset="45%" stop-color="#52525B" />
+      <stop offset="100%" stop-color="#27272A" />
     </radialGradient>
-
-    <!-- Text Loop Gradient -->
-    <linearGradient id="title-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#38BDF8" />
-      <stop offset="50%" stop-color="#818CF8" />
-      <stop offset="100%" stop-color="#C084FC" />
-    </linearGradient>
-
-    <!-- Badge Background Gradient -->
-    <linearGradient id="badge-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#18181B" stop-opacity="0.9" />
-      <stop offset="100%" stop-color="#27272A" stop-opacity="0.7" />
-    </linearGradient>
-
-    <!-- Mascot Emblem Shading -->
-    <radialGradient id="emblem-rim" cx="50%" cy="30%" r="70%">
+    <radialGradient id="char-face-grad" cx="50%" cy="38%" r="60%">
       <stop offset="0%" stop-color="#FFFFFF" />
-      <stop offset="70%" stop-color="#E4E4E7" />
-      <stop offset="100%" stop-color="#71717A" />
+      <stop offset="70%" stop-color="#F4F4F6" />
+      <stop offset="100%" stop-color="#E4E4E7" />
     </radialGradient>
-    <radialGradient id="emblem-face" cx="50%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#FFFFFF" />
-      <stop offset="80%" stop-color="#F4F4F6" />
-      <stop offset="100%" stop-color="#D4D4D8" />
+    <radialGradient id="char-belly-glow" cx="50%" cy="42%" r="48%">
+      <stop offset="0%" stop-color="#A1A1AA" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#52525B" stop-opacity="0" />
     </radialGradient>
+    <linearGradient id="char-leg-grad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#52525B" />
+      <stop offset="100%" stop-color="#27272A" />
+    </linearGradient>
+
+    <!-- Badge Background -->
+    <linearGradient id="badge-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1C1C20" />
+      <stop offset="100%" stop-color="#151518" />
+    </linearGradient>
   </defs>
 
-  <style>
-    .title-font { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800; }
-    .body-font { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 400; }
-    .mono-font { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-  </style>
+  <!-- Container Surface -->
+  <rect x="1.5" y="1.5" width="997" height="237" rx="14" fill="url(#studio-bg)" stroke="url(#studio-border)" stroke-width="1.5" />
 
-  <!-- Banner Container -->
-  <rect x="2" y="2" width="996" height="276" rx="20" fill="url(#bg-grad)" stroke="url(#border-grad)" stroke-width="1.5" />
-
-  <!-- Background Comic Paneling Watermark Guidelines -->
-  <g opacity="0.04" stroke="#FFFFFF" stroke-width="1.5" fill="none">
-    <rect x="680" y="25" width="280" height="230" rx="8" />
-    <line x1="680" y1="135" x2="960" y2="135" />
-    <line x1="820" y1="25" x2="820" y2="135" />
-    <rect x="700" y="45" width="100" height="70" rx="4" />
-    <rect x="840" y="45" width="100" height="70" rx="4" />
-    <rect x="700" y="155" width="240" height="85" rx="4" />
+  <!-- Subtle Manga Panel Wireframe (Right Watermark) -->
+  <g opacity="0.18" stroke="#44444C" stroke-width="1.2" fill="none">
+    <rect x="755" y="28" width="205" height="184" rx="6" />
+    <line x1="755" y1="116" x2="960" y2="116" />
+    <line x1="855" y1="28" x2="855" y2="116" />
+    <rect x="765" y="38" width="80" height="68" rx="4" stroke="#2B2B32" stroke-dasharray="3 3" />
+    <rect x="865" y="38" width="85" height="68" rx="4" stroke="#2B2B32" stroke-dasharray="3 3" />
+    <rect x="765" y="126" width="185" height="76" rx="4" stroke="#2B2B32" stroke-dasharray="3 3" />
   </g>
 
-  <!-- Subtle Radial Glow behind Logo -->
-  <circle cx="125" cy="140" r="120" fill="url(#aura-glow)" />
+  <!-- Left: Authentic Studio Logo Frame (Matches App Sidebar Switcher) -->
+  <g transform="translate(44, 42)">
+    <rect x="0" y="0" width="112" height="112" rx="22" fill="url(#logo-box-bg)" stroke="#383840" stroke-width="1.5" />
+    
+    <!-- Authentic Mascot Vector (ink-dark studio theme from assets/agent/pose-01-neutral.svg) -->
+    <g transform="translate(13, 8) scale(0.305)">
+      <!-- Ground Shadow -->
+      <ellipse cx="140" cy="272" rx="65" ry="10" fill="#09090B" opacity="0.6" />
 
-  <!-- Logo Emblem Container -->
-  <g transform="translate(65, 75)">
-    <!-- Outer Glow Frame -->
-    <rect x="0" y="0" width="120" height="120" rx="32" fill="#18181B" stroke="#27272A" stroke-width="2" />
-    <rect x="2" y="2" width="116" height="116" rx="30" fill="none" stroke="url(#title-grad)" stroke-width="1.5" stroke-opacity="0.4" />
+      <!-- Legs -->
+      <path d="M 90 218 C 90 234, 91 250, 93 259 C 95 266, 104 268, 115 268 C 126 268, 134 265, 135 258 C 136 248, 136 232, 136 224 Z" fill="url(#char-leg-grad)" stroke="#71717A" stroke-width="1.8" stroke-linejoin="round" />
+      <path d="M 144 224 C 144 232, 144 248, 145 258 C 146 265, 154 268, 165 268 C 176 268, 185 266, 187 259 C 189 250, 190 234, 190 218 Z" fill="url(#char-leg-grad)" stroke="#71717A" stroke-width="1.8" stroke-linejoin="round" />
+      
+      <!-- Arms -->
+      <path d="M 80 120 C 58 134, 46 168, 46 198 C 46 213, 55 220, 64 218 Z" fill="url(#char-hood-grad)" stroke="#71717A" stroke-width="1.8" />
+      <path d="M 200 120 C 222 134, 234 168, 234 198 C 234 213, 225 220, 216 218 Z" fill="url(#char-hood-grad)" stroke="#71717A" stroke-width="1.8" />
+      
+      <!-- Body / Hood -->
+      <path d="M 140 37 C 178 37, 198 58, 201 94 C 203 118, 211 148, 211 182 C 211 217, 192 238, 140 238 C 88 238, 69 217, 69 182 C 69 148, 77 118, 79 94 C 82 58, 102 37, 140 37 Z" fill="url(#char-hood-grad)" stroke="#71717A" stroke-width="2" stroke-linejoin="round" />
+      <ellipse cx="140" cy="178" rx="48" ry="42" fill="url(#char-belly-glow)" />
 
-    <!-- Mascot Emblem Graphic -->
-    <rect x="15" y="15" width="90" height="90" rx="28" fill="url(#emblem-rim)" stroke="#09090B" stroke-width="2" />
-    <rect x="20" y="20" width="80" height="80" rx="24" fill="url(#emblem-face)" stroke="#09090B" stroke-width="1.2" />
-    <ellipse cx="40" cy="71" rx="8" ry="5" fill="#A1A1AA" opacity="0.4" />
-    <ellipse cx="80" cy="71" rx="8" ry="5" fill="#A1A1AA" opacity="0.4" />
-    <circle cx="45" cy="60" r="5.5" fill="#09090B" />
-    <circle cx="43" cy="58" r="2" fill="#FFFFFF" />
-    <circle cx="75" cy="60" r="5.5" fill="#09090B" />
-    <circle cx="73" cy="58" r="2" fill="#FFFFFF" />
-    <path d="M 54 69 Q 60 74 66 69" fill="none" stroke="#09090B" stroke-width="2.2" stroke-linecap="round" />
+      <!-- Face Window -->
+      <rect x="90" y="57" width="100" height="78" rx="38" ry="36" fill="#27272A" stroke="#18181B" stroke-width="1.6" />
+      <rect x="93.5" y="60.5" width="93" height="71" rx="35" ry="33" fill="url(#char-face-grad)" />
+      
+      <!-- Cheeks -->
+      <ellipse cx="109" cy="106" rx="10" ry="7" fill="#A1A1AA" opacity="0.4" />
+      <ellipse cx="171" cy="106" rx="10" ry="7" fill="#A1A1AA" opacity="0.4" />
+      
+      <!-- Eyes -->
+      <circle cx="116" cy="95" r="6.2" fill="#09090B" />
+      <circle cx="114.2" cy="93" r="2.1" fill="#FFFFFF" />
+      <circle cx="164" cy="95" r="6.2" fill="#09090B" />
+      <circle cx="162.2" cy="93" r="2.1" fill="#FFFFFF" />
+      
+      <!-- Mouth -->
+      <path d="M 134 101.5 Q 140 106.5 146 101.5" fill="none" stroke="#09090B" stroke-width="2.2" stroke-linecap="round" />
+    </g>
   </g>
 
-  <!-- Content Block -->
-  <g transform="translate(225, 0)">
-    <!-- Top Pill Tag: Meta AI Hackathon -->
-    <g transform="translate(0, 48)">
-      <rect x="0" y="0" width="310" height="24" rx="12" fill="url(#badge-bg)" stroke="#3F3F46" stroke-width="1" />
-      <circle cx="12" cy="12" r="4" fill="#38BDF8" />
-      <text x="24" y="16" class="mono-font" font-size="11" font-weight="600" fill="#E4E4E7" letter-spacing="0.5">META GLOBAL AI HACKATHON · INDIE</text>
+  <!-- Center Content -->
+  <g transform="translate(178, 38)">
+    <!-- Hackathon Header Pill -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="272" height="22" rx="11" fill="url(#badge-bg)" stroke="#2E2E35" stroke-width="1" />
+      <circle cx="11" cy="11" r="3.5" fill="#D4D4D8" />
+      <text x="22" y="15" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="10.5" font-weight="600" fill="#A1A1AA" letter-spacing="0.08em">META GLOBAL AI HACKATHON · INDIE</text>
     </g>
 
-    <!-- Main Title: InkLoop -->
-    <text x="0" y="118" class="title-font" font-size="52" fill="#FFFFFF" letter-spacing="-1">
-      Ink<tspan fill="url(#title-grad)">Loop</tspan>
-    </text>
-
-    <!-- Studio Badge next to Title -->
-    <g transform="translate(210, 86)">
-      <rect x="0" y="0" width="105" height="24" rx="6" fill="#1E1B4B" stroke="#4338CA" stroke-width="1" />
-      <text x="52" y="16" class="mono-font" font-size="10.5" font-weight="700" fill="#A5B4FC" text-anchor="middle" letter-spacing="1">STUDIO OS</text>
+    <!-- Brand Header Lockup: Name + Context -->
+    <g transform="translate(0, 50)">
+      <text x="0" y="0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="36" font-weight="700" fill="#FFFFFF" letter-spacing="-0.02em">InkLoop</text>
+      <line x1="158" y1="-23" x2="158" y2="-3" stroke="#393942" stroke-width="1.5" />
+      <text x="174" y="-8" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="12" font-weight="600" fill="#888892" letter-spacing="0.14em">MANGA &amp; COMIC STUDIO</text>
     </g>
 
-    <!-- Short Description Line 1 -->
-    <text x="0" y="152" class="body-font" font-size="16.5" font-weight="500" fill="#F4F4F5" letter-spacing="-0.2">
-      Autonomous comic &amp; manga production engine powered by Meta AI models.
-    </text>
+    <!-- Short Description -->
+    <g transform="translate(0, 83)">
+      <text x="0" y="0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="14.5" font-weight="400" fill="#E4E4E7">Autonomous comic, manga, and visual storytelling production engine powered by Meta AI models.</text>
+      <text x="0" y="21" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="13" font-weight="400" fill="#888892">Guaranteed character continuity, canonical model sheets &amp; deterministic canvas lettering.</text>
+    </g>
 
-    <!-- Short Description Line 2 -->
-    <text x="0" y="178" class="body-font" font-size="14.5" fill="#A1A1AA">
-      Guaranteed character continuity, multi-angle anchor sheets &amp; deterministic canvas lettering.
-    </text>
-
-    <!-- Feature Pill Badges -->
-    <g transform="translate(0, 206)">
-      <!-- Badge 1: Muse Spark 1.3 -->
+    <!-- Badges Row -->
+    <g transform="translate(0, 134)">
+      <!-- Badge 1: Meta Muse Spark 1.3 -->
       <g transform="translate(0, 0)">
-        <rect x="0" y="0" width="168" height="28" rx="8" fill="#18181B" stroke="#27272A" stroke-width="1" />
-        <circle cx="14" cy="14" r="3.5" fill="#6366F1" />
-        <text x="26" y="18" class="body-font" font-size="12" font-weight="600" fill="#E4E4E7">Meta Muse Spark 1.3</text>
+        <rect x="0" y="0" width="160" height="26" rx="6" fill="url(#badge-bg)" stroke="#2E2E35" stroke-width="1" />
+        <circle cx="12" cy="13" r="3" fill="#A1A1AA" />
+        <text x="22" y="17" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" font-weight="500" fill="#D4D4D8">Meta Muse Spark 1.3</text>
       </g>
 
-      <!-- Badge 2: Muse Image 1.0 -->
-      <g transform="translate(178, 0)">
-        <rect x="0" y="0" width="168" height="28" rx="8" fill="#18181B" stroke="#27272A" stroke-width="1" />
-        <circle cx="14" cy="14" r="3.5" fill="#38BDF8" />
-        <text x="26" y="18" class="body-font" font-size="12" font-weight="600" fill="#E4E4E7">Meta Muse Image 1.0</text>
+      <!-- Badge 2: Meta Muse Image 1.0 -->
+      <g transform="translate(170, 0)">
+        <rect x="0" y="0" width="162" height="26" rx="6" fill="url(#badge-bg)" stroke="#2E2E35" stroke-width="1" />
+        <circle cx="12" cy="13" r="3" fill="#A1A1AA" />
+        <text x="22" y="17" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" font-weight="500" fill="#D4D4D8">Meta Muse Image 1.0</text>
       </g>
 
-      <!-- Badge 3: SAM 3.1 -->
-      <g transform="translate(356, 0)">
-        <rect x="0" y="0" width="132" height="28" rx="8" fill="#18181B" stroke="#27272A" stroke-width="1" />
-        <circle cx="14" cy="14" r="3.5" fill="#10B981" />
-        <text x="26" y="18" class="body-font" font-size="12" font-weight="600" fill="#E4E4E7">Meta SAM 3.1</text>
+      <!-- Badge 3: Meta SAM 3.1 -->
+      <g transform="translate(342, 0)">
+        <rect x="0" y="0" width="118" height="26" rx="6" fill="url(#badge-bg)" stroke="#2E2E35" stroke-width="1" />
+        <circle cx="12" cy="13" r="3" fill="#A1A1AA" />
+        <text x="22" y="17" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" font-weight="500" fill="#D4D4D8">Meta SAM 3.1</text>
       </g>
 
       <!-- Badge 4: Deterministic Canvas -->
-      <g transform="translate(498, 0)">
-        <rect x="0" y="0" width="186" height="28" rx="8" fill="#18181B" stroke="#27272A" stroke-width="1" />
-        <circle cx="14" cy="14" r="3.5" fill="#F59E0B" />
-        <text x="26" y="18" class="body-font" font-size="12" font-weight="600" fill="#E4E4E7">Deterministic Canvas</text>
+      <g transform="translate(470, 0)">
+        <rect x="0" y="0" width="168" height="26" rx="6" fill="url(#badge-bg)" stroke="#2E2E35" stroke-width="1" />
+        <circle cx="12" cy="13" r="3" fill="#A1A1AA" />
+        <text x="22" y="17" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" font-weight="500" fill="#D4D4D8">Deterministic Canvas</text>
       </g>
     </g>
   </g>
