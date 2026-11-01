@@ -33,6 +33,61 @@ REVISION = 25
 PROJECT_ID = "last_oneee_b36304f4"
 
 
+def _seed_fixture_if_needed():
+    store = get_page_store()
+    try:
+        store.get(PAGE_ID)
+        return
+    except Exception:
+        pass
+
+    registry = get_registry()
+    fixture_path = Path(__file__).parent / "fixtures" / "fixture_page_story_429f2386aa74.json"
+    if not fixture_path.exists():
+        return
+    from app.editor.models import EditablePageDocument
+    from app.storage.registry import AssetType
+    import io
+
+    doc = EditablePageDocument.model_validate_json(fixture_path.read_text(encoding="utf-8"))
+
+    for l in doc.layers:
+        if l.kind.value == "image" and l.source_asset_id:
+            asset_id = l.source_asset_id
+            if not registry.get_asset(asset_id):
+                dummy = Image.new("RGBA", (400, 500), (200, 200, 200, 255))
+                buf = io.BytesIO()
+                dummy.save(buf, format="PNG")
+                registry.ingest_bytes(
+                    buf.getvalue(), f"{asset_id}.png", PROJECT_ID, AssetType.PANEL_IMAGE,
+                    name=asset_id
+                )
+
+    payload = doc.model_dump_json(exclude_none=True).encode()
+    asset = registry.ingest_bytes(
+        payload, f"{PAGE_ID}-r{REVISION}.json", PROJECT_ID, AssetType.GENERIC_ARTIFACT,
+        name=f"{PAGE_ID} revision {REVISION}",
+        lineage_operation="editable_page_revision", lineage_params={"page_id": PAGE_ID, "revision": REVISION},
+        extra_metadata={"document_kind": "editable_page", "page_id": PAGE_ID, "revision": REVISION},
+    )
+
+    with store._lock:
+        store._conn.execute(
+            "INSERT OR REPLACE INTO pages(page_id, project_id, revision, artifact_id, created_at, updated_at) VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'))",
+            (PAGE_ID, PROJECT_ID, REVISION, asset.asset_id)
+        )
+        store._conn.execute(
+            "INSERT OR REPLACE INTO page_revisions(page_id, revision, artifact_id) VALUES (?, ?, ?)",
+            (PAGE_ID, REVISION, asset.asset_id)
+        )
+        store._conn.commit()
+
+
+@pytest.fixture(autouse=True)
+def _ensure_parity_document_seeded():
+    _seed_fixture_if_needed()
+
+
 def test_persisted_revision_provenance():
     """Verify that both pipelines reference the exact same persisted revision 25."""
     store = get_page_store()

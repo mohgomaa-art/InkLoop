@@ -31,7 +31,7 @@ backend/runs/
 scratch/
 all_manga_output_images/
 chosen/
-docs/research/
+docs/research/assets/
 docs/CREATOR_FIRST_ACCEPTANCE_REPORT.md
 docs/visual_forensics/
 docs/*AUDIT*.md

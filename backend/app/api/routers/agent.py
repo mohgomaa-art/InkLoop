@@ -373,19 +373,21 @@ def retry_last_turn(session_id: str, payload: RetryLastTurnRequest) -> Dict[str,
 @router.post("/attachments/upload")
 async def upload_attachment(
     file: UploadFile = File(...),
-    project_id: str = Form("default_project"),
+    project_id: Optional[str] = Query(None),
+    project_id_form: Optional[str] = Form(None, alias="project_id"),
 ) -> Dict[str, Any]:
     """
     Safely inspects and stores an uploaded image or text document attachment.
     Enforces bounded reads, content validation, project isolation, and SHA-256 integrity.
     """
+    effective_project_id = project_id or project_id_form or "default_project"
     try:
         content = await file.read(MAX_FILE_BYTES + 1)
         filename = file.filename or "attachment"
         if content.startswith((b"\x89PNG\r\n\x1a\n", b"\xff\xd8\xff")) or (content.startswith(b"RIFF") and content[8:12] == b"WEBP"):
-            att = inspect_image_bytes(data=content, filename=filename, project_id=project_id)
+            att = inspect_image_bytes(data=content, filename=filename, project_id=effective_project_id)
         else:
-            att = inspect_document_bytes(data=content, filename=filename, project_id=project_id)
+            att = inspect_document_bytes(data=content, filename=filename, project_id=effective_project_id)
         return att.model_dump()
     except ImageInspectionError as e:
         raise HTTPException(
