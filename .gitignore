@@ -49,6 +49,7 @@ docs/multi_style_dynamic_prompt_walkthrough.md
 
 # Large media, archives and video recordings (>50MB)
 *.mp4
+!docs/media/demo.mp4
 *.zip
 *.tar.gz
 *.7z
