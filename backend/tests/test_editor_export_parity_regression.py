@@ -59,7 +59,7 @@ def _seed_fixture_if_needed():
                 buf = io.BytesIO()
                 dummy.save(buf, format="PNG")
                 registry.ingest_bytes(
-                    buf.getvalue(), f"{asset_id}.png", PROJECT_ID, AssetType.PANEL_IMAGE,
+                    buf.getvalue(), f"{asset_id}.png", PROJECT_ID, AssetType.IMAGE_GENERATED,
                     name=asset_id
                 )
 
