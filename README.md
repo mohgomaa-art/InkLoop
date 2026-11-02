@@ -10,7 +10,7 @@
 
 ## 1. Demo
 
-[![InkLoop Studio Live Demonstration Walkthrough](docs/media/demo-loop.gif)](https://www.youtube.com/watch?v=7rvTbhmrQfs)
+https://github.com/user-attachments/assets/b88ff71f-0c27-4904-a31d-2e6063a831e8
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=7rvTbhmrQfs">
