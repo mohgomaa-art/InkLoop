@@ -213,7 +213,7 @@ pytest backend/tests
 
 ## 9. License
 
-This repository does not currently contain a restrictive license file. An open-source license will be designated upon public hackathon submission.
+This project is licensed under the **GNU Affero General Public License v3.0 or later** (AGPL-3.0-or-later) to preserve copyleft compatibility with its core PDF and vector rendering engine. See [LICENSE](LICENSE) for the full license text and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for third-party dependency and font licenses.
 
 ---
 
