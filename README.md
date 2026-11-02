@@ -14,15 +14,19 @@
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=7rvTbhmrQfs">
-    <strong>▶ Watch Full 1080p Studio Walkthrough on YouTube (1:20)</strong>
+    <strong>▶ Watch Full 1080p Studio Walkthrough on YouTube (1:24)</strong>
   </a>
   <br />
+  <a href="docs/media/demo.mp4">
+    <strong>🎬 Repository Video Asset (docs/media/demo.mp4 · 9.9 MB)</strong>
+  </a>
+  &nbsp;•&nbsp;
   <a href="https://github.com/mohgomaa-art/InkLoop/raw/main/docs/media/demo.mp4">
     <strong>⚡ Stream In-Browser (Raw MP4)</strong>
   </a>
   &nbsp;•&nbsp;
   <a href="https://github.com/mohgomaa-art/InkLoop/releases/download/v1.0.0/demo.mp4">
-    <strong>💾 Download Release Asset (v1.0.0 · 8.5 MB)</strong>
+    <strong>💾 Download Release Asset (v1.0.0)</strong>
   </a>
 </p>
 
