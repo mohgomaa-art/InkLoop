@@ -5,6 +5,7 @@ accurate text measurement with Pillow, word wrapping, and overflow detection.
 """
 from io import BytesIO
 import hashlib
+import os
 from pathlib import Path
 from typing import Optional, List, Tuple, Dict, Any, Union
 from PIL import Image, ImageDraw, ImageFont
@@ -157,15 +158,16 @@ class TypographyEngine:
                                 pass
 
         # 3. Search system fonts fallback
+        windir = Path(os.environ.get("WINDIR", "C:/Windows"))
         for system_candidate in [
-            f"C:/Windows/Fonts/{font_family}.ttf",
-            f"C:/Windows/Fonts/arial.ttf",
-            f"C:/Windows/Fonts/seguiemj.ttf",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            windir / "Fonts" / f"{font_family}.ttf",
+            windir / "Fonts" / "arial.ttf",
+            windir / "Fonts" / "seguiemj.ttf",
+            Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
         ]:
-            if Path(system_candidate).exists():
+            if system_candidate.exists():
                 try:
-                    return ImageFont.truetype(system_candidate, size_px), Path(system_candidate).stem
+                    return ImageFont.truetype(str(system_candidate), size_px), system_candidate.stem
                 except Exception:
                     pass
 

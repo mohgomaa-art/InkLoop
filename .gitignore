@@ -66,6 +66,8 @@ venv/
 .pytest_cache/
 .coverage
 htmlcov/
+.cache/
+*.cache
 
 # Node, frontend bundles and build outputs
 node_modules/
