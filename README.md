@@ -4,7 +4,7 @@
 
 # InkLoop
 
-> **Autonomous comic, manga, and visual storytelling production engine powered by Meta AI models with guaranteed character continuity and deterministic canvas lettering.**
+> **Autonomous comic and manga production engine that locks character identity and style with reference sheets, places speech bubbles deterministically, and checks panels with a visual judge.**
 
 ---
 
@@ -36,11 +36,11 @@ A curated selection of sequential comic pages generated and lettered with InkLoo
 
 | Two-Character Exchange | Expressive Character Acting | Dynamic Physical Movement |
 | :---: | :---: | :---: |
-| ![Two-shot conversation](docs/images/composite_page_story_0d52cb50bb7b_rev13_81.webp)<br>*Two-character conversational staging with clear speaker tail geometry and reading order.* | ![Character acting](docs/images/composite_page_story_240a37ce136d_rev16_8e.webp)<br>*Expressive close-ups and medium shots maintaining facial morphology and clothing invariants.* | ![Dynamic movement](docs/images/composite_page_story_5c01519e702a_rev13_ab.webp)<br>*Physical movement paneling with somatic posture congruence across panels.* |
+| ![Two-shot conversation](docs/images/composite_page_story_0d52cb50bb7b_rev13_81.webp)<br>*Two characters talk across panels with speech bubble tails pointing to the speaker.* | ![Character acting](docs/images/composite_page_story_240a37ce136d_rev16_8e.webp)<br>*Close-up and medium shots keep the same face and clothes across different angles.* | ![Dynamic movement](docs/images/composite_page_story_5c01519e702a_rev13_ab.webp)<br>*Action panels follow character motion from panel to panel.* |
 
 | Dialogue Tension | Grid Composition | Climax & Resolution |
 | :---: | :---: | :---: |
-| ![Dialogue interaction](docs/images/composite_page_story_ddf145c1e9c2_rev22.webp)<br>*Dialogue interaction conveying narrative tension through restrained character acting.* | ![Grid composition](docs/images/composite_page_story_e1438f8a37f6_rev12_d8.webp)<br>*Multi-panel progression following strict left-to-right reading order and border gutters.* | ![Climax resolution](docs/images/composite_page_story_f90626ac07e3_rev18_96.webp)<br>*Final narrative pacing resolution with obstacle-free speech bubbles and tail clearance.* |
+| ![Dialogue interaction](docs/images/composite_page_story_ddf145c1e9c2_rev22.webp)<br>*Dialogue scene showing character expressions and speech bubbles that avoid covering faces.* | ![Grid composition](docs/images/composite_page_story_e1438f8a37f6_rev12_d8.webp)<br>*Multi-panel grid layout supporting both left-to-right and right-to-left reading flow.* | ![Climax resolution](docs/images/composite_page_story_f90626ac07e3_rev18_96.webp)<br>*Closing sequence showing final story beats and clean speech balloon placement.* |
 
 *Detailed breakdowns and generation parameters available in the [Page Gallery](docs/GALLERY.md).*
 
@@ -48,9 +48,9 @@ A curated selection of sequential comic pages generated and lettered with InkLoo
 
 ## 3. Problem & Solution
 
-AI image generators suffer from severe identity and layout amnesia across sequential panels. When generating a multi-panel visual story, facial structures morph, hairstyles shift, costumes randomly mutate, and text bubbles carelessly obscure characters' faces and focal action. Hand-lettering comics remains tedious, and manual digital tools do not coordinate with narrative scripts.
+AI image generators often lose track of character appearance across sequential panels. Faces morph, clothes change randomly, and generated speech bubbles cover faces or important action. Hand-lettering comics is slow, and drawing software does not parse scripts into panel layouts.
 
-InkLoop resolves sequential comic production by pairing Meta AI models with deterministic layout geometry. It establishes canonical multi-angle character model sheets, translates script dialogue into structured panel beats, and leverages computer vision segmentation to route vector speech bubbles into open gutters with directional tails. The creator retains full control through an interactive web canvas editor while the system guarantees visual continuity.
+InkLoop solves sequential comic creation by pairing Meta AI models with deterministic layout geometry. It locks character identity and style using canonical reference sheets, turns scripts into structured panel beats, and segments panels with computer vision to place speech bubbles in open spaces. A visual judge checks generated panels against the story bible. Creators keep full control through an interactive web canvas editor.
 
 ---
 
@@ -60,9 +60,9 @@ InkLoop integrates three Meta AI models verified across the codebase:
 
 | Model Name | Exact Role in InkLoop | Invocation (REST / SDK) |
 | :--- | :--- | :--- |
-| **`muse-image-1.0`** | Generates multi-angle character turnaround anchors and high-fidelity comic panel artwork conditioned on character model sheets. | `POST /v1/responses` targeting `muse-image-1.0` with structured negative quality guards (`backend/app/image_adapter.py:53`). |
-| **`muse-spark-1.3`** | Performs story script parsing, narrative beat extraction, shot density allocation, and visual judge verification against story bible invariants. | `POST /v1/responses` targeting `muse-spark-1.3` with low reasoning effort and JSON schema contracts (`backend/app/agent/model_client.py:216`). |
-| **`sam-3.1`** | Performs promptable subject segmentation (`input_text: "person"`) to detect faces, heads, and eyes, generating obstacle masks for bubble placement. | `POST /v1/responses` targeting `sam-3.1` with concept segmentation prompts (`backend/app/canvas/protected_regions.py:140`). |
+| **`muse-image-1.0`** | Generates multi-angle character reference sheets and in-panel comic artwork conditioned on reference images. | `POST /images/generations` and `POST /images/edits` targeting `muse-image-1.0` (`backend/app/image_adapter.py:53`, `backend/app/image_adapter.py:152-165`). |
+| **`muse-spark-1.3`** | Parses scripts into story beats, plans panel compositions, and evaluates panel artwork against story bible rules. | `POST /responses` targeting `muse-spark-1.3` with structured tool selection and schema validation (`backend/app/agent/model_client.py:216`, `backend/app/agent/model_client.py:457-467`). |
+| **`sam-3.1`** | Locates characters, heads, and faces to build obstacle masks so speech bubbles avoid covering key visual subjects. | `POST /responses` targeting `sam-3.1` with promptable concept queries (`backend/app/verification/l1_subject.py:77, 101`, adapted in `backend/app/canvas/protected_regions.py:140`). |
 
 ---
 
@@ -183,7 +183,7 @@ InkLoop/
 ├── docs/
 │   ├── ARCHITECTURE.md      # Architecture diagram and component data flows
 │   ├── CONFIGURATION.md     # Complete environment variable specification
-│   ├── GALLERY.md           # 16 web-optimized generated comic pages
+│   ├── GALLERY.md           # 6 web-optimized generated comic pages
 │   ├── SETUP.md             # Detailed cross-platform setup instructions
 │   └── TROUBLESHOOTING.md   # Common errors and verified resolutions
 ├── scripts/
@@ -205,15 +205,15 @@ InkLoop includes an automated integration and regression test suite:
 pytest backend/tests
 ```
 
-- **Total Test Count**: 827 tests.
-- **Pass Rate**: 825 passed, 2 skipped (by design pending exact sequence replay data), 0 failed.
-- **Test Coverage**: Character anchor invariance, obstacle-free bubble routing, reading-direction geometry (LTR/RTL), spend budget caps, content hashing, and canvas editor / PDF export parity.
+- **Total Test Count**: 827 tests collected.
+- **Pass Rate**: 826 passed, 1 skipped (by design pending exact sequence replay data), 0 failed in 62.40s.
+- **Test Coverage**: Character reference locking, obstacle-free bubble routing, reading-direction geometry (LTR and RTL), budget spend caps, content hashing, and canvas editor to PDF export parity.
 
 ---
 
 ## 9. License
 
-This repository does not currently contain a restrictive license file. An open-source license (such as Apache 2.0 or MIT) will be designated upon public hackathon submission.
+This repository does not currently contain a restrictive license file. An open-source license will be designated upon public hackathon submission.
 
 ---
 
@@ -221,6 +221,7 @@ This repository does not currently contain a restrictive license file. An open-s
 
 - **Event**: Meta Global AI Developer Hackathon
 - **Track**: Indie Track
+- **Theme**: Build for Your World
 - **Author**: [Mohamed Gomaa (`mohgomaa-art`)](https://github.com/mohgomaa-art)
 - **Contact**: `mnile23@gmail.com`
 - **Third-Party Credits**: PyMuPDF (PDF rendering), Pillow (image handling), FastAPI (backend framework), React / Vite (studio canvas interface).

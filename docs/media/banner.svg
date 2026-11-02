@@ -118,7 +118,7 @@
     <!-- Short Description -->
     <g transform="translate(0, 83)">
       <text x="0" y="0" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="14.5" font-weight="400" fill="#E4E4E7">Autonomous comic, manga, and visual storytelling production engine powered by Meta AI models.</text>
-      <text x="0" y="21" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="13" font-weight="400" fill="#888892">Guaranteed character continuity, canonical model sheets &amp; deterministic canvas lettering.</text>
+      <text x="0" y="21" font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" font-size="13" font-weight="400" fill="#888892">Reference-locked character continuity, canonical model sheets &amp; deterministic canvas lettering.</text>
     </g>
 
     <!-- Badges Row -->
